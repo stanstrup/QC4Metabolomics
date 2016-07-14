@@ -11,7 +11,7 @@ data_cont <- xcmsRaw_to_tbl(files)
 
 
 # Get contamination lists -------------------------------------------------
-data_cont %<>% mutate(cont_list = get_cont_list(polarity))
+data_cont %<>% mutate(cont_list = get_cont_list(polarity,type=QC4Metabolomics.env$target_cont$cont_list$cont_list_type))
 
 
 

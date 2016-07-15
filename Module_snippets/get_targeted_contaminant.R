@@ -6,12 +6,15 @@ library(dplyr)
 library(tidyr)
 
 
+
 # Read raw data -----------------------------------------------------------
-data_cont <- xcmsRaw_to_tbl(files)
+data <- xcmsRaw_to_tbl(files)
+
 
 
 # Get contamination lists -------------------------------------------------
-data_cont %<>% mutate(cont_list = get_cont_list(polarity,type=QC4Metabolomics.env$target_cont$cont_list$cont_list_type))
+data_cont <-    data %>% 
+                mutate(cont_list = get_cont_list(polarity,type=QC4Metabolomics.env$target_cont$cont_list$cont_list_type))
 
 
 
@@ -36,4 +39,3 @@ data_cont %<>%  unnest(cont_list, .drop = FALSE) %>%  # one line per contaminant
                 select(-raw,-EIC) # lets remove the big stuff so this could eventually go in a database
     
     
-

@@ -1,5 +1,6 @@
 require(ini)
 require(dplyr)
+require(stringr)
 
 ini <- read.ini("settings.ini")
 
@@ -10,5 +11,6 @@ QC4Metabolomics.env$target_cont$cont_list$cont_list_type    <- ini$target_cont$c
 QC4Metabolomics.env$target_cont$cont_list$loc$positive      <- ini$target_cont$cont_list_loc_positive  %>% as.character
 QC4Metabolomics.env$target_cont$cont_list$loc$unknown       <- ini$target_cont$cont_list_loc_unknown   %>% as.character
 QC4Metabolomics.env$target_cont$cont_list$loc$negative      <- ini$target_cont$cont_list_loc_negative  %>% as.character
-
+QC4Metabolomics.env$TIC$TIC_exclude                         <- ini$visualization$TIC_exclude %>% str_split(",") %>% unlist %>% as.numeric
+QC4Metabolomics.env$TIC$TIC_exclude_ppm                     <- ini$visualization$TIC_exclude_ppm %>% as.numeric
 rm(ini)

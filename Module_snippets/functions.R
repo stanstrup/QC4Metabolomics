@@ -4,7 +4,7 @@ xcmsRaw_to_tbl <- function(files){
     require(dplyr)
     require(purrr)
     
-    data_cont <- files %>% 
+    data <- files %>% 
         data_frame(path = .) %>% as.tbl %>%                  # string to tbl
         mutate(file=basename(path)) %>% 
         mutate(raw   = map(.$path, xcmsRaw)  ) %>%           # read raw data
@@ -12,7 +12,7 @@ xcmsRaw_to_tbl <- function(files){
         mutate(polarity = map_chr(raw,extract_polarity)) %>% # get polarity for each raw data
         select(file,polarity,raw,path)                       # just re-arrange for readability
     
-    return(data_cont)
+    return(data)
 }
 
 

@@ -21,7 +21,7 @@ data_cont %>%
                         theme(plot.title = element_text(margin=margin(b = 50),face="bold",size=32)) +
                         labs(x="Contaminants", y="Median EIC") +
                         scale_y_continuous(label=scientific)
-    ) ->
+                ) ->
 p
 
 

@@ -12,7 +12,7 @@ data_cont %>%
                 group_by(sample) %>% 
                 do(
                     plot =  ggplot(data=.,aes(x = reorder(comp_name, -EIC_median), y = EIC_median)) + 
-                        geom_bar(stat = "identity") +
+                        geom_bar(stat = "identity",fill="black") +
                         theme_classic() +
                         theme(axis.text.x = element_text(hjust=1,size = 10, angle = 90, vjust = 0.5)) +
                         theme(axis.title = element_text(size = 16,face = "bold")) +

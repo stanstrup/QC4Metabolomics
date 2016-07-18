@@ -22,7 +22,7 @@ p
 
 # Plot tic with excluded masses -------------------------------------------
 test %>%    mutate(TIC = map(raw, ~ get_TIC(., TIC_exclude_mz = QC4Metabolomics.env$TIC$TIC_exclude ) )) %>% 
-    mutate(TIC_plot = map(TIC,plot_TIC)) %>% 
-    mutate(TIC_plotly = map(TIC_plot, ggplotly)) ->
-    p
+            mutate(TIC_plot = map(TIC,plot_TIC)) %>% 
+            mutate(TIC_plotly = map(TIC_plot, ggplotly)) ->
+p
 

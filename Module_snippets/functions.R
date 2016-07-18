@@ -147,3 +147,27 @@ get_TIC <- function(xraw, TIC_exclude_mz = NULL, TIC_exclude_ppm = 30){
     return(tic)
     
 }
+
+
+
+plot_TIC <- function(tbl, RT_col = "RT", Intensity_col = "Intensity"){
+    
+    ggplot(data=tbl,aes_string(x = RT_col, y = Intensity_col)) + 
+        geom_line(size=0.2) +
+        theme_bw() +
+        theme(
+            plot.background = element_blank()
+            ,panel.grid.major = element_blank()
+            ,panel.grid.minor = element_blank()
+            ,panel.border = element_blank()
+        ) +
+        #draws x and y axis line
+        theme(axis.line.x = element_line(color="black", size = 0.5),
+              axis.line.y = element_line(color="black", size = 0.5)) + 
+        labs(x="Retention time (min)", y="Intensity (counts)") +
+        theme(axis.title = element_text(size = 16,face = "bold")) +
+        scale_y_continuous(label=scientific) +
+        expand_limits(x = 0, y = 0) +
+        geom_hline(yintercept=0, size=0.5)
+    
+}

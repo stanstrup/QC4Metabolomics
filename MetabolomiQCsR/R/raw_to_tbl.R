@@ -13,6 +13,9 @@
 extract_polarity <- function(xraw){
     
     pols          <- xraw@polarity
+    
+    if(length(pols)==0) return("unknown")
+    
     pols_count    <- table(pols)
     pols_dominant <- names(pols_count)[which.max(pols_count)]
     

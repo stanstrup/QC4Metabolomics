@@ -1,0 +1,36 @@
+---
+title: "Functionality walk-through"
+author: "Jan Stanstrup"
+date: "18 jul 2016"
+output: rmarkdown::html_document
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Functionality walk-through}
+  %\usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Keeping raw data in tibbles
+
+Tibbles are similar to data frames with a few tricks up its sleave. One is that you can use so called list columns.
+So instead of having datasets (or LC-MS raw data) in a list or in different variables it can be in one table with associated meta data.
+
+Lets take some raw data data and make it into a table. We will do this in the pipe/dplyr way just because we can.
+
+```{r libraries, message=FALSE}
+library(MetabolomiQCsR)
+library(dplyr)
+library(faahKO)
+```
+
+```{r xcmsRaw_to_tbl}
+files <- file.path(find.package("faahKO"), "cdf/KO") %>% 
+         list.files(full.names=TRUE)
+ 
+files %>% xcmsRaw_to_tbl
+```
+
+

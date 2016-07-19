@@ -2,6 +2,7 @@
 
 export(extract_polarity)
 export(xcmsRaw_to_tbl)
+importFrom(dplyr,"%>%")
 importFrom(dplyr,as.tbl)
 importFrom(dplyr,funs)
 importFrom(dplyr,mutate)

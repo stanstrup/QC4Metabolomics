@@ -5,3 +5,5 @@
 QC4Metabolomics.Rproj
 notes.txt
 MetabolomiQCsR/man
+inst/doc
+MetabolomiQCsR.Rcheck

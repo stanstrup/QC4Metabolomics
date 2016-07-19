@@ -6,8 +6,6 @@
 #' @return A character string giving the polarity. Can be "positive", "negative", or "unknown".
 #' 
 #' @export
-#'
-#' @examples
 #' 
 
 extract_polarity <- function(xraw){
@@ -40,14 +38,14 @@ extract_polarity <- function(xraw){
 #' @export
 #'
 #'@importFrom tibble data_frame
-#'@importFrom dplyr as.tbl mutate mutate_each funs select
+#'@importFrom dplyr as.tbl mutate mutate_each funs select %>%
 #'@importFrom purrr map map_chr
 #'@importFrom xcms xcmsRaw
-#'
-#' @examples
 #' 
 
 xcmsRaw_to_tbl <- function(files){
+
+    . <- path <- polarity <- NULL # make build check happy
 
     data <- files %>% 
             data_frame(path = .) %>% as.tbl %>%                  # string to tbl

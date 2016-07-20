@@ -1,4 +1,6 @@
 #' Extract polarity from xcmsRaw object.
+#' 
+#' Extracts polarity from an xcmsRaw object.
 #' The polarity found in the majority of scans is returned.
 #'
 #' @param xraw The xcmsRaw object to extract polarity from.

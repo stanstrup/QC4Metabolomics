@@ -5,7 +5,7 @@
 \title{Get EICs from xcmsRaw object}
 \usage{
 get_EICs(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30,
-  range_tbl_vars = c("mz_lower", "mz_upper"), BPI = FALSE)
+  range_tbl_cols = c("mz_lower", "mz_upper"), BPI = FALSE)
 }
 \arguments{
 \item{xraw}{\code{\link{xcmsRaw}} object to get EIC(s)/TIC from.}
@@ -16,7 +16,7 @@ get_EICs(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30,
 
 \item{exclude_ppm}{ppm tolerance of exclude_mz}
 
-\item{range_tbl_vars}{Which columns in range_tbl holds the lower and upper range. defaults to c("mz_lower","mz_upper").}
+\item{range_tbl_cols}{Which columns in range_tbl holds the lower and upper range. defaults to c("mz_lower","mz_upper").}
 
 \item{BPI}{Logical selecting to calculate TIC (FALSE) or BPI.}
 }

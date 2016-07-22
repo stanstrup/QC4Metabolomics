@@ -1,0 +1,218 @@
+---
+title: "How to make EICs/TICs/BPIs"
+author: "Jan Stanstrup"
+date: "22 jul 2016"
+output:
+          html_document:
+                        highlight: haddock
+                        toc: yes
+                        number_sections: yes
+                        css: style.css
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{How to make EICs/TICs/BPIs}
+  %\usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", dev='svg')
+```
+
+# R Keeping raw data in tibbles
+
+Tibbles are similar to data frames with a few tricks up their sleave. One is that you can use so called list columns.
+So instead of having datasets (or LC-MS raw data) in a list or in different variables it can be in one table with associated meta data.
+
+# Reading raw data into a tibble/table with meta data
+
+Lets take some raw data data and make it into a table. We will do this in the pipe/dplyr because that is much more readable.
+First we load some packages we will need in this tutorial.
+
+```{r libraries, message=FALSE, warning = FALSE}
+library(MetabolomiQCsR)
+library(purrr)
+library(tidyr)
+library(dplyr)
+library(faahKO)
+library(magrittr)
+library(ggplot2)
+```
+
+
+Now we first find the path to some test data:
+
+```{r xcmsRaw_to_tbl1}
+files <- file.path(find.package("faahKO"), "cdf/KO") %>% 
+         list.files(full.names=TRUE)
+
+files
+```
+
+Then we read the raw data with a wrapper that puts it into a table.
+```{r xcmsRaw_to_tbl2}
+raw_tbl <- files %>% xcmsRaw_to_tbl
+
+raw_tbl
+```
+
+A single raw object could be accessed like this:
+```{r xcmsRaw_to_tbl3}
+raw_tbl$raw[[1]]
+```
+
+# Extracted ion chromatograms
+## TIC for a single raw file
+
+To get a TIC we can use `get_EICs` with m/z range from `-Inf` to `Inf`.
+Lets create a TIC for one of the raw files and plot it with `plot_chrom`:
+
+```{r 'single TIC', dev='svg'}
+TIC_tbl <- raw_tbl$raw[[1]] %>% 
+                                get_EICs(range_tbl = data.frame(mz_lower = -Inf,mz_upper = Inf)) %>% 
+                                extract2(1) # since the function can work on multiple ranges we get a list. 
+                                            # So we take first element.
+
+plot_chrom(TIC_tbl, RT_col = "scan_rt", Intensity_col = "intensity")
+```
+
+
+## BPI for a single raw file
+
+We can also get the BPI instead.
+
+```{r 'single BPI', dev='svg'}
+BPI_tbl <- raw_tbl$raw[[1]] %>% 
+                                get_EICs(range_tbl = data.frame(mz_lower = -Inf,mz_upper = Inf, BPI = TRUE)) %>% 
+                                extract2(1)
+
+plot_chrom(BPI_tbl, RT_col = "scan_rt", Intensity_col = "intensity")
+```
+
+
+## TIC for a single raw file, filtered for certain masses
+
+If there is a contaminant (or a continuous calibrant) you can exclude it.
+In this case there is no such thing in the data so for illustrative purposes we can remove a peak from the TIC (see if you can find it!).
+
+```{r 'single TIC with exclusion range'}
+TIC_tbl <- raw_tbl$raw[[1]] %>% 
+                            get_EICs(range_tbl = data.frame(mz_lower = -Inf, mz_upper = Inf), 
+                                     exclude_mz = 279.000, 
+                                     exclude_ppm = 1000
+                                    ) %>% 
+                            extract2(1)
+
+plot_chrom(TIC_tbl, RT_col = "scan_rt", Intensity_col = "intensity")
+```
+
+
+## EIC for a single raw file
+
+Now lets do an EIC instead of a TIC. We can look at the mass we excluded above.
+We again take out just a single raw file.
+First we need to get the m/z range of the EIC slice.
+
+```{r 'single EIC 1'}
+ppm <- 1000 # this is not accurate mass data
+
+EIC_intervals <- data_frame(mz=279.000, 
+                            mz_lower = mz-((ppm)/1E6)*mz, 
+                            mz_upper = mz+((ppm)/1E6)*mz
+                           ) 
+
+EIC_intervals
+```
+
+Now we get the EIC data and plot it.
+```{r 'single EIC 2'}
+EIC_data <- get_EICs(raw_tbl$raw[[1]], EIC_intervals) %>% extract2(1)
+    
+EIC_data
+
+plot_chrom(EIC_data, RT_col = "scan_rt", Intensity_col = "intensity")
+```
+
+
+
+
+## EICs for a multiple raw file
+Now lets get many EICs at the same time for all the files.
+This might be a bit hairy but I will try to explain each step.
+
+First we make a table of ranges:
+
+```{r 'multiple  EIC 1'}
+ppm <- 1000 # this is not accurate mass data. Used to create intervals below.
+
+range_tbls <-   data_frame(mz = c(508.1, 279.0, 577.3)) %>% 
+                mutate(mz_lower = mz-((ppm)/1E6)*mz, 
+                       mz_upper = mz+((ppm)/1E6)*mz
+                       )
+
+range_tbls
+```
+
+
+Then we need to make a copy of the table for each of the files.
+This is so that they can go in the table together.
+```{r 'multiple  EIC 2'}
+range_tbls %<>% list %>% 
+                rep(nrow(raw_tbl)) %>% 
+                data_frame(ranges = .)
+
+range_tbls
+```
+
+
+At this point we are ready to merge the two tables.
+```{r 'multiple  EIC 3'}
+range_tbls_and_files <- bind_cols(raw_tbl, range_tbls)
+
+range_tbls_and_files %>% select(-path) # In this display we remove the path column just to better show the relevant data.
+```
+
+
+Now the FUN begins.
+We use `map2` from the `purrr` to go through each row of the table and run `get_EICs` on each combination of the `raw` and `ranges` columns.
+
+```{r 'multiple  EIC 4'}
+range_tbls_and_files %<>% mutate(EIC = map2(raw,ranges, get_EICs  ))
+
+range_tbls_and_files  %>% select(-path)
+
+# Inside each of the EIC lists we have a table for each EIC slice:
+range_tbls_and_files$EIC[[1]]
+```
+
+
+So now we need to wrangle the data a bit to be able to unwrap those nested tables.
+We go into the `EIC` lists, merge the lists while we add a row to show which m/z slice each belongs to.
+While we are at it we change the new `mz` column to a factor.
+```{r 'multiple  EIC 5'}
+range_tbls_and_files %<>% mutate(EIC = map2(EIC,ranges, ~ bind_rows(.x %>% setNames(.y$mz), .id = "mz") %>% 
+                                                          mutate(mz = mz %>% as.numeric %>% as.factor) 
+                                            )
+                                 )
+
+range_tbls_and_files$EIC[[1]]
+```
+
+
+So now we can get rid of those nested tables.
+First we remove the `ranges` and the `raw` columns because we cannot unnest everything together.
+```{r 'multiple  EIC 6'}
+range_tbls_and_files %<>% select(-ranges, -raw) %>% unnest
+```
+
+
+Now we can even plot all the EICs for all the files at the same time of we want.
+
+```{r 'multiple  EIC plots', fig.height = 8, fig.width = 8}
+
+p <- range_tbls_and_files %>% 
+                                plot_chrom(RT_col = "scan_rt", Intensity_col = "intensity") +
+                                facet_grid(file ~ mz) # since plot_chrom gives a ggplot2 object 
+                                                      # we can continue manipulating it.
+
+p
+```

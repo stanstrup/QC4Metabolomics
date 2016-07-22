@@ -49,13 +49,14 @@ cont_screen_gg2plotly <- function(x){
 
 
 
-get_EICs <- function(tbl){
-require(xcms)
-require(purrr)
-require(plyr)
-    
 
-tbl %>%     
+get_EICs <- function(tbl){
+    require(xcms)
+    require(purrr)
+    require(plyr)
+    
+    
+    tbl %>%     
         mutate(EIC   = pmap(list(raw,mz_lower,mz_upper),   function(raw,lower,upper) rawEIC(raw, as.matrix(data.frame(mzmin=lower,mzmax=upper)))   )) %>% # get the EICs
         mutate(EIC   = map(EIC,  ~ do.call(cbind.data.frame,.) %>% as.tbl  )) %>%     # EICs are lists. make nice data.frame
         mutate(EIC   = map2(EIC,raw, function(EIC,raw) mutate(EIC,scan_rt = raw@scantime[EIC$scan]/60)   )) %>% # convert scans to retention times
@@ -64,17 +65,15 @@ tbl %>%
         mutate(EIC_sd       = map_dbl(EIC,  ~ sd(.$intensity)   )) %>%      # get the sd intensity of each EIC
         mutate(EIC_max      = map_dbl(EIC,  ~ max(.$intensity)   )) %>%     # get the max intensity of each EIC
         mutate(EIC_max      = map_dbl(EIC,  ~ max(.$intensity)   )) ->      # get the max intensity of each EIC
-out
-
-return(out)
+        out
+    
+    return(out)
     
 }
 
 
 
 
-
-# function to make TIC from raw -------------------------------------------
 
 get_TIC <- function(xraw, TIC_exclude_mz = NULL, TIC_exclude_ppm = 30){
     
@@ -110,25 +109,3 @@ get_TIC <- function(xraw, TIC_exclude_mz = NULL, TIC_exclude_ppm = 30){
 }
 
 
-
-plot_TIC <- function(tbl, RT_col = "RT", Intensity_col = "Intensity"){
-    
-    ggplot(data=tbl,aes_string(x = RT_col, y = Intensity_col)) + 
-        geom_line(size=0.2) +
-        theme_bw() +
-        theme(
-            plot.background = element_blank()
-            ,panel.grid.major = element_blank()
-            ,panel.grid.minor = element_blank()
-            ,panel.border = element_blank()
-        ) +
-        #draws x and y axis line
-        theme(axis.line.x = element_line(color="black", size = 0.5),
-              axis.line.y = element_line(color="black", size = 0.5)) + 
-        labs(x="Retention time (min)", y="Intensity (counts)") +
-        theme(axis.title = element_text(size = 16,face = "bold")) +
-        scale_y_continuous(label=scientific) +
-        expand_limits(x = 0, y = 0) +
-        geom_hline(yintercept=0, size=0.5)
-    
-}

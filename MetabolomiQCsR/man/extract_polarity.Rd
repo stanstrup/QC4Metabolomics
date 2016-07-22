@@ -2,8 +2,7 @@
 % Please edit documentation in R/raw_to_tbl.R
 \name{extract_polarity}
 \alias{extract_polarity}
-\title{Extract polarity from xcmsRaw object.
-The polarity found in the majority of scans is returned.}
+\title{Extract polarity from xcmsRaw object.}
 \usage{
 extract_polarity(xraw)
 }
@@ -14,7 +13,7 @@ extract_polarity(xraw)
 A character string giving the polarity. Can be "positive", "negative", or "unknown".
 }
 \description{
-Extract polarity from xcmsRaw object.
+Extracts polarity from an xcmsRaw object.
 The polarity found in the majority of scans is returned.
 }
 

@@ -1,0 +1,30 @@
+---
+title: "Finding contaminants"
+author: "Jan Stanstrup"
+date: "22 jul 2016"
+output:
+          html_document:
+                        highlight: haddock
+                        toc: yes
+                        number_sections: yes
+                        css: style.css
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Finding contaminants}
+  %\usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", dev='svg')
+```
+
+# Getting a list of known contaminants
+
+We can pull a list of known contaminants from a list hosted on github (see `?get_cont_list`).
+"Unknown" will used the positive mode list by default. This is mainly to do something when the ionization mode cannot be detected.
+
+```{r contaminant list}
+library(MetabolomiQCsR)
+
+get_cont_list(polarity = c("positive", "negative", "unknown"))
+```

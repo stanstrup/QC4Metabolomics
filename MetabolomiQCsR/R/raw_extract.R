@@ -60,7 +60,7 @@ EIC_calc <- function(tbl, lower, upper, BPI = FALSE){
 #' @param range_tbl data.frame/\code{\link{tibble}} with columns for the lower and upper m/z boundaries of EIC slice(s).
 #' @param exclude_mz Masses to exclude from the EIC. Most useful to remove contaminants from TICs.
 #' @param exclude_ppm ppm tolerance of exclude_mz
-#' @param range_tbl_vars Which columns in range_tbl holds the lower and upper range. defaults to c("mz_lower","mz_upper").
+#' @param range_tbl_cols Which columns in range_tbl holds the lower and upper range. defaults to c("mz_lower","mz_upper").
 #' @param BPI Logical selecting to calculate TIC (FALSE) or BPI.
 #'
 #' @return tbl A \code{\link{tibble}} containing the columns: 
@@ -80,14 +80,14 @@ EIC_calc <- function(tbl, lower, upper, BPI = FALSE){
 #' @importFrom magrittr extract2 %<>%
 #' 
 
-get_EICs <- function(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30, range_tbl_vars = c("mz_lower","mz_upper"), BPI = FALSE){
+get_EICs <- function(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30, range_tbl_cols = c("mz_lower","mz_upper"), BPI = FALSE){
     
     # make build check happy
     . <- mz <- exclude <- mz_lower <- mz_upper <- EIC <- NULL
     
     
-    # get the right columns from range_tbl_vars
-    range_tbl %<>% rename_(mz_lower = range_tbl_vars[1],mz_upper = range_tbl_vars[2])
+    # get the right columns from range_tbl_cols
+    range_tbl %<>% rename_(mz_lower = range_tbl_cols[1],mz_upper = range_tbl_cols[2])
 
     
     # get raw values

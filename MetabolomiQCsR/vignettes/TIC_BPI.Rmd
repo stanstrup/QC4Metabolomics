@@ -36,6 +36,7 @@ library(dplyr)
 library(faahKO)
 library(magrittr)
 library(ggplot2)
+library(plotly)
 ```
 
 
@@ -129,13 +130,19 @@ EIC_data <- get_EICs(raw_tbl$raw[[1]], EIC_intervals) %>% extract2(1)
     
 EIC_data
 
-plot_chrom(EIC_data, RT_col = "scan_rt", Intensity_col = "intensity")
+p <- plot_chrom(EIC_data, RT_col = "scan_rt", Intensity_col = "intensity")
+
+p
+```
+
+As a side note we can also get interactive plots with `plotly`:
+```{r 'single EIC 3'}
+
+p  %>% ggplotly %>% layout(margin = list(l = 80, b = 60))
 ```
 
 
-
-
-## EICs for a multiple raw file
+## EICs for multiple raw files
 Now lets get many EICs at the same time for all the files.
 This might be a bit hairy but I will try to explain each step.
 
@@ -205,6 +212,8 @@ range_tbls_and_files %<>% select(-ranges, -raw) %>% unnest
 ```
 
 
+### One plot with all file/mz together
+
 Now we can even plot all the EICs for all the files at the same time of we want.
 
 ```{r 'multiple  EIC plots', fig.height = 8, fig.width = 8}
@@ -215,4 +224,24 @@ p <- range_tbls_and_files %>%
                                                       # we can continue manipulating it.
 
 p
+```
+
+
+### One plot for each file/mz
+
+You can also generate a separate plot for each file/mz combination very easily:
+
+```{r 'multiple  EIC plots 2'}
+
+# Nest the table again by file/mz
+range_tbls_and_files %<>%   group_by(file, mz) %>% nest
+
+range_tbls_and_files
+
+# now make the plots
+range_tbls_and_files %<>%   mutate(plot = map(data, ~ plot_chrom(.x, RT_col = "scan_rt", Intensity_col = "intensity")))
+                                
+range_tbls_and_files
+
+range_tbls_and_files$plot[[1]]
 ```

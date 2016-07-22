@@ -9,6 +9,7 @@ library(dplyr)
 library(faahKO)
 library(magrittr)
 library(ggplot2)
+library(plotly)
 
 ## ----xcmsRaw_to_tbl1-----------------------------------------------------
 files <- file.path(find.package("faahKO"), "cdf/KO") %>% 
@@ -64,7 +65,13 @@ EIC_data <- get_EICs(raw_tbl$raw[[1]], EIC_intervals) %>% extract2(1)
     
 EIC_data
 
-plot_chrom(EIC_data, RT_col = "scan_rt", Intensity_col = "intensity")
+p <- plot_chrom(EIC_data, RT_col = "scan_rt", Intensity_col = "intensity")
+
+p
+
+## ----'single EIC 3'------------------------------------------------------
+
+p  %>% ggplotly %>% layout(margin = list(l = 80, b = 60))
 
 ## ----'multiple  EIC 1'---------------------------------------------------
 ppm <- 1000 # this is not accurate mass data. Used to create intervals below.
@@ -115,4 +122,18 @@ p <- range_tbls_and_files %>%
                                                       # we can continue manipulating it.
 
 p
+
+## ----'multiple  EIC plots 2'---------------------------------------------
+
+# Nest the table again by file/mz
+range_tbls_and_files %<>%   group_by(file, mz) %>% nest
+
+range_tbls_and_files
+
+# now make the plots
+range_tbls_and_files %<>%   mutate(plot = map(data, ~ plot_chrom(.x, RT_col = "scan_rt", Intensity_col = "intensity")))
+                                
+range_tbls_and_files
+
+range_tbls_and_files$plot[[1]]
 

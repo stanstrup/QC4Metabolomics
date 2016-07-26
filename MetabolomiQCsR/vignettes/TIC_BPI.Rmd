@@ -37,6 +37,7 @@ library(faahKO)
 library(magrittr)
 library(ggplot2)
 library(plotly)
+library(knitr)
 ```
 
 
@@ -234,14 +235,32 @@ You can also generate a separate plot for each file/mz combination very easily:
 ```{r 'multiple  EIC plots 2'}
 
 # Nest the table again by file/mz
-range_tbls_and_files %<>%   group_by(file, mz) %>% nest
+range_tbls_and_files %<>% group_by(file, mz, path) %>% nest(.key = "EIC")
 
 range_tbls_and_files
 
 # now make the plots
-range_tbls_and_files %<>%   mutate(plot = map(data, ~ plot_chrom(.x, RT_col = "scan_rt", Intensity_col = "intensity")))
+range_tbls_and_files %<>%   mutate(plot = map(EIC, ~ plot_chrom(.x, RT_col = "scan_rt", Intensity_col = "intensity")))
                                 
 range_tbls_and_files
 
 range_tbls_and_files$plot[[1]]
+```
+
+
+# Summarise EIC
+This probably only makes sense if you are look for the max of a peak or if you have a contaminant and you want to know the median intensity etc.
+
+```{r 'multiple  EIC summary'}
+EIC_summary <-  range_tbls_and_files %>% 
+                select(-plot) %>% # can't unnest the plot and EIC at the same time 
+                unnest %>% 
+                group_by(file, mz, path) %>% 
+                summarise(EIC_median = median(intensity), 
+                          EIC_mean   = mean(intensity), 
+                          EIC_sd     = sd(intensity), 
+                          EIC_max    = max(intensity)
+                          )
+
+EIC_summary %>% select(-path) %>% kable # kable is just to show a nice table below instead of the print display
 ```

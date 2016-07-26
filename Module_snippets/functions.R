@@ -1,35 +1,3 @@
-# Get contamination list for a vector of polarities -----------------------
-
-# relies on the QC4Metabolomics.env being found globally
-
-get_cont_list <- function(polarity,type) {
-    require(magrittr)
-    require(dplyr)
-    require(purrr)
-    library(readr)
-    library(RCurl)
-    
-    polarity_un <- unique(polarity)
-    
-    if(type=="URL"){
-    cont_list <- QC4Metabolomics.env$target_cont$cont_list$loc %>% 
-        {data_frame(polarity = names(.),loc = as.character(.))} %>% 
-        filter(polarity %in% polarity_un) %>% 
-        mutate(cont_list = map_chr(loc, getURL)) %>% 
-        mutate(cont_list = map(cont_list, read_tsv))
-    }
-    
-    out <- polarity %>% 
-        {data_frame(polarity=polarity)} %>% as.tbl %>% 
-        left_join(cont_list, by="polarity") %>% 
-        extract2("cont_list")
-    
-    return(out)
-}
-
-
-
-
 # gg contamination barplot to plotly --------------------------------------
 # with fixed tooltip
 

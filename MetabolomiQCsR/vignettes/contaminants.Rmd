@@ -1,5 +1,5 @@
 ---
-title: "Finding contaminants"
+title: "Automatically annotation contaminants"
 author: "Jan Stanstrup"
 date: "22 jul 2016"
 output:
@@ -10,7 +10,7 @@ output:
                         css: style.css
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Finding contaminants}
+  %\VignetteIndexEntry{Automatically annotation contaminants}
   %\usepackage[utf8]{inputenc}
 ---
 
@@ -23,8 +23,29 @@ knitr::opts_chunk$set(echo = TRUE, fig.align = "center", dev='svg')
 We can pull a list of known contaminants from a list hosted on github (see `?get_cont_list`).
 "Unknown" will used the positive mode list by default. This is mainly to do something when the ionization mode cannot be detected.
 
-```{r contaminant list}
-library(MetabolomiQCsR)
 
-get_cont_list(polarity = c("positive", "negative", "unknown"))
+We need to load some libraries we will be using.
+
+```{r libraries, message=FALSE, warning = FALSE}
+library(MetabolomiQCsR)
+library(dplyr)
+library(knitr)
 ```
+
+
+## Retrieving list
+```{r contaminant list}
+contaminant_list <- get_cont_list(polarity = c("positive", "negative", "unknown"))
+contaminant_list %>% str
+```
+
+
+```{r contaminant list table}
+contaminant_list[[1]] %>% slice(1:20) %>% select(-ESI, -MALDI, -References) %>% kable
+```
+
+
+
+
+
+

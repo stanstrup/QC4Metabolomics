@@ -18,6 +18,19 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE, fig.align = "center", dev='svg')
 ```
 
+
+
+<style>
+pre code, pre, code {
+  white-space: pre !important;
+  overflow-x: scroll !important;
+  word-break: keep-all;
+  word-wrap: initial; 
+}
+</style>
+
+
+
 # Getting a list of known contaminants
 
 We can pull a list of known contaminants from a list hosted on github (see `?get_cont_list`).
@@ -28,12 +41,15 @@ We need to load some libraries we will be using.
 
 ```{r libraries, message=FALSE, warning = FALSE}
 library(MetabolomiQCsR)
+library(purrr)
+library(tidyr)
+library(tibble)
 library(dplyr)
+library(magrittr)
 library(knitr)
 ```
 
 
-## Retrieving list
 ```{r contaminant list}
 contaminant_list <- get_cont_list(polarity = c("positive", "negative", "unknown"))
 contaminant_list %>% str
@@ -41,11 +57,81 @@ contaminant_list %>% str
 
 
 ```{r contaminant list table}
-contaminant_list[[1]] %>% slice(1:20) %>% select(-ESI, -MALDI, -References) %>% kable
+contaminant_list[[1]] %>% 
+                            slice(1:20) %>% 
+                            select(-ESI, -MALDI, -References) %>% 
+                            kable
 ```
 
 
 
 
 
+# Read the raw files
 
+Input files. These are local files for now.
+
+```{r input files}
+files <- c("Z:/_Data/LIP1/0000_Test/2016-06-24 - Contamination hunt - part I/Infusion tests/mzML_centroided/IPA_VWR_Boiled.mzML",
+           "Z:/_Data/LIP1/0000_Test/2016-06-24 - Contamination hunt - part I/Infusion tests/mzML_centroided/EluentB_IPA1_Boiled.mzML",
+           "Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_034_2_1_1.mzML",
+           "Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_057_36_1_1.mzML"
+)
+```
+
+
+```{r read raw files}
+data_raw <- xcmsRaw_to_tbl(files)
+```
+
+
+# Get list of all known contaminants
+
+Get list of contaminants for the polarities we have and add it to the file list.
+```{r list of contaminants}
+data_cont <-    data_raw %>% 
+                distinct(polarity) %>% 
+                mutate(cont_list = get_cont_list(polarity))
+```
+
+
+
+
+# Get EICs of all known contaminants
+
+Clean up some column names and calculate EIC intervals.
+
+```{r clean contaminant list}
+EIC_ppm <- MetabolomiQCsR.env$target_cont$EIC_ppm # 30
+
+data_cont %<>%  unnest(cont_list, .drop = FALSE) %>%  # one line per contaminant
+                setNames(make.names(names(.))) %>% 
+                mutate(comp_name = paste0(Compound.ID.or.species," (",Ion.type,", ", round(Monoisotopic.ion.mass..singly.charged.,4),")"), comp_mz = Monoisotopic.ion.mass..singly.charged. ) %>% 
+                mutate(mz_lower = comp_mz-((EIC_ppm)/1E6)*comp_mz, mz_upper = comp_mz+((EIC_ppm)/1E6)*comp_mz) %>% 
+                nest(-polarity, .key = contaminants)
+```
+
+
+Add the raw data to the table
+```{r merge tables}
+data <- left_join(data_raw,data_cont, by = "polarity")
+
+rm(data_cont,data_raw)
+```
+
+Get EICs for all contaminants and raw files
+```{r EIC for each contaminant}
+data %<>%    mutate(   EIC = map2( raw, contaminants, get_EICs )   )
+```
+
+
+```{r EIC unnest contaminants and EIC}
+data %<>%   mutate(EIC = map2(EIC,contaminants, ~ bind_cols(.y, data_frame(EIC = .x) ))) %>% 
+            select(-raw,-contaminants) %>% 
+            unnest
+
+data %>% select(file, polarity, comp_name, comp_mz, mz_lower, mz_upper, EIC)  %>% print(width=Inf)
+```
+
+
+ 

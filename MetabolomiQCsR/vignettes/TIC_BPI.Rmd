@@ -84,7 +84,7 @@ We can also get the BPI instead.
 
 ```{r 'single BPI', dev='svg'}
 BPI_tbl <- raw_tbl$raw[[1]] %>% 
-                                get_EICs(range_tbl = data.frame(mz_lower = -Inf,mz_upper = Inf, BPI = TRUE)) %>% 
+                                get_EICs(range_tbl = data.frame(mz_lower = -Inf,mz_upper = Inf), BPI = TRUE) %>% 
                                 extract2(1)
 
 plot_chrom(BPI_tbl, RT_col = "scan_rt", Intensity_col = "intensity")
@@ -118,8 +118,8 @@ First we need to get the m/z range of the EIC slice.
 ppm <- 1000 # this is not accurate mass data
 
 EIC_intervals <- data_frame(mz=279.000, 
-                            mz_lower = mz-((ppm)/1E6)*mz, 
-                            mz_upper = mz+((ppm)/1E6)*mz
+                            mz_lower = mz-(ppm/1E6)*mz, 
+                            mz_upper = mz+(ppm/1E6)*mz
                            ) 
 
 EIC_intervals

@@ -50,6 +50,77 @@ EIC_calc <- function(tbl, lower, upper, BPI = FALSE){
 
 
 
+#' Calculate EICs from a raw matrix using XCMS C function
+#' 
+#' Calculate EICs from a raw matrix of all observations (scan/mz/intensity combinations).
+#' Can calculate for several ranges at a time
+#'
+#'
+#' @param tbl A \code{\link{tibble}} containing the columns: 
+#' \itemize{
+#'   \item \strong{scan:} scan number
+#'   \item \strong{scan_rt:} Retention time of scan
+#'   \item \strong{intensity:} The intensity of the observation
+#'   \item \strong{mz:} the mz of the observation
+#' }
+#' @param range_tbl data.frame/\code{\link{tibble}} with columns for the lower and upper ("mz_lower","mz_upper") m/z boundaries of EIC slice(s).
+#'
+#' @return tbl A \code{\link{tibble}} containing the columns: 
+#' \itemize{
+#'   \item \strong{scan:} scan number
+#'   \item \strong{scan_rt:} Retention time of scan
+#'   \item \strong{intensity:} The summed intensity for each scan in the given m/z interval
+#' } 
+#'
+#' @keywords internal
+#' @export
+#'
+#' @importFrom dplyr select distinct %>% bind_rows left_join
+#' @importFrom magrittr %<>% extract2
+#' @importFrom tibble data_frame
+#' @importFrom tidyr nest
+#' 
+#' 
+
+getEIC_C_wrap <- function(xraw_values, range_tbl) {
+
+    scan_rt <- range_id <- NULL  # make build check happy
+    
+    mz        <- xraw_values %>% extract2("mz")
+    int       <- xraw_values %>% extract2("intensity")
+    scanindex <- which(!duplicated(xraw_values$scan))-1 %>% as.integer
+    
+    N <- xraw_values %>% extract2("scan") %>% unique %>% length %>% as.integer
+
+    scan_times <- xraw_values %>% select(scan,scan_rt) %>% distinct
+    
+    out <- list()
+    
+    for(i in 1:nrow(range_tbl)){
+        out[[i]] <- .Call(  "getEIC",
+                              mz,
+                              int,
+                              scanindex,
+                              as.double(c(range_tbl$mz_lower[i],range_tbl$mz_upper[i])),
+                              c(1L,N),
+                              N,
+                              PACKAGE ='xcms' 
+                            )
+        
+        out[[i]] <- do.call(data_frame,out[[i]])
+    }
+    
+    
+    out <-    bind_rows(out,.id = "range_id") %>% # we flatten everything to be able to match the RT to the scan fast
+              left_join(scan_times, by="scan") %>%
+              nest(-range_id) %>% # then we need to split things again
+              extract2("data")
+
+    return(out)
+}
+ 
+
+
 #' Get EICs from xcmsRaw object
 #' 
 #' Takes an \code{\link{xcmsRaw}} object and extracts EICs.
@@ -103,7 +174,7 @@ get_EICs <- function(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30, range
     xraw_values %<>% mutate(scan_rt = xraw@scantime[scan]/60)
     
     
-    # If we ned to exclude something remove it from the raw data
+    # If we need to exclude something remove it from the raw data
     if(!is.null(exclude_mz)){
         # Get ranges for mz's to exclude
         exclude_mz %>% 
@@ -124,10 +195,13 @@ get_EICs <- function(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30, range
     
     
 
+    if(!BPI){ # if we don't need BPI we can use the fast C function
+        range_tbl %<>% getEIC_C_wrap(xraw_values,.) %>% data_frame(EIC = .) %>% bind_cols(range_tbl,.)
+    }else{
     # Get EIC for each interval
     range_tbl %<>%      mutate(EIC   = pmap(list(mz_lower,mz_upper,BPI), function(lower,upper, BPI) EIC_calc(xraw_values, lower, upper, BPI = BPI)   )  ) %>% # get the EICs
                         mutate(EIC   = map(EIC,  ~ do.call(cbind.data.frame,.) %>% as.tbl  ))     # EICs are lists. make nice data.frame
-                        
+    }              
     
     return(range_tbl %>% extract2("EIC"))
 }

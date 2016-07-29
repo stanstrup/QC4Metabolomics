@@ -47,6 +47,9 @@ library(tibble)
 library(dplyr)
 library(magrittr)
 library(knitr)
+library(ggplot2)
+library(plotly)
+library(scales)
 ```
 
 
@@ -134,4 +137,54 @@ data %>% select(file, polarity, comp_name, comp_mz, mz_lower, mz_upper, EIC)  %>
 ```
 
 
- 
+
+# Summarise contamination
+
+```{r 'multiple  EIC summary'}
+EIC_summary <-  data %>% 
+                unnest %>% 
+                group_by(file, comp_name, comp_mz, path) %>% 
+                summarise(EIC_median = median(intensity), 
+                          EIC_mean   = mean(intensity), 
+                          EIC_sd     = sd(intensity), 
+                          EIC_max    = max(intensity)
+                          ) %>% 
+                ungroup %>% 
+                filter(EIC_median > 0)
+
+EIC_summary %>% select(-path) %>% slice(1:10) %>% kable # kable is just to show a nice table below instead of the print display
+```
+
+
+
+
+
+```{r EIC plotting contamination profile}
+EIC_summary %>% 
+                mutate(sample = gsub(".mzML","",file)) %>% 
+                mutate(sample = factor(sample,levels=unique(sample))) %>%
+                select(sample,comp_name,EIC_median) %>%
+                mutate(comp_name = factor(comp_name,levels=unique(comp_name)) ) %>% 
+
+                group_by(sample) %>% 
+                do(
+                    gg =  ggplot(data=.,aes(x = reorder(comp_name, -EIC_median), y = EIC_median)) + 
+                        geom_bar(stat = "identity",fill="black") +
+                        theme_classic() +
+                        theme(axis.text.x = element_text(hjust=1,size = 10, angle = 90, vjust = 0.5)) +
+                        theme(axis.title = element_text(size = 16,face = "bold")) +
+                        theme(axis.ticks=element_blank()) +
+                        ggtitle(.$sample %>% unique %>% as.character) +
+                        theme(plot.title = element_text(margin=margin(b = 50),face="bold",size=32)) +
+                        labs(x="Contaminants", y="Median EIC") +
+                        scale_y_continuous(label=scientific)
+                ) ->
+EIC_plots
+
+
+EIC_plots %<>% ungroup %>% 
+                 mutate(  ggp = map(gg, plotly_build)  ) %>%
+                 mutate(  ggp = map(ggp, ~ plotly_clean_tt(.x, rep=c(`reorder(comp_name, -EIC_median):` = "<b>Compound:</b>", `EIC_median:` = "<b>EIC Median:</b>"))    )  )
+
+EIC_plots$ggp[[2]] 
+```

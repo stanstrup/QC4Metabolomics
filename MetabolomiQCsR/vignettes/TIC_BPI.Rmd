@@ -68,7 +68,7 @@ raw_tbl$raw[[1]]
 To get a TIC we can use `get_EICs` with m/z range from `-Inf` to `Inf`.
 Lets create a TIC for one of the raw files and plot it with `plot_chrom`:
 
-```{r 'single TIC', dev='svg'}
+```{r 'single TIC'}
 TIC_tbl <- raw_tbl$raw[[1]] %>% 
                                 get_EICs(range_tbl = data.frame(mz_lower = -Inf,mz_upper = Inf)) %>% 
                                 extract2(1) # since the function can work on multiple ranges we get a list. 
@@ -82,7 +82,7 @@ plot_chrom(TIC_tbl, RT_col = "scan_rt", Intensity_col = "intensity")
 
 We can also get the BPI instead.
 
-```{r 'single BPI', dev='svg'}
+```{r 'single BPI'}
 BPI_tbl <- raw_tbl$raw[[1]] %>% 
                                 get_EICs(range_tbl = data.frame(mz_lower = -Inf,mz_upper = Inf), BPI = TRUE) %>% 
                                 extract2(1)

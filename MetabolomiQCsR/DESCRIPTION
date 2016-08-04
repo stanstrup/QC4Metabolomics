@@ -7,11 +7,11 @@ Author: Jan Stanstrup
 Maintainer: Jan Stanstrup <stanstrup@gmail.com>
 Description: Functions for performing QC on LC-MS.
 Depends: R (>= 3.0)
-Imports: tibble, magrittr, dplyr, purrr, xcms, massageR, tidyr, scales, ggplot2, ini, stringr, RCurl, readr, utils
-Suggests: knitr, rmarkdown, faahKO, plotly
+Imports: tibble, magrittr, dplyr, purrr, xcms, massageR, tidyr, scales, ggplot2, ini, stringr, RCurl, readr, utils, WGCNA
+Suggests: knitr, rmarkdown, faahKO, plotly, svglite, chemhelper
 License: GPL (>= 2)
 URL: None
 biocViews: MassSpectrometry, Metabolomics
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
-Remotes: stanstrup/massageR
+Remotes: stanstrup/massageR, stanstrup/chemhelper

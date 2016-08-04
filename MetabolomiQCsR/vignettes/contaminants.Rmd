@@ -15,7 +15,8 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.align = "center", dev='svg')
+library(svglite)
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", dev='svglite')
 ```
 
 
@@ -171,5 +172,5 @@ EIC_plots
 EIC_plots %<>% mutate(  ggp = map(gg, plotly_build)  ) %>%
                mutate(  ggp = map(ggp, ~ plotly_clean_tt(.x, rep=c(`comp_name:` = "<b>Compound:</b>", `EIC_median:` = "<b>EIC Median:</b>"))    )  )
 
-EIC_plots$ggp[[2]] 
+EIC_plots$ggp[[1]] 
 ```

@@ -28,6 +28,7 @@ extract_polarity <- function(xraw){
 #' Convert raw data into a tibble of xcmsRaw objects.
 #'
 #' @param files character vector of file names/paths.
+#' @param ... further arguments to \code{\link{xcmsRaw}}.
 #'
 #' @return A \code{\link{tibble}} containing the columns: 
 #' \itemize{
@@ -45,14 +46,14 @@ extract_polarity <- function(xraw){
 #'@importFrom xcms xcmsRaw
 #' 
 
-xcmsRaw_to_tbl <- function(files){
+xcmsRaw_to_tbl <- function(files, ...){
 
     . <- path <- polarity <- NULL # make build check happy
 
     data <- files %>% 
             data_frame(path = .) %>% as.tbl %>%                  # string to tbl
             mutate(file=basename(path)) %>% 
-            mutate(raw   = map(.$path, xcmsRaw)  ) %>%           # read raw data
+            mutate(raw   = map(.$path, ~ xcmsRaw(.x, ...))  ) %>%           # read raw data
             mutate_each(funs(as.factor),path,file) %>% 
             mutate(polarity = map_chr(raw,extract_polarity)) %>% # get polarity for each raw data
             select(file,polarity,raw,path)                       # just re-arrange for readability

@@ -4,7 +4,7 @@
 \alias{xcmsRaw_to_tbl}
 \title{Convert raw data into a tibble of xcmsRaw objects.}
 \usage{
-xcmsRaw_to_tbl(files)
+xcmsRaw_to_tbl(files, ...)
 }
 \arguments{
 \item{files}{character vector of file names/paths.}

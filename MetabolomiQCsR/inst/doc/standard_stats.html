@@ -11,7 +11,7 @@
 
 <meta name="author" content="Jan Stanstrup" />
 
-<meta name="date" content="2016-07-22" />
+<meta name="date" content="2016-08-12" />
 
 <title>Statistics on standards</title>
 
@@ -147,7 +147,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Statistics on standards</h1>
 <h4 class="author"><em>Jan Stanstrup</em></h4>
-<h4 class="date"><em>22 jul 2016</em></h4>
+<h4 class="date"><em>12 aug 2016</em></h4>
 
 </div>
 
@@ -155,10 +155,9 @@ $(document).ready(function () {
 <ul>
 <li><a href="#setting-the-scene"><span class="toc-section-number">1</span> Setting the scene</a><ul>
 <li><a href="#libraries"><span class="toc-section-number">1.1</span> Libraries</a></li>
-<li><a href="#helper-functions-to-be-moved-to-package"><span class="toc-section-number">1.2</span> Helper functions to be moved to package</a></li>
-<li><a href="#processing-settings"><span class="toc-section-number">1.3</span> Processing settings</a></li>
-<li><a href="#select-some-files"><span class="toc-section-number">1.4</span> Select some files</a></li>
-<li><a href="#get-list-of-targeted-peaks"><span class="toc-section-number">1.5</span> Get list of targeted peaks</a></li>
+<li><a href="#processing-settings"><span class="toc-section-number">1.2</span> Processing settings</a></li>
+<li><a href="#select-some-files"><span class="toc-section-number">1.3</span> Select some files</a></li>
+<li><a href="#get-list-of-targeted-peaks"><span class="toc-section-number">1.4</span> Get list of targeted peaks</a></li>
 </ul></li>
 <li><a href="#read-the-raw-files"><span class="toc-section-number">2</span> Read the raw files</a><ul>
 <li><a href="#add-md5-sum-of-the-file"><span class="toc-section-number">2.1</span> Add md5 sum of the file</a></li>
@@ -166,8 +165,16 @@ $(document).ready(function () {
 <li><a href="#peak-picking-a-targeted-list-of-compounds"><span class="toc-section-number">3</span> Peak picking a targeted list of compounds</a><ul>
 <li><a href="#setting-up-the-list-of-interesting-regions"><span class="toc-section-number">3.1</span> Setting up the list of interesting regions</a></li>
 <li><a href="#detecting-the-peaks"><span class="toc-section-number">3.2</span> Detecting the peaks</a></li>
+<li><a href="#find-the-best-matching-peaks"><span class="toc-section-number">3.3</span> Find the best matching peaks</a></li>
 </ul></li>
-<li><a href="#find-the-best-matching-peaks"><span class="toc-section-number">4</span> Find the best matching peaks</a></li>
+<li><a href="#calculating-statistics"><span class="toc-section-number">4</span> Calculating statistics</a><ul>
+<li><a href="#function-to-convert-scan-to-retention-time"><span class="toc-section-number">4.1</span> Function to convert scan to retention time</a></li>
+<li><a href="#we-will-need-the-eics-to-calculate-tailing-and-asymmetry-factors-later"><span class="toc-section-number">4.2</span> We will need the EICs to calculate tailing and asymmetry factors later</a></li>
+<li><a href="#flatten-the-table"><span class="toc-section-number">4.3</span> Flatten the table</a></li>
+<li><a href="#deviations"><span class="toc-section-number">4.4</span> Deviations</a></li>
+<li><a href="#fwhm"><span class="toc-section-number">4.5</span> FWHM</a></li>
+<li><a href="#tailing-factor-and-assymmetry-factor"><span class="toc-section-number">4.6</span> Tailing Factor and Assymmetry factor</a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -191,59 +198,22 @@ pre code, pre, code {
 <span class="kw">library</span>(listviewer) <span class="co"># https://github.com/timelyportfolio/listviewer</span>
 <span class="kw">library</span>(purrr)
 <span class="kw">library</span>(magrittr)
-<span class="kw">library</span>(dplyr)</code></pre></div>
-</div>
-<div id="helper-functions-to-be-moved-to-package" class="section level2">
-<h2><span class="header-section-number">1.2</span> Helper functions to be moved to package</h2>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">closest_match &lt;-<span class="st"> </span>function(a,b, rt_tol, mz_ppm, <span class="dt">rt_col =</span> <span class="st">&quot;rt&quot;</span>, <span class="dt">mz_col =</span> <span class="st">&quot;mz&quot;</span>){
-    
-    indices &lt;-<span class="st"> </span><span class="kw">rep_len</span>(<span class="kw">as.numeric</span>(<span class="ot">NA</span>), <span class="kw">nrow</span>(a))
-    
-    b_mz &lt;-<span class="st"> </span>b %&gt;%<span class="st"> </span><span class="kw">extract2</span>(mz_col)
-    b_rt &lt;-<span class="st"> </span>b %&gt;%<span class="st"> </span><span class="kw">extract2</span>(rt_col)
-        
-    for(i in <span class="dv">1</span>:<span class="kw">nrow</span>(a)){
-        
-        a_mz &lt;-<span class="st"> </span>a %&gt;%<span class="st"> </span><span class="kw">slice</span>(i) %&gt;%<span class="st"> </span><span class="kw">extract2</span>(mz_col)
-        a_rt &lt;-<span class="st"> </span>a %&gt;%<span class="st"> </span><span class="kw">slice</span>(i) %&gt;%<span class="st"> </span><span class="kw">extract2</span>(rt_col)
-        
-        
-        idx &lt;-<span class="st">  </span><span class="kw">abs</span>(a_rt-b_rt) &lt;<span class="st"> </span>rt_tol &amp;<span class="st"> </span>
-<span class="st">               </span>(<span class="kw">abs</span>(a_mz-b_mz)/a_mz)*<span class="fl">1E6</span> &lt;<span class="st">  </span>mz_ppm
-        
-        <span class="co"># no match is found</span>
-        if(<span class="kw">sum</span>(idx)==<span class="dv">0</span>){ next } <span class="co"># we filled the vector with NA so we don't need to do anyting</span>
-        
-        <span class="co"># 1 match is found</span>
-        if(<span class="kw">sum</span>(idx)==<span class="dv">1</span>){
-            indices[i] &lt;-<span class="st"> </span><span class="kw">which</span>(idx) 
-            next
-            }
-        
-        <span class="co"># More than one match is found. RT wil decide</span>
-        if(<span class="kw">sum</span>(idx)&gt;<span class="dv">1</span>){
-            idx2       &lt;-<span class="st"> </span><span class="kw">which.min</span>(<span class="kw">abs</span>(a_rt-b_rt[idx]))
-            indices[i] &lt;-<span class="st"> </span><span class="kw">which</span>(idx)[idx2]
-            next
-            }
-            
-    }
-    
-    <span class="kw">return</span>(indices)
-}</code></pre></div>
+<span class="kw">library</span>(dplyr)
+<span class="kw">library</span>(massageR)
+<span class="kw">library</span>(tidyr)</code></pre></div>
 </div>
 <div id="processing-settings" class="section level2">
-<h2><span class="header-section-number">1.3</span> Processing settings</h2>
+<h2><span class="header-section-number">1.2</span> Processing settings</h2>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">settings &lt;-<span class="st"> </span><span class="kw">list</span>()
 
 settings$xcmsRaw$profparam          &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">step=</span><span class="fl">0.005</span>)
 
-settings$std_match$ppm                &lt;-<span class="st"> </span><span class="dv">20</span>
+settings$std_match$ppm                &lt;-<span class="st"> </span><span class="dv">100</span> <span class="co"># this needs to be quite large for this strategy to work. Only scans inside this is used AFAIK. The centwave ppm setting will limit appropiately</span>
 settings$std_match$rt_tol             &lt;-<span class="st"> </span><span class="fl">0.25</span>*<span class="dv">60</span>
 
 settings$findPeaks$method             &lt;-<span class="st"> 'centWave'</span>
 settings$findPeaks$snthr              &lt;-<span class="st"> </span><span class="dv">10</span>
-settings$findPeaks$ppm                &lt;-<span class="st"> </span><span class="dv">20</span>
+settings$findPeaks$ppm                &lt;-<span class="st"> </span><span class="dv">30</span>
 settings$findPeaks$peakwidth          &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.05</span>*<span class="dv">60</span>,<span class="fl">0.3</span>*<span class="dv">60</span>)
 settings$findPeaks$scanrange          &lt;-<span class="st"> </span><span class="ot">NULL</span>
 settings$findPeaks$prefilter          &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">3</span>,<span class="fl">1E3</span>)
@@ -252,18 +222,18 @@ settings$findPeaks$verbose.columns    &lt;-<span class="st"> </span><span class=
 settings$findPeaks$fitgauss           &lt;-<span class="st"> </span><span class="ot">TRUE</span>
 
 <span class="kw">jsonedit</span>(settings)</code></pre></div>
-<div id="htmlwidget-3924" style="width:672px;height:480px;" class="jsonedit html-widget"></div>
-<script type="application/json" data-for="htmlwidget-3924">{"x":{"data":{"xcmsRaw":{"profparam":{"step":0.005}},"std_match":{"ppm":20,"rt_tol":15},"findPeaks":{"method":"centWave","snthr":10,"ppm":20,"peakwidth":[3,18],"prefilter":[3,1000],"integrate":1,"verbose.columns":true,"fitgauss":true}},"options":{"mode":"tree","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-438" style="width:672px;height:480px;" class="jsonedit html-widget"></div>
+<script type="application/json" data-for="htmlwidget-438">{"x":{"data":{"xcmsRaw":{"profparam":{"step":0.005}},"std_match":{"ppm":100,"rt_tol":15},"findPeaks":{"method":"centWave","snthr":10,"ppm":30,"peakwidth":[3,18],"prefilter":[3,1000],"integrate":1,"verbose.columns":true,"fitgauss":true}},"options":{"mode":"tree","modes":["code","form","text","tree","view"]}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="select-some-files" class="section level2">
-<h2><span class="header-section-number">1.4</span> Select some files</h2>
+<h2><span class="header-section-number">1.3</span> Select some files</h2>
 <p>Input files. These are local files for now.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">files &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_034_2_1_1.mzML&quot;</span>,
            <span class="st">&quot;Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_057_36_1_1.mzML&quot;</span>
            )</code></pre></div>
 </div>
 <div id="get-list-of-targeted-peaks" class="section level2">
-<h2><span class="header-section-number">1.5</span> Get list of targeted peaks</h2>
+<h2><span class="header-section-number">1.4</span> Get list of targeted peaks</h2>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">stds &lt;-<span class="st"> </span><span class="kw">read_tsv</span>(<span class="st">&quot;stds.tsv&quot;</span>)
 stds</code></pre></div>
 <pre><code>## Source: local data frame [10 x 4]
@@ -286,6 +256,8 @@ stds</code></pre></div>
 <h1><span class="header-section-number">2</span> Read the raw files</h1>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">raw &lt;-<span class="st"> </span><span class="kw">xcmsRaw_to_tbl</span>(files, <span class="dt">profparam =</span> settings$xcmsRaw$profparam)
 
+<span class="kw">rm</span>(files)
+
 raw</code></pre></div>
 <pre><code>## Source: local data frame [2 x 4]
 ## 
@@ -303,38 +275,35 @@ raw</code></pre></div>
 <h1><span class="header-section-number">3</span> Peak picking a targeted list of compounds</h1>
 <div id="setting-up-the-list-of-interesting-regions" class="section level2">
 <h2><span class="header-section-number">3.1</span> Setting up the list of interesting regions</h2>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">attr_rem &lt;-<span class="st"> </span>function(x, which) {
-    <span class="kw">attr</span>(x, which) &lt;-<span class="st"> </span><span class="ot">NULL</span>
-    <span class="kw">return</span>(x)
-}
+<p>First we merge the table of raw data and the list of standards. So now the table of standards is repeated for each data file.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">stds %&gt;%<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">rt =</span> rt*<span class="dv">60</span>) %&gt;%<span class="st"> </span>
+<span class="st">            </span>list %&gt;%<span class="st"> </span>
+<span class="st">            </span><span class="kw">rep</span>(<span class="kw">nrow</span>(raw))%&gt;%<span class="st"> </span>
+<span class="st">            </span><span class="kw">data_frame</span>(<span class="dt">stds=</span>.) %&gt;%<span class="st"> </span>
+<span class="st">            </span><span class="kw">bind_cols</span>(raw,.) -&gt;
+data
 
-settings$findPeaks$ROI.list &lt;-<span class="st">   </span>
-<span class="st">             </span>stds %&gt;%<span class="st"> </span>
-<span class="st">             </span>rowwise %&gt;%<span class="st"> </span>
-<span class="st">             </span><span class="kw">transmute</span>(<span class="dt">mz        =</span> mz, <span class="co"># not used!</span>
-                       <span class="dt">mzmin     =</span> mz -<span class="st"> </span>settings$std_match$ppm *<span class="st"> </span>mz *<span class="st"> </span><span class="fl">1E-6</span>, 
-                       <span class="dt">mzmax     =</span> mz +<span class="st"> </span>settings$std_match$ppm *<span class="st"> </span>mz *<span class="st"> </span><span class="fl">1E-6</span>,
-                       <span class="dt">scmin     =</span> <span class="kw">which.min</span>(<span class="kw">abs</span>((rt*<span class="dv">60</span>-settings$std_match$rt_tol)-raw$raw[[<span class="dv">1</span>]]@scantime)),
-                       <span class="dt">scmax     =</span> <span class="kw">which.min</span>(<span class="kw">abs</span>((rt*<span class="dv">60</span>+settings$std_match$rt_tol)-raw$raw[[<span class="dv">1</span>]]@scantime)),
-                       <span class="dt">length    =</span> -<span class="dv">1</span>, <span class="co"># not used!</span>
-                       <span class="dt">intensity =</span> -<span class="dv">1</span>  <span class="co"># not used!</span>
-                       ) %&gt;%
-<span class="st">             </span>ungroup %&gt;%<span class="st"> </span>
-<span class="st">        </span>
-<span class="st">             </span><span class="kw">by_row</span>(as.list) %&gt;%<span class="st"> </span>
-<span class="st">             </span><span class="kw">mutate</span>( <span class="dt">.out =</span> <span class="kw">map</span>(.out, ~<span class="st"> </span><span class="kw">attr_rem</span>(.x,<span class="st">&quot;indices&quot;</span>))) %&gt;%<span class="st"> </span><span class="co"># we get some indices attribute. Dunno why. But lets remove it.</span>
-<span class="st">             </span><span class="kw">extract2</span>(<span class="st">&quot;.out&quot;</span>)
+<span class="kw">rm</span>(stds,raw)</code></pre></div>
+<p>Now we convert to ROI list.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data %&lt;&gt;%
+<span class="st">            </span><span class="kw">mutate</span>(<span class="dt">ROI =</span> <span class="kw">map2</span>(raw,stds, ~<span class="st"> </span><span class="kw">tbl2ROI</span>(.y, 
+                                            <span class="dt">raw    =</span> .x, 
+                                            <span class="dt">ppm    =</span> settings$std_match$ppm, 
+                                            <span class="dt">rt_tol =</span> settings$std_match$rt_tol
+                                            )
+                             )
+                   )
 
 
-settings$findPeaks$ROI.list[[<span class="dv">7</span>]]</code></pre></div>
+data$ROI[[<span class="dv">1</span>]][[<span class="dv">7</span>]]</code></pre></div>
 <pre><code>## $mz
 ## [1] 827.7802
 ## 
 ## $mzmin
-## [1] 827.7636
+## [1] 827.6974
 ## 
 ## $mzmax
-## [1] 827.7968
+## [1] 827.863
 ## 
 ## $scmin
 ## [1] 1184
@@ -350,16 +319,22 @@ settings$findPeaks$ROI.list[[<span class="dv">7</span>]]</code></pre></div>
 </div>
 <div id="detecting-the-peaks" class="section level2">
 <h2><span class="header-section-number">3.2</span> Detecting the peaks</h2>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">peakTable &lt;-<span class="st"> </span>settings$findPeaks %&gt;%<span class="st"> </span>
-<span class="st">             </span><span class="kw">lift_dl</span>(findPeaks, <span class="dt">object =</span> raw$raw[[<span class="dv">1</span>]])() %&gt;%<span class="st"> </span>
-<span class="st">             </span>as.data.frame %&gt;%<span class="st"> </span>as.tbl %&gt;%<span class="st"> </span>
-<span class="st">             </span><span class="kw">arrange</span>(mz) %&gt;%<span class="st"> </span>
-<span class="st">             </span><span class="kw">mutate_each</span>(<span class="kw">funs</span>(./<span class="dv">60</span>),rt,rtmin,rtmax)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">findPeaks_l &lt;-<span class="st"> </span><span class="kw">lift_dl</span>(findPeaks) <span class="co"># trick to make findPeaks accept a list of arguments.</span>
+
+
+data %&lt;&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">peakTable =</span> <span class="kw">map2</span>(raw, ROI, ~<span class="st"> </span><span class="kw">findPeaks_l</span>(settings$findPeaks, <span class="dt">object =</span> .x, <span class="dt">ROI.list =</span> .y) %&gt;%<span class="st"> </span>
+<span class="st">                                              </span>as.data.frame %&gt;%<span class="st"> </span>as.tbl
+                                  )
+                 )</code></pre></div>
 <pre><code>## 
 ##  Detecting chromatographic peaks ... 
 ##  % finished: 10 20 30 40 50 60 70 80 90 100 
+##  11  Peaks.
+## 
+##  Detecting chromatographic peaks ... 
+##  % finished: 10 20 30 40 50 60 70 80 90 100 
 ##  11  Peaks.</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">peakTable %&gt;%<span class="st"> </span>kable</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data$peakTable[[<span class="dv">1</span>]] %&gt;%<span class="st"> </span>kable</code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -389,112 +364,64 @@ settings$findPeaks$ROI.list[[<span class="dv">7</span>]]</code></pre></div>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">491.4035</td>
-<td align="right">491.4034</td>
-<td align="right">491.4036</td>
-<td align="right">5.700867</td>
-<td align="right">5.642883</td>
-<td align="right">5.767133</td>
-<td align="right">13301611.4</td>
-<td align="right">13293427.48</td>
-<td align="right">3145869.0</td>
-<td align="right">2322</td>
-<td align="right">0.0339516</td>
-<td align="right">683.3027</td>
-<td align="right">3.338241</td>
-<td align="right">3281510.2</td>
-<td align="right">8</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">683</td>
-<td align="right">680</td>
-<td align="right">686</td>
-<td align="right">79</td>
-<td align="right">94</td>
-</tr>
-<tr class="even">
-<td align="right">510.3551</td>
-<td align="right">510.3548</td>
-<td align="right">510.3554</td>
-<td align="right">4.284450</td>
-<td align="right">4.218183</td>
-<td align="right">4.350717</td>
-<td align="right">35288254.1</td>
-<td align="right">35288245.64</td>
-<td align="right">7460131.5</td>
-<td align="right">7460130</td>
-<td align="right">0.0381720</td>
-<td align="right">511.8945</td>
-<td align="right">3.788109</td>
-<td align="right">7735304.8</td>
-<td align="right">5</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">512</td>
-<td align="right">509</td>
-<td align="right">515</td>
-<td align="right">77</td>
-<td align="right">93</td>
-</tr>
-<tr class="odd">
-<td align="right">552.5344</td>
-<td align="right">552.5341</td>
-<td align="right">552.5351</td>
-<td align="right">7.647400</td>
-<td align="right">7.581133</td>
-<td align="right">7.713667</td>
-<td align="right">2118061.0</td>
-<td align="right">2117211.13</td>
-<td align="right">496574.4</td>
-<td align="right">1313</td>
-<td align="right">0.0357757</td>
-<td align="right">917.9007</td>
-<td align="right">3.441871</td>
-<td align="right">504170.3</td>
-<td align="right">3</td>
+<td align="right">720.5528</td>
+<td align="right">720.5525</td>
+<td align="right">720.5529</td>
+<td align="right">476.239</td>
+<td align="right">472.263</td>
+<td align="right">480.214</td>
+<td align="right">9472384</td>
+<td align="right">9472376</td>
+<td align="right">2149187.2</td>
+<td align="right">2149186</td>
+<td align="right">0.0262262</td>
+<td align="right">952.6939</td>
+<td align="right">3.482191</td>
+<td align="right">2229018.0</td>
 <td align="right">1</td>
+<td align="right">0</td>
 <td align="right">3</td>
-<td align="right">918</td>
-<td align="right">915</td>
-<td align="right">921</td>
+<td align="right">953</td>
+<td align="right">950</td>
+<td align="right">956</td>
 <td align="right">85</td>
 <td align="right">101</td>
 </tr>
 <tr class="even">
-<td align="right">691.5886</td>
-<td align="right">691.5880</td>
-<td align="right">691.5891</td>
-<td align="right">6.371800</td>
-<td align="right">6.280683</td>
-<td align="right">6.471200</td>
-<td align="right">55696245.0</td>
-<td align="right">55694533.55</td>
-<td align="right">9062131.0</td>
-<td align="right">39605</td>
-<td align="right">0.0422174</td>
-<td align="right">764.0186</td>
-<td align="right">4.860271</td>
-<td align="right">9340797.3</td>
-<td align="right">6</td>
-<td align="right">0</td>
-<td align="right">5</td>
-<td align="right">764</td>
-<td align="right">759</td>
-<td align="right">769</td>
-<td align="right">77</td>
-<td align="right">100</td>
+<td align="right">720.5401</td>
+<td align="right">720.5387</td>
+<td align="right">720.5415</td>
+<td align="right">459.838</td>
+<td align="right">455.862</td>
+<td align="right">464.311</td>
+<td align="right">2508476</td>
+<td align="right">2508467</td>
+<td align="right">504440.1</td>
+<td align="right">504439</td>
+<td align="right">0.0223677</td>
+<td align="right">920.1666</td>
+<td align="right">4.004974</td>
+<td align="right">514330.0</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">3</td>
+<td align="right">920</td>
+<td align="right">917</td>
+<td align="right">923</td>
+<td align="right">52</td>
+<td align="right">69</td>
 </tr>
 <tr class="odd">
 <td align="right">717.5898</td>
 <td align="right">717.5894</td>
 <td align="right">717.5900</td>
-<td align="right">7.241533</td>
-<td align="right">7.166983</td>
-<td align="right">7.307783</td>
-<td align="right">23282122.9</td>
-<td align="right">23193972.36</td>
+<td align="right">434.492</td>
+<td align="right">430.019</td>
+<td align="right">438.467</td>
+<td align="right">23282123</td>
+<td align="right">23282114</td>
 <td align="right">4811217.5</td>
-<td align="right">326</td>
+<td align="right">4811216</td>
 <td align="right">0.0148656</td>
 <td align="right">868.8189</td>
 <td align="right">3.919249</td>
@@ -509,26 +436,26 @@ settings$findPeaks$ROI.list[[<span class="dv">7</span>]]</code></pre></div>
 <td align="right">100</td>
 </tr>
 <tr class="even">
-<td align="right">720.5528</td>
-<td align="right">720.5525</td>
-<td align="right">720.5529</td>
-<td align="right">7.937317</td>
-<td align="right">7.871050</td>
-<td align="right">8.003567</td>
-<td align="right">9444335.6</td>
-<td align="right">9389714.80</td>
-<td align="right">2149187.2</td>
-<td align="right">396</td>
-<td align="right">0.0267957</td>
-<td align="right">952.6922</td>
-<td align="right">3.468434</td>
-<td align="right">2231279.0</td>
-<td align="right">1</td>
-<td align="right">0</td>
+<td align="right">552.5344</td>
+<td align="right">552.5341</td>
+<td align="right">552.5351</td>
+<td align="right">458.844</td>
+<td align="right">454.868</td>
+<td align="right">462.820</td>
+<td align="right">2118503</td>
+<td align="right">2117230</td>
+<td align="right">496574.4</td>
+<td align="right">1142</td>
+<td align="right">0.0356577</td>
+<td align="right">917.9004</td>
+<td align="right">3.442522</td>
+<td align="right">504133.3</td>
 <td align="right">3</td>
-<td align="right">953</td>
-<td align="right">950</td>
-<td align="right">956</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">918</td>
+<td align="right">915</td>
+<td align="right">921</td>
 <td align="right">85</td>
 <td align="right">101</td>
 </tr>
@@ -536,13 +463,13 @@ settings$findPeaks$ROI.list[[<span class="dv">7</span>]]</code></pre></div>
 <td align="right">762.6013</td>
 <td align="right">762.6007</td>
 <td align="right">762.6016</td>
-<td align="right">7.813067</td>
-<td align="right">7.738517</td>
-<td align="right">7.887617</td>
-<td align="right">46018582.7</td>
-<td align="right">45940780.14</td>
+<td align="right">468.784</td>
+<td align="right">464.311</td>
+<td align="right">473.257</td>
+<td align="right">46018583</td>
+<td align="right">46018573</td>
 <td align="right">8917082.0</td>
-<td align="right">1923</td>
+<td align="right">8917081</td>
 <td align="right">0.0509792</td>
 <td align="right">937.8515</td>
 <td align="right">4.072229</td>
@@ -557,14 +484,134 @@ settings$findPeaks$ROI.list[[<span class="dv">7</span>]]</code></pre></div>
 <td align="right">101</td>
 </tr>
 <tr class="even">
+<td align="right">510.3551</td>
+<td align="right">510.3548</td>
+<td align="right">510.3554</td>
+<td align="right">257.067</td>
+<td align="right">253.091</td>
+<td align="right">261.043</td>
+<td align="right">35288254</td>
+<td align="right">35215014</td>
+<td align="right">7460131.5</td>
+<td align="right">763</td>
+<td align="right">0.0381720</td>
+<td align="right">511.8945</td>
+<td align="right">3.788109</td>
+<td align="right">7735304.8</td>
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">512</td>
+<td align="right">509</td>
+<td align="right">515</td>
+<td align="right">77</td>
+<td align="right">93</td>
+</tr>
+<tr class="odd">
+<td align="right">691.5886</td>
+<td align="right">691.5880</td>
+<td align="right">691.5891</td>
+<td align="right">382.308</td>
+<td align="right">376.841</td>
+<td align="right">388.272</td>
+<td align="right">55696245</td>
+<td align="right">55687047</td>
+<td align="right">9062131.0</td>
+<td align="right">10699</td>
+<td align="right">0.0422174</td>
+<td align="right">764.0186</td>
+<td align="right">4.860271</td>
+<td align="right">9340797.3</td>
+<td align="right">6</td>
+<td align="right">0</td>
+<td align="right">5</td>
+<td align="right">764</td>
+<td align="right">759</td>
+<td align="right">769</td>
+<td align="right">77</td>
+<td align="right">100</td>
+</tr>
+<tr class="even">
+<td align="right">827.7798</td>
+<td align="right">827.7795</td>
+<td align="right">827.7800</td>
+<td align="right">614.401</td>
+<td align="right">609.929</td>
+<td align="right">618.874</td>
+<td align="right">28795896</td>
+<td align="right">28795886</td>
+<td align="right">5495703.0</td>
+<td align="right">5495702</td>
+<td align="right">0.0417636</td>
+<td align="right">1231.0616</td>
+<td align="right">4.167010</td>
+<td align="right">5716848.3</td>
+<td align="right">7</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">1231</td>
+<td align="right">1228</td>
+<td align="right">1234</td>
+<td align="right">90</td>
+<td align="right">108</td>
+</tr>
+<tr class="odd">
+<td align="right">491.4035</td>
+<td align="right">491.4034</td>
+<td align="right">491.4036</td>
+<td align="right">342.052</td>
+<td align="right">338.573</td>
+<td align="right">346.028</td>
+<td align="right">13307560</td>
+<td align="right">13271220</td>
+<td align="right">3145869.0</td>
+<td align="right">2058</td>
+<td align="right">0.0336942</td>
+<td align="right">683.3026</td>
+<td align="right">3.339722</td>
+<td align="right">3280955.3</td>
+<td align="right">8</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">683</td>
+<td align="right">680</td>
+<td align="right">686</td>
+<td align="right">79</td>
+<td align="right">94</td>
+</tr>
+<tr class="even">
+<td align="right">791.7774</td>
+<td align="right">791.7771</td>
+<td align="right">791.7775</td>
+<td align="right">438.467</td>
+<td align="right">434.492</td>
+<td align="right">442.940</td>
+<td align="right">13502364</td>
+<td align="right">13502355</td>
+<td align="right">2997708.8</td>
+<td align="right">2997708</td>
+<td align="right">0.0252669</td>
+<td align="right">877.1192</td>
+<td align="right">3.662132</td>
+<td align="right">3017406.7</td>
+<td align="right">9</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">877</td>
+<td align="right">874</td>
+<td align="right">880</td>
+<td align="right">82</td>
+<td align="right">99</td>
+</tr>
+<tr class="odd">
 <td align="right">790.7721</td>
 <td align="right">790.7719</td>
 <td align="right">790.7723</td>
-<td align="right">7.307783</td>
-<td align="right">7.241533</td>
-<td align="right">7.382333</td>
-<td align="right">15915291.4</td>
-<td align="right">15914583.43</td>
+<td align="right">438.467</td>
+<td align="right">434.492</td>
+<td align="right">442.940</td>
+<td align="right">15915291</td>
+<td align="right">15914583</td>
 <td align="right">3547688.5</td>
 <td align="right">4482</td>
 <td align="right">0.0259419</td>
@@ -580,95 +627,28 @@ settings$findPeaks$ROI.list[[<span class="dv">7</span>]]</code></pre></div>
 <td align="right">82</td>
 <td align="right">99</td>
 </tr>
-<tr class="odd">
-<td align="right">791.7774</td>
-<td align="right">791.7771</td>
-<td align="right">791.7775</td>
-<td align="right">7.307783</td>
-<td align="right">7.241533</td>
-<td align="right">7.382333</td>
-<td align="right">13502363.5</td>
-<td align="right">13496537.26</td>
-<td align="right">2997708.8</td>
-<td align="right">1855</td>
-<td align="right">0.0252669</td>
-<td align="right">877.1192</td>
-<td align="right">3.662132</td>
-<td align="right">3017406.7</td>
-<td align="right">9</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">877</td>
-<td align="right">874</td>
-<td align="right">880</td>
-<td align="right">82</td>
-<td align="right">99</td>
-</tr>
-<tr class="even">
-<td align="right">827.7695</td>
-<td align="right">0.0000</td>
-<td align="right">827.7732</td>
-<td align="right">9.966683</td>
-<td align="right">9.950117</td>
-<td align="right">10.165483</td>
-<td align="right">98583.5</td>
-<td align="right">98579.53</td>
-<td align="right">145823.9</td>
-<td align="right">1253</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">7</td>
-<td align="right">999991</td>
-<td align="right">3</td>
-<td align="right">1198</td>
-<td align="right">1195</td>
-<td align="right">1201</td>
-<td align="right">64</td>
-<td align="right">90</td>
-</tr>
-<tr class="odd">
-<td align="right">827.7796</td>
-<td align="right">827.7789</td>
-<td align="right">827.7800</td>
-<td align="right">10.240017</td>
-<td align="right">10.165483</td>
-<td align="right">10.314567</td>
-<td align="right">28795258.2</td>
-<td align="right">28795248.75</td>
-<td align="right">5495703.0</td>
-<td align="right">5495702</td>
-<td align="right">0.0417845</td>
-<td align="right">1231.0616</td>
-<td align="right">4.166911</td>
-<td align="right">5716898.9</td>
-<td align="right">7</td>
-<td align="right">0</td>
-<td align="right">-1</td>
-<td align="right">-1</td>
-<td align="right">-1</td>
-<td align="right">-1</td>
-<td align="right">90</td>
-<td align="right">108</td>
-</tr>
 </tbody>
 </table>
 </div>
-</div>
-<div id="find-the-best-matching-peaks" class="section level1">
-<h1><span class="header-section-number">4</span> Find the best matching peaks</h1>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">peakTable %&lt;&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">row =</span> <span class="dv">1</span>:<span class="kw">n</span>())
+<div id="find-the-best-matching-peaks" class="section level2">
+<h2><span class="header-section-number">3.3</span> Find the best matching peaks</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data %&lt;&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">peakTable =</span> <span class="kw">map</span>(peakTable, ~<span class="st"> </span><span class="kw">mutate</span>(.x, <span class="dt">row =</span> <span class="dv">1</span>:<span class="kw">nrow</span>(.x)))) <span class="co"># we add a row index we can match by later</span>
+             
 
-stds %&lt;&gt;%<span class="st"> </span><span class="kw">closest_match</span>(peakTable,settings$std_match$rt_tol/<span class="dv">60</span>,settings$std_match$ppm) %&gt;%<span class="st"> </span>
-<span class="st">         </span><span class="kw">data_frame</span>(<span class="dt">row =</span> .) %&gt;%<span class="st"> </span>
-<span class="st">         </span><span class="kw">bind_cols</span>(stds)
+data %&lt;&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">std_peaks =</span> <span class="kw">map2</span>(stds, peakTable, ~<span class="st"> </span><span class="kw">closest_match</span>(.x, .y, settings$std_match$rt_tol,
+                                                                  settings$std_match$ppm
+                                                                  ) %&gt;%<span class="st"> </span>
+<span class="st">                                                    </span><span class="kw">data_frame</span>(<span class="dt">row =</span> .) %&gt;%<span class="st"> </span>
+<span class="st">                                                    </span><span class="kw">bind_cols</span>(.x) %&gt;%<span class="st"> </span>
+<span class="st">                                                    </span><span class="kw">left_join</span>(.y, <span class="dt">by =</span> <span class="st">&quot;row&quot;</span>, <span class="dt">suffix =</span> <span class="kw">c</span>(<span class="st">&quot;.stds&quot;</span>, <span class="st">&quot;.peaks&quot;</span>)) %&gt;%<span class="st"> </span>
+<span class="st">                                                    </span><span class="kw">mutate</span>(<span class="dt">found =</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(row),<span class="ot">FALSE</span>,<span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>
+<span class="st">                                                    </span><span class="kw">select</span>(-row)
+                                 )
+                )
 
-stds %&lt;&gt;%<span class="st"> </span><span class="kw">left_join</span>(peakTable, <span class="dt">by =</span> <span class="st">&quot;row&quot;</span>, <span class="dt">suffix =</span> <span class="kw">c</span>(<span class="st">&quot;.stds&quot;</span>, <span class="st">&quot;.peaks&quot;</span>)) %&gt;%<span class="st"> </span>
-<span class="st">          </span><span class="kw">mutate</span>(<span class="dt">found =</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(row),<span class="ot">FALSE</span>,<span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>
-<span class="st">          </span><span class="kw">select</span>(-row)
 
-stds %&gt;%<span class="st"> </span>kable</code></pre></div>
+
+data$std_peaks[[<span class="dv">1</span>]] %&gt;%<span class="st"> </span>kable</code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -705,22 +685,22 @@ stds %&gt;%<span class="st"> </span>kable</code></pre></div>
 <tr class="odd">
 <td align="right">1</td>
 <td align="right">720.5538</td>
-<td align="right">7.85</td>
+<td align="right">471.0</td>
 <td align="left">01.PE(17:0/17:0)</td>
 <td align="right">720.5528</td>
 <td align="right">720.5525</td>
 <td align="right">720.5529</td>
-<td align="right">7.937317</td>
-<td align="right">7.871050</td>
-<td align="right">8.003567</td>
-<td align="right">9444335.6</td>
-<td align="right">9389714.80</td>
+<td align="right">476.239</td>
+<td align="right">472.263</td>
+<td align="right">480.214</td>
+<td align="right">9472384</td>
+<td align="right">9472376</td>
 <td align="right">2149187.2</td>
-<td align="right">396</td>
-<td align="right">0.0267957</td>
-<td align="right">952.6922</td>
-<td align="right">3.468434</td>
-<td align="right">2231279.0</td>
+<td align="right">2149186</td>
+<td align="right">0.0262262</td>
+<td align="right">952.6939</td>
+<td align="right">3.482191</td>
+<td align="right">2229018.0</td>
 <td align="right">1</td>
 <td align="right">0</td>
 <td align="right">3</td>
@@ -734,18 +714,18 @@ stds %&gt;%<span class="st"> </span>kable</code></pre></div>
 <tr class="even">
 <td align="right">2</td>
 <td align="right">717.5905</td>
-<td align="right">7.16</td>
+<td align="right">429.6</td>
 <td align="left">02.SM(d18:1/17:0)</td>
 <td align="right">717.5898</td>
 <td align="right">717.5894</td>
 <td align="right">717.5900</td>
-<td align="right">7.241533</td>
-<td align="right">7.166983</td>
-<td align="right">7.307783</td>
-<td align="right">23282122.9</td>
-<td align="right">23193972.36</td>
+<td align="right">434.492</td>
+<td align="right">430.019</td>
+<td align="right">438.467</td>
+<td align="right">23282123</td>
+<td align="right">23282114</td>
 <td align="right">4811217.5</td>
-<td align="right">326</td>
+<td align="right">4811216</td>
 <td align="right">0.0148656</td>
 <td align="right">868.8189</td>
 <td align="right">3.919249</td>
@@ -763,22 +743,22 @@ stds %&gt;%<span class="st"> </span>kable</code></pre></div>
 <tr class="odd">
 <td align="right">3</td>
 <td align="right">552.5350</td>
-<td align="right">7.56</td>
+<td align="right">453.6</td>
 <td align="left">03.Cer(d18:1/17:0)</td>
 <td align="right">552.5344</td>
 <td align="right">552.5341</td>
 <td align="right">552.5351</td>
-<td align="right">7.647400</td>
-<td align="right">7.581133</td>
-<td align="right">7.713667</td>
-<td align="right">2118061.0</td>
-<td align="right">2117211.13</td>
+<td align="right">458.844</td>
+<td align="right">454.868</td>
+<td align="right">462.820</td>
+<td align="right">2118503</td>
+<td align="right">2117230</td>
 <td align="right">496574.4</td>
-<td align="right">1313</td>
-<td align="right">0.0357757</td>
-<td align="right">917.9007</td>
-<td align="right">3.441871</td>
-<td align="right">504170.3</td>
+<td align="right">1142</td>
+<td align="right">0.0356577</td>
+<td align="right">917.9004</td>
+<td align="right">3.442522</td>
+<td align="right">504133.3</td>
 <td align="right">3</td>
 <td align="right">1</td>
 <td align="right">3</td>
@@ -792,18 +772,18 @@ stds %&gt;%<span class="st"> </span>kable</code></pre></div>
 <tr class="even">
 <td align="right">4</td>
 <td align="right">762.6007</td>
-<td align="right">7.73</td>
+<td align="right">463.8</td>
 <td align="left">04.PC(17:0/17:0)</td>
 <td align="right">762.6013</td>
 <td align="right">762.6007</td>
 <td align="right">762.6016</td>
-<td align="right">7.813067</td>
-<td align="right">7.738517</td>
-<td align="right">7.887617</td>
-<td align="right">46018582.7</td>
-<td align="right">45940780.14</td>
+<td align="right">468.784</td>
+<td align="right">464.311</td>
+<td align="right">473.257</td>
+<td align="right">46018583</td>
+<td align="right">46018573</td>
 <td align="right">8917082.0</td>
-<td align="right">1923</td>
+<td align="right">8917081</td>
 <td align="right">0.0509792</td>
 <td align="right">937.8515</td>
 <td align="right">4.072229</td>
@@ -821,18 +801,18 @@ stds %&gt;%<span class="st"> </span>kable</code></pre></div>
 <tr class="odd">
 <td align="right">5</td>
 <td align="right">510.3554</td>
-<td align="right">4.26</td>
+<td align="right">255.6</td>
 <td align="left">05.LPC(17:0)</td>
 <td align="right">510.3551</td>
 <td align="right">510.3548</td>
 <td align="right">510.3554</td>
-<td align="right">4.284450</td>
-<td align="right">4.218183</td>
-<td align="right">4.350717</td>
-<td align="right">35288254.1</td>
-<td align="right">35288245.64</td>
+<td align="right">257.067</td>
+<td align="right">253.091</td>
+<td align="right">261.043</td>
+<td align="right">35288254</td>
+<td align="right">35215014</td>
 <td align="right">7460131.5</td>
-<td align="right">7460130</td>
+<td align="right">763</td>
 <td align="right">0.0381720</td>
 <td align="right">511.8945</td>
 <td align="right">3.788109</td>
@@ -850,18 +830,18 @@ stds %&gt;%<span class="st"> </span>kable</code></pre></div>
 <tr class="even">
 <td align="right">6</td>
 <td align="right">691.5884</td>
-<td align="right">6.32</td>
+<td align="right">379.2</td>
 <td align="left">06.PC(14:0/d13)</td>
 <td align="right">691.5886</td>
 <td align="right">691.5880</td>
 <td align="right">691.5891</td>
-<td align="right">6.371800</td>
-<td align="right">6.280683</td>
-<td align="right">6.471200</td>
-<td align="right">55696245.0</td>
-<td align="right">55694533.55</td>
+<td align="right">382.308</td>
+<td align="right">376.841</td>
+<td align="right">388.272</td>
+<td align="right">55696245</td>
+<td align="right">55687047</td>
 <td align="right">9062131.0</td>
-<td align="right">39605</td>
+<td align="right">10699</td>
 <td align="right">0.0422174</td>
 <td align="right">764.0186</td>
 <td align="right">4.860271</td>
@@ -879,51 +859,51 @@ stds %&gt;%<span class="st"> </span>kable</code></pre></div>
 <tr class="odd">
 <td align="right">7</td>
 <td align="right">827.7802</td>
-<td align="right">10.10</td>
+<td align="right">606.0</td>
 <td align="left">07.TG(16:0/16:0/16:0)-13C3</td>
-<td align="right">827.7695</td>
-<td align="right">0.0000</td>
-<td align="right">827.7732</td>
-<td align="right">9.966683</td>
-<td align="right">9.950117</td>
-<td align="right">10.165483</td>
-<td align="right">98583.5</td>
-<td align="right">98579.53</td>
-<td align="right">145823.9</td>
-<td align="right">1253</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
+<td align="right">827.7798</td>
+<td align="right">827.7795</td>
+<td align="right">827.7800</td>
+<td align="right">614.401</td>
+<td align="right">609.929</td>
+<td align="right">618.874</td>
+<td align="right">28795896</td>
+<td align="right">28795886</td>
+<td align="right">5495703.0</td>
+<td align="right">5495702</td>
+<td align="right">0.0417636</td>
+<td align="right">1231.0616</td>
+<td align="right">4.167010</td>
+<td align="right">5716848.3</td>
 <td align="right">7</td>
-<td align="right">999991</td>
+<td align="right">0</td>
 <td align="right">3</td>
-<td align="right">1198</td>
-<td align="right">1195</td>
-<td align="right">1201</td>
-<td align="right">64</td>
+<td align="right">1231</td>
+<td align="right">1228</td>
+<td align="right">1234</td>
 <td align="right">90</td>
+<td align="right">108</td>
 <td align="left">TRUE</td>
 </tr>
 <tr class="even">
 <td align="right">8</td>
 <td align="right">491.4046</td>
-<td align="right">5.67</td>
+<td align="right">340.2</td>
 <td align="left">08.TG(8:0/8:0/8:0)-13C3</td>
 <td align="right">491.4035</td>
 <td align="right">491.4034</td>
 <td align="right">491.4036</td>
-<td align="right">5.700867</td>
-<td align="right">5.642883</td>
-<td align="right">5.767133</td>
-<td align="right">13301611.4</td>
-<td align="right">13293427.48</td>
+<td align="right">342.052</td>
+<td align="right">338.573</td>
+<td align="right">346.028</td>
+<td align="right">13307560</td>
+<td align="right">13271220</td>
 <td align="right">3145869.0</td>
-<td align="right">2322</td>
-<td align="right">0.0339516</td>
-<td align="right">683.3027</td>
-<td align="right">3.338241</td>
-<td align="right">3281510.2</td>
+<td align="right">2058</td>
+<td align="right">0.0336942</td>
+<td align="right">683.3026</td>
+<td align="right">3.339722</td>
+<td align="right">3280955.3</td>
 <td align="right">8</td>
 <td align="right">0</td>
 <td align="right">3</td>
@@ -937,18 +917,18 @@ stds %&gt;%<span class="st"> </span>kable</code></pre></div>
 <tr class="odd">
 <td align="right">9</td>
 <td align="right">791.7797</td>
-<td align="right">7.24</td>
+<td align="right">434.4</td>
 <td align="left">09a.PC(16:0/d31/18:1)</td>
 <td align="right">791.7774</td>
 <td align="right">791.7771</td>
 <td align="right">791.7775</td>
-<td align="right">7.307783</td>
-<td align="right">7.241533</td>
-<td align="right">7.382333</td>
-<td align="right">13502363.5</td>
-<td align="right">13496537.26</td>
+<td align="right">438.467</td>
+<td align="right">434.492</td>
+<td align="right">442.940</td>
+<td align="right">13502364</td>
+<td align="right">13502355</td>
 <td align="right">2997708.8</td>
-<td align="right">1855</td>
+<td align="right">2997708</td>
 <td align="right">0.0252669</td>
 <td align="right">877.1192</td>
 <td align="right">3.662132</td>
@@ -966,16 +946,16 @@ stds %&gt;%<span class="st"> </span>kable</code></pre></div>
 <tr class="even">
 <td align="right">10</td>
 <td align="right">790.7735</td>
-<td align="right">7.24</td>
+<td align="right">434.4</td>
 <td align="left">09b.PC(16:0/d30/18:1)</td>
 <td align="right">790.7721</td>
 <td align="right">790.7719</td>
 <td align="right">790.7723</td>
-<td align="right">7.307783</td>
-<td align="right">7.241533</td>
-<td align="right">7.382333</td>
-<td align="right">15915291.4</td>
-<td align="right">15914583.43</td>
+<td align="right">438.467</td>
+<td align="right">434.492</td>
+<td align="right">442.940</td>
+<td align="right">15915291</td>
+<td align="right">15914583</td>
 <td align="right">3547688.5</td>
 <td align="right">4482</td>
 <td align="right">0.0259419</td>
@@ -994,6 +974,490 @@ stds %&gt;%<span class="st"> </span>kable</code></pre></div>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
+<div id="calculating-statistics" class="section level1">
+<h1><span class="header-section-number">4</span> Calculating statistics</h1>
+<div id="function-to-convert-scan-to-retention-time" class="section level2">
+<h2><span class="header-section-number">4.1</span> Function to convert scan to retention time</h2>
+<p>We will need later to have a function that converts scan number to retention time for each file.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data %&lt;&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">scan2rt_fun =</span> <span class="kw">map</span>(raw, ~<span class="st"> </span><span class="kw">approxfun</span>(<span class="kw">seq_along</span>(.x@scantime),.x@scantime)))</code></pre></div>
+</div>
+<div id="we-will-need-the-eics-to-calculate-tailing-and-asymmetry-factors-later" class="section level2">
+<h2><span class="header-section-number">4.2</span> We will need the EICs to calculate tailing and asymmetry factors later</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data %&lt;&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">EIC =</span> <span class="kw">map2</span>(raw,std_peaks,
+                           ~<span class="st"> </span><span class="kw">get_EICs</span>(.x, <span class="kw">data_frame</span>(<span class="dt">mz_lower =</span> .y$mz.stds -<span class="st"> </span>settings$findPeaks$ppm*.y$mz.stds*<span class="fl">1E-6</span>, 
+                                                     <span class="dt">mz_upper =</span> .y$mz.stds +<span class="st"> </span>settings$findPeaks$ppm*.y$mz.stds*<span class="fl">1E-6</span>)
+                                      )   
+                           )
+                )</code></pre></div>
+</div>
+<div id="flatten-the-table" class="section level2">
+<h2><span class="header-section-number">4.3</span> Flatten the table</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_flat &lt;-<span class="st">    </span>data %&gt;%<span class="st"> </span>
+<span class="st">                </span><span class="kw">select</span>(file,polarity,raw,md5,std_peaks,path,scan2rt_fun) %&gt;%<span class="st"> </span>
+<span class="st">                </span><span class="kw">unnest</span>(std_peaks, <span class="dt">.drop =</span> <span class="ot">FALSE</span>) %&gt;%<span class="st"> </span>
+<span class="st">                </span><span class="kw">bind_cols</span>(<span class="kw">data_frame</span>(<span class="dt">EIC=</span><span class="kw">unlist</span>(data$EIC,<span class="dt">recursive =</span> <span class="ot">FALSE</span>))) <span class="co"># we cannot just unnest the EICs so we do it manally and re-add them</span>
+
+data_flat %&gt;%<span class="st"> </span><span class="kw">select</span>(-scan2rt_fun, -raw, -EIC) %&gt;%<span class="st"> </span><span class="kw">slice</span>(<span class="dv">1</span>:<span class="dv">12</span>) %&gt;%<span class="st"> </span>kable</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">file</th>
+<th align="left">polarity</th>
+<th align="left">md5</th>
+<th align="left">path</th>
+<th align="right">ID</th>
+<th align="right">mz.stds</th>
+<th align="right">rt.stds</th>
+<th align="left">Name</th>
+<th align="right">mz.peaks</th>
+<th align="right">mzmin</th>
+<th align="right">mzmax</th>
+<th align="right">rt.peaks</th>
+<th align="right">rtmin</th>
+<th align="right">rtmax</th>
+<th align="right">into</th>
+<th align="right">intb</th>
+<th align="right">maxo</th>
+<th align="right">sn</th>
+<th align="right">egauss</th>
+<th align="right">mu</th>
+<th align="right">sigma</th>
+<th align="right">h</th>
+<th align="right">f</th>
+<th align="right">dppm</th>
+<th align="right">scale</th>
+<th align="right">scpos</th>
+<th align="right">scmin</th>
+<th align="right">scmax</th>
+<th align="right">lmin</th>
+<th align="right">lmax</th>
+<th align="left">found</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="left">unknown</td>
+<td align="left">86595e435ba16523a5066287a6b03a50</td>
+<td align="left">Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="right">1</td>
+<td align="right">720.5538</td>
+<td align="right">471.0</td>
+<td align="left">01.PE(17:0/17:0)</td>
+<td align="right">720.5528</td>
+<td align="right">720.5525</td>
+<td align="right">720.5529</td>
+<td align="right">476.239</td>
+<td align="right">472.263</td>
+<td align="right">480.214</td>
+<td align="right">9472384</td>
+<td align="right">9472376</td>
+<td align="right">2149187.2</td>
+<td align="right">2149186</td>
+<td align="right">0.0262262</td>
+<td align="right">952.6939</td>
+<td align="right">3.482191</td>
+<td align="right">2229018.0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">953</td>
+<td align="right">950</td>
+<td align="right">956</td>
+<td align="right">85</td>
+<td align="right">101</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="even">
+<td align="left">0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="left">unknown</td>
+<td align="left">86595e435ba16523a5066287a6b03a50</td>
+<td align="left">Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="right">2</td>
+<td align="right">717.5905</td>
+<td align="right">429.6</td>
+<td align="left">02.SM(d18:1/17:0)</td>
+<td align="right">717.5898</td>
+<td align="right">717.5894</td>
+<td align="right">717.5900</td>
+<td align="right">434.492</td>
+<td align="right">430.019</td>
+<td align="right">438.467</td>
+<td align="right">23282123</td>
+<td align="right">23282114</td>
+<td align="right">4811217.5</td>
+<td align="right">4811216</td>
+<td align="right">0.0148656</td>
+<td align="right">868.8189</td>
+<td align="right">3.919249</td>
+<td align="right">4860176.9</td>
+<td align="right">2</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">869</td>
+<td align="right">866</td>
+<td align="right">872</td>
+<td align="right">83</td>
+<td align="right">100</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="odd">
+<td align="left">0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="left">unknown</td>
+<td align="left">86595e435ba16523a5066287a6b03a50</td>
+<td align="left">Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="right">3</td>
+<td align="right">552.5350</td>
+<td align="right">453.6</td>
+<td align="left">03.Cer(d18:1/17:0)</td>
+<td align="right">552.5344</td>
+<td align="right">552.5341</td>
+<td align="right">552.5351</td>
+<td align="right">458.844</td>
+<td align="right">454.868</td>
+<td align="right">462.820</td>
+<td align="right">2118503</td>
+<td align="right">2117230</td>
+<td align="right">496574.4</td>
+<td align="right">1142</td>
+<td align="right">0.0356577</td>
+<td align="right">917.9004</td>
+<td align="right">3.442522</td>
+<td align="right">504133.3</td>
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">918</td>
+<td align="right">915</td>
+<td align="right">921</td>
+<td align="right">85</td>
+<td align="right">101</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="even">
+<td align="left">0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="left">unknown</td>
+<td align="left">86595e435ba16523a5066287a6b03a50</td>
+<td align="left">Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="right">4</td>
+<td align="right">762.6007</td>
+<td align="right">463.8</td>
+<td align="left">04.PC(17:0/17:0)</td>
+<td align="right">762.6013</td>
+<td align="right">762.6007</td>
+<td align="right">762.6016</td>
+<td align="right">468.784</td>
+<td align="right">464.311</td>
+<td align="right">473.257</td>
+<td align="right">46018583</td>
+<td align="right">46018573</td>
+<td align="right">8917082.0</td>
+<td align="right">8917081</td>
+<td align="right">0.0509792</td>
+<td align="right">937.8515</td>
+<td align="right">4.072229</td>
+<td align="right">9355799.7</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">937</td>
+<td align="right">934</td>
+<td align="right">940</td>
+<td align="right">83</td>
+<td align="right">101</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="odd">
+<td align="left">0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="left">unknown</td>
+<td align="left">86595e435ba16523a5066287a6b03a50</td>
+<td align="left">Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="right">5</td>
+<td align="right">510.3554</td>
+<td align="right">255.6</td>
+<td align="left">05.LPC(17:0)</td>
+<td align="right">510.3551</td>
+<td align="right">510.3548</td>
+<td align="right">510.3554</td>
+<td align="right">257.067</td>
+<td align="right">253.091</td>
+<td align="right">261.043</td>
+<td align="right">35288254</td>
+<td align="right">35215014</td>
+<td align="right">7460131.5</td>
+<td align="right">763</td>
+<td align="right">0.0381720</td>
+<td align="right">511.8945</td>
+<td align="right">3.788109</td>
+<td align="right">7735304.8</td>
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">512</td>
+<td align="right">509</td>
+<td align="right">515</td>
+<td align="right">77</td>
+<td align="right">93</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="even">
+<td align="left">0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="left">unknown</td>
+<td align="left">86595e435ba16523a5066287a6b03a50</td>
+<td align="left">Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="right">6</td>
+<td align="right">691.5884</td>
+<td align="right">379.2</td>
+<td align="left">06.PC(14:0/d13)</td>
+<td align="right">691.5886</td>
+<td align="right">691.5880</td>
+<td align="right">691.5891</td>
+<td align="right">382.308</td>
+<td align="right">376.841</td>
+<td align="right">388.272</td>
+<td align="right">55696245</td>
+<td align="right">55687047</td>
+<td align="right">9062131.0</td>
+<td align="right">10699</td>
+<td align="right">0.0422174</td>
+<td align="right">764.0186</td>
+<td align="right">4.860271</td>
+<td align="right">9340797.3</td>
+<td align="right">6</td>
+<td align="right">0</td>
+<td align="right">5</td>
+<td align="right">764</td>
+<td align="right">759</td>
+<td align="right">769</td>
+<td align="right">77</td>
+<td align="right">100</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="odd">
+<td align="left">0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="left">unknown</td>
+<td align="left">86595e435ba16523a5066287a6b03a50</td>
+<td align="left">Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="right">7</td>
+<td align="right">827.7802</td>
+<td align="right">606.0</td>
+<td align="left">07.TG(16:0/16:0/16:0)-13C3</td>
+<td align="right">827.7798</td>
+<td align="right">827.7795</td>
+<td align="right">827.7800</td>
+<td align="right">614.401</td>
+<td align="right">609.929</td>
+<td align="right">618.874</td>
+<td align="right">28795896</td>
+<td align="right">28795886</td>
+<td align="right">5495703.0</td>
+<td align="right">5495702</td>
+<td align="right">0.0417636</td>
+<td align="right">1231.0616</td>
+<td align="right">4.167010</td>
+<td align="right">5716848.3</td>
+<td align="right">7</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">1231</td>
+<td align="right">1228</td>
+<td align="right">1234</td>
+<td align="right">90</td>
+<td align="right">108</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="even">
+<td align="left">0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="left">unknown</td>
+<td align="left">86595e435ba16523a5066287a6b03a50</td>
+<td align="left">Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="right">8</td>
+<td align="right">491.4046</td>
+<td align="right">340.2</td>
+<td align="left">08.TG(8:0/8:0/8:0)-13C3</td>
+<td align="right">491.4035</td>
+<td align="right">491.4034</td>
+<td align="right">491.4036</td>
+<td align="right">342.052</td>
+<td align="right">338.573</td>
+<td align="right">346.028</td>
+<td align="right">13307560</td>
+<td align="right">13271220</td>
+<td align="right">3145869.0</td>
+<td align="right">2058</td>
+<td align="right">0.0336942</td>
+<td align="right">683.3026</td>
+<td align="right">3.339722</td>
+<td align="right">3280955.3</td>
+<td align="right">8</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">683</td>
+<td align="right">680</td>
+<td align="right">686</td>
+<td align="right">79</td>
+<td align="right">94</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="odd">
+<td align="left">0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="left">unknown</td>
+<td align="left">86595e435ba16523a5066287a6b03a50</td>
+<td align="left">Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="right">9</td>
+<td align="right">791.7797</td>
+<td align="right">434.4</td>
+<td align="left">09a.PC(16:0/d31/18:1)</td>
+<td align="right">791.7774</td>
+<td align="right">791.7771</td>
+<td align="right">791.7775</td>
+<td align="right">438.467</td>
+<td align="right">434.492</td>
+<td align="right">442.940</td>
+<td align="right">13502364</td>
+<td align="right">13502355</td>
+<td align="right">2997708.8</td>
+<td align="right">2997708</td>
+<td align="right">0.0252669</td>
+<td align="right">877.1192</td>
+<td align="right">3.662132</td>
+<td align="right">3017406.7</td>
+<td align="right">9</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">877</td>
+<td align="right">874</td>
+<td align="right">880</td>
+<td align="right">82</td>
+<td align="right">99</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="even">
+<td align="left">0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="left">unknown</td>
+<td align="left">86595e435ba16523a5066287a6b03a50</td>
+<td align="left">Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_034_2_1_1.mzML</td>
+<td align="right">10</td>
+<td align="right">790.7735</td>
+<td align="right">434.4</td>
+<td align="left">09b.PC(16:0/d30/18:1)</td>
+<td align="right">790.7721</td>
+<td align="right">790.7719</td>
+<td align="right">790.7723</td>
+<td align="right">438.467</td>
+<td align="right">434.492</td>
+<td align="right">442.940</td>
+<td align="right">15915291</td>
+<td align="right">15914583</td>
+<td align="right">3547688.5</td>
+<td align="right">4482</td>
+<td align="right">0.0259419</td>
+<td align="right">877.3102</td>
+<td align="right">3.670050</td>
+<td align="right">3550835.2</td>
+<td align="right">10</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">877</td>
+<td align="right">874</td>
+<td align="right">880</td>
+<td align="right">82</td>
+<td align="right">99</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="odd">
+<td align="left">0036_LIP1p_20160201_057_36_1_1.mzML</td>
+<td align="left">unknown</td>
+<td align="left">a1c2bf4a9be8f29b1dc86bce8bf19dc0</td>
+<td align="left">Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_057_36_1_1.mzML</td>
+<td align="right">1</td>
+<td align="right">720.5538</td>
+<td align="right">471.0</td>
+<td align="left">01.PE(17:0/17:0)</td>
+<td align="right">720.5497</td>
+<td align="right">720.5218</td>
+<td align="right">720.5531</td>
+<td align="right">476.365</td>
+<td align="right">472.389</td>
+<td align="right">480.341</td>
+<td align="right">10053537</td>
+<td align="right">10053529</td>
+<td align="right">2346051.0</td>
+<td align="right">2346050</td>
+<td align="right">0.0210779</td>
+<td align="right">953.6685</td>
+<td align="right">3.376764</td>
+<td align="right">2426970.7</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">954</td>
+<td align="right">951</td>
+<td align="right">957</td>
+<td align="right">85</td>
+<td align="right">101</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="even">
+<td align="left">0036_LIP1p_20160201_057_36_1_1.mzML</td>
+<td align="left">unknown</td>
+<td align="left">a1c2bf4a9be8f29b1dc86bce8bf19dc0</td>
+<td align="left">Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_057_36_1_1.mzML</td>
+<td align="right">2</td>
+<td align="right">717.5905</td>
+<td align="right">429.6</td>
+<td align="left">02.SM(d18:1/17:0)</td>
+<td align="right">717.5898</td>
+<td align="right">717.5896</td>
+<td align="right">717.5901</td>
+<td align="right">434.617</td>
+<td align="right">430.641</td>
+<td align="right">438.593</td>
+<td align="right">19740038</td>
+<td align="right">19740030</td>
+<td align="right">4474274.5</td>
+<td align="right">4474274</td>
+<td align="right">0.0165635</td>
+<td align="right">869.9202</td>
+<td align="right">3.688029</td>
+<td align="right">4371954.9</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">870</td>
+<td align="right">867</td>
+<td align="right">873</td>
+<td align="right">84</td>
+<td align="right">100</td>
+<td align="left">TRUE</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="deviations" class="section level2">
+<h2><span class="header-section-number">4.4</span> Deviations</h2>
+<p>ppm and retention time.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_flat %&lt;&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">mz_dev =</span> ((mz.peaks -<span class="st"> </span>mz.stds)/mz.stds)*<span class="fl">1E6</span> ) %&gt;%<span class="st"> </span>
+<span class="st">               </span><span class="kw">mutate</span>(<span class="dt">rt_dev =</span> rt.peaks -<span class="st"> </span>rt.stds , <span class="dt">rt_dev_min =</span> rt_dev/<span class="dv">60</span>)</code></pre></div>
+</div>
+<div id="fwhm" class="section level2">
+<h2><span class="header-section-number">4.5</span> FWHM</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_flat %&lt;&gt;%<span class="st"> </span>rowwise %&gt;%<span class="st"> </span>
+<span class="st">               </span><span class="kw">mutate</span>(<span class="dt">FWHM_scan  =</span> <span class="dv">2</span>*<span class="kw">sqrt</span>(<span class="dv">2</span>*<span class="kw">log</span>(<span class="dv">2</span>))*sigma) %&gt;%<span class="st"> </span>
+<span class="st">               </span><span class="kw">mutate</span>(<span class="dt">FWHM_start =</span> (scpos -<span class="st"> </span>FWHM_scan/<span class="dv">2</span>) %&gt;%<span class="st"> </span>scan2rt_fun ) %&gt;%
+<span class="st">               </span><span class="kw">mutate</span>(<span class="dt">FWHM_end   =</span> (scpos +<span class="st"> </span>FWHM_scan/<span class="dv">2</span>) %&gt;%<span class="st"> </span>scan2rt_fun ) %&gt;%<span class="st"> </span>
+<span class="st">               </span><span class="kw">mutate</span>(<span class="dt">FWHM       =</span>  FWHM_end -<span class="st"> </span>FWHM_start ) %&gt;%
+<span class="st">               </span><span class="kw">mutate</span>(<span class="dt">FWHM_dp    =</span>  scmax -<span class="st"> </span>scmin +<span class="st"> </span><span class="dv">1</span> ) %&gt;%<span class="st"> </span><span class="co"># data points</span>
+<span class="st">               </span>ungroup %&gt;%<span class="st"> </span>
+<span class="st">               </span><span class="kw">select</span>(-FWHM_scan, -FWHM_start, -FWHM_end)</code></pre></div>
+</div>
+<div id="tailing-factor-and-assymmetry-factor" class="section level2">
+<h2><span class="header-section-number">4.6</span> Tailing Factor and Assymmetry factor</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_flat %&lt;&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">TF =</span>  <span class="kw">map2_dbl</span>(EIC,rt.peaks, ~<span class="st"> </span><span class="kw">peak_factor</span>(.x,.y,<span class="dt">factor=</span><span class="st">&quot;TF&quot;</span>))) %&gt;%<span class="st"> </span>
+<span class="st">               </span><span class="kw">mutate</span>(<span class="dt">ASF =</span> <span class="kw">map2_dbl</span>(EIC,rt.peaks, ~<span class="st"> </span><span class="kw">peak_factor</span>(.x,.y,<span class="dt">factor=</span><span class="st">&quot;ASF&quot;</span>)))</code></pre></div>
+</div>
 </div>
 
 

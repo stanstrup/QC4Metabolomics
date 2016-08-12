@@ -8,6 +8,8 @@ xcmsRaw_to_tbl(files, ...)
 }
 \arguments{
 \item{files}{character vector of file names/paths.}
+
+\item{...}{further arguments to \code{\link{xcmsRaw}}.}
 }
 \value{
 A \code{\link{tibble}} containing the columns: 

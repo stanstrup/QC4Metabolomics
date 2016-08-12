@@ -138,9 +138,12 @@ data_flat %<>% rowwise %>%
                ungroup %>% 
                select(-FWHM_scan, -FWHM_start, -FWHM_end)
 
-## ------------------------------------------------------------------------
+## ----factors-------------------------------------------------------------
 
 data_flat %<>% mutate(TF =  map2_dbl(EIC,rt.peaks, ~ peak_factor(.x,.y,factor="TF"))) %>% 
                mutate(ASF = map2_dbl(EIC,rt.peaks, ~ peak_factor(.x,.y,factor="ASF")))
 
+
+## ----output--------------------------------------------------------------
+data_flat %>% select(-scan2rt_fun, -raw, -EIC) %>% slice(1:12) %>% kable
 

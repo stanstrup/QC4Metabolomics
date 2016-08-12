@@ -250,7 +250,7 @@ data_flat %<>% rowwise %>%
 
 ## Tailing Factor and Assymmetry factor
 
-```{r}
+```{r factors}
 
 data_flat %<>% mutate(TF =  map2_dbl(EIC,rt.peaks, ~ peak_factor(.x,.y,factor="TF"))) %>% 
                mutate(ASF = map2_dbl(EIC,rt.peaks, ~ peak_factor(.x,.y,factor="ASF")))
@@ -258,6 +258,11 @@ data_flat %<>% mutate(TF =  map2_dbl(EIC,rt.peaks, ~ peak_factor(.x,.y,factor="T
 ```
 
 
+
+# Final output
+```{r output}
+data_flat %>% select(-scan2rt_fun, -raw, -EIC) %>% slice(1:12) %>% kable
+```
 
 
 

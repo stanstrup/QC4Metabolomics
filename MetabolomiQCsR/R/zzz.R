@@ -1,7 +1,7 @@
 
 #' When the package is loaded read an ini file to get config parameters
 #'
-#' @return Hidden environment MetabolomiQCsR.env containing settings from MetabolomiQCsR.conf
+#' @return Hidden environment MetabolomiQCsR.env containing settings from MetabolomiQCs.conf
 #' @importFrom ini read.ini
 #' @importFrom stringr str_split
 #' @noRd
@@ -12,14 +12,15 @@
     #### read ini file
     
     # search locations
-    ini_file <- c("./MetabolomiQCsR.conf", # if file in working dir use that
-                  "~/MetabolomiQCsR.conf", # if file in home folder
-                  system.file("extdata", "MetabolomiQCsR.conf", package = "MetabolomiQCsR") # If no file found use the one from the package
+    ini_file <- c("./MetabolomiQCs.conf", # if file in working dir use that
+                  "../MetabolomiQCs.conf", # one folder back
+                  "~/MetabolomiQCs.conf", # if file in home folder
+                  system.file("extdata", "MetabolomiQCs.conf", package = "MetabolomiQCsR") # If no file found use the one from the package
     )
     
     
     # check if we can find any config file at all
-    if(all(!file.exists(ini_file))) stop("No MetabolomiQCsR.conf found.\nThis should not happen since the packages comes with a default configuration file.")
+    if(all(!file.exists(ini_file))) stop("No MetabolomiQCs.conf found.\nThis should not happen since the packages comes with a default configuration file.")
     
     
     # Get the first of the files in the above list
@@ -41,6 +42,11 @@
     MetabolomiQCsR.env$target_cont$cont_list$loc$negative      <<- ini$target_cont$cont_list_loc_negative  %>% as.character
     MetabolomiQCsR.env$TIC$TIC_exclude                         <<- ini$visualization$TIC_exclude %>% str_split(",") %>% unlist %>% as.numeric
     MetabolomiQCsR.env$TIC$TIC_exclude_ppm                     <<- ini$visualization$TIC_exclude_ppm %>% as.numeric
+    
+    MetabolomiQCsR.env$db$db                                   <<- ini$db$db  %>% as.character
+    MetabolomiQCsR.env$db$user                                 <<- ini$db$user  %>% as.character
+    MetabolomiQCsR.env$db$password                             <<- ini$db$password  %>% as.character
+    MetabolomiQCsR.env$db$host                                 <<- ini$db$host  %>% as.character
     rm(ini)
     
 }

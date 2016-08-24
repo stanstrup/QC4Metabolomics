@@ -4,8 +4,8 @@ globalVariables("MetabolomiQCsR.env")
 #' Get list of known contaminants
 #'
 #' @param polarity The polarity to get contaminants for. Can be "positive", "negative" or "unknown".
-#' If "unknown" the list specified in the MetabolomiQCsR.conf is used. 
-#' MetabolomiQCsR.conf can be in the working folder or the home folder.
+#' If "unknown" the list specified in the MetabolomiQCs.conf is used. 
+#' MetabolomiQCs.conf can be in the working folder or the home folder.
 #' If those are not found the package default is used (unknown will used the positive mode list).
 #' @param type If using local or remote. 
 #' Only "URL" implemented which downloads a list from https://github.com/stanstrup/common_mz

@@ -2,7 +2,7 @@
 knitr::opts_chunk$set(echo = TRUE, fig.align = "center", dev='svg')
 
 ## ----default configuration-----------------------------------------------
-writeLines(readLines(system.file("extdata", "MetabolomiQCsR.conf", package = "MetabolomiQCsR")))
+writeLines(readLines(system.file("extdata", "MetabolomiQCs.conf", package = "MetabolomiQCsR")))
 
 ## ----config environment--------------------------------------------------
 library(MetabolomiQCsR)

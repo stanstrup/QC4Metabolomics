@@ -35,19 +35,25 @@
     #### Read ini file data into environment
     MetabolomiQCsR.env                                         <- NULL
     MetabolomiQCsR.env                                         <<- new.env()
+    
     MetabolomiQCsR.env$target_cont$EIC_ppm                     <<- ini$target_cont$EIC_ppm                 %>% as.numeric
     MetabolomiQCsR.env$target_cont$cont_list$cont_list_type    <<- ini$target_cont$cont_list_type          %>% as.character
     MetabolomiQCsR.env$target_cont$cont_list$loc$positive      <<- ini$target_cont$cont_list_loc_positive  %>% as.character
     MetabolomiQCsR.env$target_cont$cont_list$loc$unknown       <<- ini$target_cont$cont_list_loc_unknown   %>% as.character
     MetabolomiQCsR.env$target_cont$cont_list$loc$negative      <<- ini$target_cont$cont_list_loc_negative  %>% as.character
+    
     MetabolomiQCsR.env$TIC$TIC_exclude                         <<- ini$visualization$TIC_exclude %>% str_split(",") %>% unlist %>% as.numeric
     MetabolomiQCsR.env$TIC$TIC_exclude_ppm                     <<- ini$visualization$TIC_exclude_ppm %>% as.numeric
     
-    MetabolomiQCsR.env$db$db                                   <<- ini$db$db  %>% as.character
-    MetabolomiQCsR.env$db$user                                 <<- ini$db$user  %>% as.character
-    MetabolomiQCsR.env$db$password                             <<- ini$db$password  %>% as.character
-    MetabolomiQCsR.env$db$host                                 <<- ini$db$host  %>% as.character
-    rm(ini)
+    MetabolomiQCsR.env$db$db                                   <<- ini$db$db %>% as.character
+    MetabolomiQCsR.env$db$user                                 <<- ini$db$user %>% as.character
+    MetabolomiQCsR.env$db$password                             <<- ini$db$password %>% as.character
+    MetabolomiQCsR.env$db$host                                 <<- ini$db$host %>% as.character
+    
+    MetabolomiQCsR.env$folders$base                            <<- ini$folders$base %>% as.character
+    MetabolomiQCsR.env$folders$include_ext                     <<- ini$folders$include_ext %>% as.character
+    MetabolomiQCsR.env$folders$include_path                    <<- ini$folders$include_path %>% as.character
+    MetabolomiQCsR.env$folders$exclude_path                    <<- ini$folders$exclude_path %>% as.character
     
 }
 

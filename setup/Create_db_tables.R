@@ -34,7 +34,7 @@ sql <- "
         path          TEXT(256) NOT NULL,
         project_nr    SMALLINT  NOT NULL,
         instrument    TEXT(256) NOT NULL,
-        mode          ENUM('pos', 'neg') NOT NULL,
+        mode          ENUM('pos', 'neg','unknown') NOT NULL,
         date          DATE      NOT NULL,
         batch_seq_nr  SMALLINT  NOT NULL,
         sample_id     TEXT(256) NOT NULL,
@@ -115,9 +115,9 @@ for(i in seq_along(sql)){
 
 poolReturn(con)
 
-ifelse(all(suc),"All queries were sucessful.\n",  paste0("Queries ",paste(which(suc),collapse=", ")," failed.\n")   ) %>% 
+ifelse(all(suc),"All queries were successful.\n",  paste0("Queries ",paste(which(suc),collapse=", ")," failed.\n")   ) %>% 
     message
 
 # Close connection --------------------------------------------------------
 poolClose(pool)
-rm(pool, con, suc, sql)
+rm(pool, con, suc, sql, i)

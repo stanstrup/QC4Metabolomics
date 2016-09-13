@@ -4,7 +4,7 @@ library(magrittr)
 library(stringr)
 library(DBI)
 library(RMySQL)
-   
+library(pool) # devtools::install_github("rstudio/pool")   
  
 
 # Get extension pattern ---------------------------------------------------
@@ -62,22 +62,27 @@ if(length(files)==0) quit(save="no")
 
 
 # Establish connection ----------------------------------------------------
-con <- dbConnect(MySQL(),
-                 user     = MetabolomiQCsR.env$db$user,
-                 password = MetabolomiQCsR.env$db$password, 
-                 host     = MetabolomiQCsR.env$db$host, 
-                 dbname   = MetabolomiQCsR.env$db$db)
+pool <- dbPool(
+                  drv = MySQL(),
+                  dbname = MetabolomiQCsR.env$db$db,
+                  host = MetabolomiQCsR.env$db$host,
+                  username = MetabolomiQCsR.env$db$user,
+                  password = MetabolomiQCsR.env$db$password,
+                  idleTimeout = 30*60*1000 # 30 minutes
+)
 
 
-# Add the files new_files -------------------------------------------------
+
+# Figure if there are any new files to add to the queue -------------------
+
 # figure if files are already in the new_files table (the queue to be processed)
 files_already_in_db <-  paste(files,collapse="','") %>% 
                         paste0("'",.,"'") %>% 
                         paste0("select path from new_files where path in (",.,")") %>% 
-                        dbGetQuery(con,.) %>% 
+                        dbGetQuery(pool,.) %>% 
                         extract2("path")
 
-# Only paths not already in the queue
+# Only paths not already in the queue (new_files table)
 files <- files[!(files %in% files_already_in_db)]
 
 
@@ -85,10 +90,10 @@ files <- files[!(files %in% files_already_in_db)]
 files_already_in_db <-  paste(files,collapse="','") %>% 
                         paste0("'",.,"'") %>% 
                         paste0("select path from files where path in (",.,")") %>% 
-                        dbGetQuery(con,.) %>% 
+                        dbGetQuery(pool,.) %>% 
                         extract2("path")
 
-# Only paths not already in the queue
+# Only paths not already in the files table
 files <- files[!(files %in% files_already_in_db)]
 
 
@@ -97,28 +102,77 @@ files <- files[!(files %in% files_already_in_db)]
 if(length(files)==0){
     message("No new files to add to queue.\n")
     
-}else{
+    # close connections
+    poolClose(pool)
+    rm(pool, files_already_in_db)
     
-    # Put in the log how many files we want to add to the queue
-    message(paste0("Will attempt to put ",length(files)," new files in the queue.\n"))
-    
-    
-    # write to the db
-    res <- sqlAppendTable(con, "new_files", data.frame(path=files)) %>% 
-        dbSendQuery(con,.)
-    
-    res <- dbClearResult(res)
-    
-    # Put in the log if db query successful
-    ifelse(res,"Added files to queue successfully.\n",
-               "Files were NOT added to the queue successfully.\n"
-    ) %>% 
-    message
-
+    # If no files found quit the process. Else do rest of script
+    quit(save="no")
 }
 
 
-# close connections
-dbDisconnect(con)
-rm(res, con, files_already_in_db)
+# Add the files to new_files ----------------------------------------------
 
+# Put in the log how many files we want to add to the queue
+paste0("Will attempt to put ",length(files)," new files in the queue.\n") %>% 
+    message
+
+
+# parse filename
+file_tbl <- files %>% 
+            sub("\\.[^.]*$", "", .) %>% 
+            basename %>% 
+    
+            parse_filenames(MetabolomiQCsR.env$files$mask) %>% 
+            as.tbl %>%
+            mutate(path = files) %>% # we put back the original filenames with extension
+            select(-filename) %>% 
+            mutate_each(funs(as.numeric), project_nr, batch_seq_nr, sample_ext_nr, inst_run_nr) %>% 
+            mutate(date = as.Date(date, MetabolomiQCsR.env$files$datemask) %>% format("%Y-%m-%d")) # date format that mysql likes
+
+            
+# get mode from other field. Steno work-around
+if(MetabolomiQCsR.env$files$mode_from_other_field){
+   
+  file_tbl %<>% mutate(mode = ifelse(
+                                     grepl(MetabolomiQCsR.env$files$mode_from_other_field_pos_trigger, file_tbl %>% extract2(MetabolomiQCsR.env$files$mode_from_other_field_which) ),
+                                     "pos",
+                                     NA
+                                    )
+                      )
+    
+  file_tbl %<>% mutate(mode = ifelse(
+                                     grepl(MetabolomiQCsR.env$files$mode_from_other_field_neg_trigger, file_tbl %>% extract2(MetabolomiQCsR.env$files$mode_from_other_field_which) ),
+                                     "neg",
+                                     mode
+                                )
+                  )
+}
+
+
+
+
+
+# write to the db
+con <- poolCheckout(pool)
+
+dbBegin(con)
+
+res <- sqlAppendTable(con, "new_files", file_tbl) %>% 
+       dbSendQuery(con,.)
+
+res <- dbCommit(con)
+
+poolReturn(con)
+
+# Put in the log if db query successful
+ifelse(res,
+       "Added files to queue successfully.\n",
+       "Files were NOT added to the queue successfully.\n"
+      ) %>% 
+message
+
+
+# close connections
+poolClose(pool)
+rm(res, pool, con, files_already_in_db)

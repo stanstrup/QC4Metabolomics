@@ -2,25 +2,33 @@
 library(DBI)
 library(RMySQL)
 library(MetabolomiQCsR)
+library(pool) # devtools::install_github("rstudio/pool")
 
 
 # Establish connection ----------------------------------------------------
-con <- dbConnect(MySQL(),
-                 user     = MetabolomiQCsR.env$db$user,
-                 password = MetabolomiQCsR.env$db$password, 
-                 host     = MetabolomiQCsR.env$db$host, 
-                 dbname   = MetabolomiQCsR.env$db$db)
+pool <- dbPool(
+                  drv = MySQL(),
+                  dbname = MetabolomiQCsR.env$db$db,
+                  host = MetabolomiQCsR.env$db$host,
+                  username = MetabolomiQCsR.env$db$user,
+                  password = MetabolomiQCsR.env$db$password,
+                  idleTimeout = 0.5*1000*60*60 # ½ hour
+)
 
 
 # Kill existing tables ----------------------------------------------------
-dbRemoveTable(con, "std_stat_data")
-dbRemoveTable(con, "new_files")
-dbRemoveTable(con, "files")
-dbRemoveTable(con, "std_compounds")
-dbRemoveTable(con, "std_stat_types")
+if(FALSE){
+    dbRemoveTable(pool, "std_stat_data")
+    dbRemoveTable(pool, "new_files")
+    dbRemoveTable(pool, "files")
+    dbRemoveTable(pool, "std_compounds")
+    dbRemoveTable(pool, "std_stat_types")
+}
 
 
 # files -------------------------------------------------------------------
+con <- poolCheckout(pool)
+
 res <- dbSendQuery(con, "
                             CREATE TABLE new_files (
                             path TEXT(256) NOT NULL
@@ -28,7 +36,6 @@ res <- dbSendQuery(con, "
                         "
                     )
 
-dbClearResult(res)
 
 
 res <- dbSendQuery(con, "
@@ -39,9 +46,12 @@ res <- dbSendQuery(con, "
                         "
                     )
 
-dbClearResult(res)
+poolReturn(con)
+
 
 # std_stat_types ----------------------------------------------------------
+con <- poolCheckout(pool)
+
 res <- dbSendQuery(con, "
                             CREATE TABLE std_stat_types (
                             stat_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -51,9 +61,12 @@ res <- dbSendQuery(con, "
                         "
                     )
 
-dbClearResult(res)
+poolReturn(con)
+
 
 # std_compounds -----------------------------------------------------------
+con <- poolCheckout(pool)
+
 res <- dbSendQuery(con, "
                             CREATE TABLE std_compounds (
                             cmp_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -65,11 +78,14 @@ res <- dbSendQuery(con, "
                         "
                     )
 
-dbClearResult(res)
+poolReturn(con)
+
 
 # std_stat_data -----------------------------------------------------------
 # reason the PRIMARY KEY is set this way: 
 # http://weblogs.sqlteam.com/jeffs/archive/2007/08/23/composite_primary_keys.aspx
+
+con <- poolCheckout(pool)
 
 res <- dbSendQuery(con, "
                             CREATE TABLE std_stat_data (
@@ -85,9 +101,9 @@ res <- dbSendQuery(con, "
                         "
                     )
 
-dbClearResult(res)
+poolReturn(con)
 
 
 # Close connection --------------------------------------------------------
-dbDisconnect(con)
-rm(res,con)
+poolClose(pool)
+rm(res,pool)

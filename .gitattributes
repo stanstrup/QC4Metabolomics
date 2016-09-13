@@ -5,3 +5,6 @@ Shiny_app/packrat/src/*/* filter=lfs diff=lfs merge=lfs -text
 *.mzML filter=lfs diff=lfs merge=lfs -text
 *.mzXML filter=lfs diff=lfs merge=lfs -text
 *.mzData filter=lfs diff=lfs merge=lfs -text
+
+# mySQL Workbench model
+*.mwb filter=lfs diff=lfs merge=lfs -text

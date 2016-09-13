@@ -55,6 +55,14 @@
     MetabolomiQCsR.env$folders$include_path                    <<- ini$folders$include_path %>% as.character
     MetabolomiQCsR.env$folders$exclude_path                    <<- ini$folders$exclude_path %>% as.character
     
+    MetabolomiQCsR.env$files$mask                              <<- ini$files$mask     %>% as.character
+    MetabolomiQCsR.env$files$datemask                          <<- ini$files$datemask %>% as.character
+    
+    MetabolomiQCsR.env$files$mode_from_other_field             <<- ini$files$mode_from_other_field            %>% as.logical
+    MetabolomiQCsR.env$files$mode_from_other_field_which       <<- ini$files$mode_from_other_field_which      %>% as.character
+    MetabolomiQCsR.env$files$mode_from_other_field_pos_trigger <<- ini$files$mode_from_other_field_pos_trigger %>% as.character
+    MetabolomiQCsR.env$files$mode_from_other_field_neg_trigger <<- ini$files$mode_from_other_field_neg_trigger %>% as.character
+    
 }
 
 

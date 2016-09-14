@@ -69,11 +69,12 @@ sql <- c(sql, "
 # std_compounds -----------------------------------------------------------
 sql <- c(sql, "
                 CREATE TABLE std_compounds (
-                cmp_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                cmp_name VARCHAR(20) NOT NULL,
-                cmp_mz FLOAT NOT NULL,
-                cmp_rt1 FLOAT NOT NULL,
-                cmp_rt2 FLOAT
+                cmp_id   int                NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                cmp_name VARCHAR(20)        NOT NULL,
+                mode     ENUM('pos', 'neg') NOT NULL,
+                cmp_mz   FLOAT              NOT NULL,
+                cmp_rt1  FLOAT              NOT NULL,
+                cmp_rt2  FLOAT
                 )
               "
          )

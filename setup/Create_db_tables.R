@@ -24,23 +24,24 @@ if(TRUE){
     dbRemoveTable(pool, "files")
     dbRemoveTable(pool, "std_compounds")
     dbRemoveTable(pool, "std_stat_types")
+    dbRemoveTable(pool, "log")
 }
 
 
 # files -------------------------------------------------------------------
 sql <- "
         CREATE TABLE new_files (
-        file_key      INT(11)   NOT NULL AUTO_INCREMENT PRIMARY KEY,
-        path          TEXT(256) NOT NULL,
-        project_nr    SMALLINT  NOT NULL,
-        instrument    TEXT(256) NOT NULL,
+        file_key      INT(11)       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        path          TEXT(256)     NOT NULL,
+        project       VARCHAR(256)  NOT NULL,
+        instrument    TEXT(256)     NOT NULL,
         mode          ENUM('pos', 'neg','unknown') NOT NULL,
-        date          DATE      NOT NULL,
-        batch_seq_nr  SMALLINT  NOT NULL,
-        sample_id     TEXT(256) NOT NULL,
-        sample_ext_nr SMALLINT  NOT NULL,
-        inst_run_nr   SMALLINT  NOT NULL,
-        FLAG          BOOL      NOT NULL
+        date          DATE          NOT NULL,
+        batch_seq_nr  SMALLINT      NOT NULL,
+        sample_id     TEXT(256)     NOT NULL,
+        sample_ext_nr SMALLINT      NOT NULL,
+        inst_run_nr   SMALLINT      NOT NULL,
+        FLAG          BOOL          NOT NULL
         )
        "
 
@@ -98,6 +99,19 @@ sql <- c(sql, "
 
 
 
+# Log ---------------------------------------------------------------------
+sql <- c(sql, "
+                CREATE TABLE log (
+                id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                time          DATETIME      NOT NULL,
+                msg           TEXT          NOT NULL,
+                cat           ENUM('info', 'warning','error') NOT NULL,
+                source        VARCHAR(256)  NOT NULL
+                )
+               "
+         )
+
+
 # Write to db -------------------------------------------------------------
 suc <- vector(length=length(sql))
 
@@ -115,7 +129,7 @@ for(i in seq_along(sql)){
 
 poolReturn(con)
 
-ifelse(all(suc),"All queries were successful.\n",  paste0("Queries ",paste(which(suc),collapse=", ")," failed.\n")   ) %>% 
+ifelse(all(suc),"All queries were successful.\n",  paste0("Queries ",paste(which(!suc),collapse=", ")," failed.\n")   ) %>% 
     message
 
 # Close connection --------------------------------------------------------

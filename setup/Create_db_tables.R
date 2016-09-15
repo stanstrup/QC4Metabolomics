@@ -70,11 +70,14 @@ sql <- c(sql, "
 sql <- c(sql, "
                 CREATE TABLE std_compounds (
                 cmp_id   int                NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                cmp_name VARCHAR(20)        NOT NULL,
+                cmp_name TEXT               NOT NULL,
                 mode     ENUM('pos', 'neg') NOT NULL,
                 cmp_mz   FLOAT              NOT NULL,
                 cmp_rt1  FLOAT              NOT NULL,
-                cmp_rt2  FLOAT
+                cmp_rt2  FLOAT,
+                enabled  BOOL               NOT NULL,
+                updated_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                KEY (updated_at)
                 )
               "
          )

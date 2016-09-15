@@ -1,0 +1,58 @@
+fluidPage(
+  #use shiny js to disable the ID field
+  shinyjs::useShinyjs(),
+  
+  # mroe width on the table
+  tags$head(
+    tags$style(type="text/css", "#std_cmp_tbl { max-width: 1200px; }")
+  ),
+
+  
+  #data table
+  dataTableOutput("std_cmp_tbl"), 
+  
+  #input fields
+  tags$hr(),
+  
+  div(
+        div( style="display: inline-block;",
+             disabled(numericInput("std_cmp_id", "Id", NULL))
+           ),
+        div( style="display: inline-block;",
+             textInput(   "std_cmp_name",     "Compound name", "")
+           )
+    ),
+  
+  
+    div(
+        div( style="display: inline-block;vertical-align: top;",
+             selectInput( "std_cmp_mode",     "Mode", c("","pos","neg"), "")
+           ),
+        div( style="display: inline-block;vertical-align: top;",
+             numericInput("std_cmp_mz",       "m/z", NULL)
+           )
+    ),
+  
+  
+      div(
+        div( style="display: inline-block;vertical-align: top;",
+             numericInput("std_cmp_rt1",      "rt1", NULL)
+           ),
+        div( style="display: inline-block;vertical-align: top;",
+             numericInput("std_cmp_rt2",      "rt2", NULL)
+           )
+    ),
+  
+  
+  
+  checkboxInput("std_cmp_enable", "Enable", TRUE),
+  
+  
+  #action buttons
+  actionButton("submit", "Submit"),
+  actionButton("new", "New"),
+  actionButton("delete", "Delete")
+)
+
+
+

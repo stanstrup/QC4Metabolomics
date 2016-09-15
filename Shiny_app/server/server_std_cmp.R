@@ -44,6 +44,8 @@ observeEvent(input$std_cmp_tbl_rows_selected,
                     std_cmp_tbl_read() %>% 
                                             slice(input$std_cmp_tbl_rows_selected) %>% 
                                             UpdateInputs(session)
+                    
+                    updateActionButton(session, "std_cmp_submit", label="Update")
              }
     
 })
@@ -52,7 +54,10 @@ observeEvent(input$std_cmp_tbl_rows_selected,
 
 # Press "New" button -> display empty record
 observeEvent(input$std_cmp_new, {
+    
      std_cmp_default_data %>% UpdateInputs(session)
+    
+     updateActionButton(session, "std_cmp_submit", label="Submit")
 })
 
 
@@ -67,6 +72,7 @@ observeEvent(input$std_cmp_delete,
                 poolReturn(con)
                 
                 std_cmp_default_data %>% UpdateInputs(session)
+                updateActionButton(session, "std_cmp_submit", label="Submit")
              }, 
              priority = 1
 )
@@ -106,6 +112,9 @@ observeEvent(   input$std_cmp_submit,
                 res <- dbCommit(con)
                 poolReturn(con)
                 
+                std_cmp_default_data %>% UpdateInputs(session)
+                updateActionButton(session, "std_cmp_submit", label="Submit")
+                
                 }, 
                 priority = 1
             )
@@ -116,7 +125,8 @@ observeEvent(   input$std_cmp_submit,
 output$std_cmp_tbl <- renderDataTable({
 
                                         std_cmp_tbl_read() %>% 
-                                        datatable(rownames = FALSE, 
+                                        datatable(colnames=c("Compound ID", "Compound Name", "Mode", "m/z", "RT 1", "RT 2", "Enabled?", "Changed"),
+                                                  rownames = FALSE, 
                                                   selection = "single",
                                                   options=list(columnDefs = list(list(visible=FALSE, targets=c(7)))))
     

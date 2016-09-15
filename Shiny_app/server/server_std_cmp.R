@@ -4,9 +4,9 @@ std_cmp_tbl_read <- reactivePoll(10*1000, # every 10 s
                                  session=session,
                                  function(){ 
                                             # update after submit is clicked
-                                            input$submit
+                                            input$std_cmp_submit
                                             # update after delete is clicked
-                                            input$delete
+                                            input$std_cmp_delete
                                             # check same number of entries (new/deleted rows).
                                             a <- "SELECT COUNT(*) FROM std_compounds"      %>% dbGetQuery(pool, .) %>% as.numeric 
                                             #  Also check if updates.
@@ -51,13 +51,13 @@ observeEvent(input$std_cmp_tbl_rows_selected,
 
 
 # Press "New" button -> display empty record
-observeEvent(input$new, {
+observeEvent(input$std_cmp_new, {
      std_cmp_default_data %>% UpdateInputs(session)
 })
 
 
 # Press "Delete" button -> delete from data
-observeEvent(input$delete, 
+observeEvent(input$std_cmp_delete, 
              {
                 con <- poolCheckout(pool)
                 dbBegin(con)
@@ -74,7 +74,7 @@ observeEvent(input$delete,
 
 
 # Click "Submit" button -> save data
-observeEvent(   input$submit,
+observeEvent(   input$std_cmp_submit,
                 {
                     data <- data.frame(cmp_name= input$std_cmp_name   %>% as.character,
                                        mode    = input$std_cmp_mode   %>% as.character,

@@ -49,9 +49,9 @@ fluidPage(
   
   
   #action buttons
-  actionButton("submit", "Submit"),
-  actionButton("new", "New"),
-  actionButton("delete", "Delete")
+  actionButton("std_cmp_submit", "Submit"),
+  actionButton("std_cmp_new", "New"),
+  actionButton("std_cmp_delete", "Delete")
 )
 
 

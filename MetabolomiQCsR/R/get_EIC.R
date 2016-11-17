@@ -133,6 +133,7 @@ getEIC_C_wrap <- function(xraw_values, range_tbl) {
 #' @param exclude_ppm ppm tolerance of exclude_mz
 #' @param range_tbl_cols Which columns in range_tbl holds the lower and upper range. defaults to c("mz_lower","mz_upper").
 #' @param BPI Logical selecting to calculate TIC (FALSE) or BPI.
+#' @param min_int the minimum intensity mass peak to include
 #'
 #' @return tbl A \code{\link{tibble}} containing the columns: 
 #' \itemize{
@@ -151,7 +152,7 @@ getEIC_C_wrap <- function(xraw_values, range_tbl) {
 #' @importFrom magrittr extract2 %<>%
 #' 
 
-get_EICs <- function(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30, range_tbl_cols = c("mz_lower","mz_upper"), BPI = FALSE){
+get_EICs <- function(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30, range_tbl_cols = c("mz_lower","mz_upper"), BPI = FALSE, min_int = 0){
     
     # make build check happy
     . <- mz <- exclude <- mz_lower <- mz_upper <- EIC <- NULL
@@ -194,7 +195,10 @@ get_EICs <- function(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30, range
     }
     
     
+    # Cut of everthing below the minimum intensity
+    xraw_values %<>% filter(intensity>min_int)
 
+    
     if(!BPI){ # if we don't need BPI we can use the fast C function
         range_tbl %<>% getEIC_C_wrap(xraw_values,.) %>% data_frame(EIC = .) %>% bind_cols(range_tbl,.)
     }else{

@@ -5,7 +5,7 @@
 \title{Get EICs from xcmsRaw object}
 \usage{
 get_EICs(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30,
-  range_tbl_cols = c("mz_lower", "mz_upper"), BPI = FALSE)
+  range_tbl_cols = c("mz_lower", "mz_upper"), BPI = FALSE, min_int = 0)
 }
 \arguments{
 \item{xraw}{\code{\link{xcmsRaw}} object to get EIC(s)/TIC from.}
@@ -19,6 +19,8 @@ get_EICs(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30,
 \item{range_tbl_cols}{Which columns in range_tbl holds the lower and upper range. defaults to c("mz_lower","mz_upper").}
 
 \item{BPI}{Logical selecting to calculate TIC (FALSE) or BPI.}
+
+\item{min_int}{the minimum intensity mass peak to include}
 }
 \value{
 tbl A \code{\link{tibble}} containing the columns: 

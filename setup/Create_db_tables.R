@@ -40,8 +40,7 @@ sql <- "
         batch_seq_nr  SMALLINT      NOT NULL,
         sample_id     TEXT(256)     NOT NULL,
         sample_ext_nr SMALLINT      NOT NULL,
-        inst_run_nr   SMALLINT      NOT NULL,
-        FLAG          BOOL          NOT NULL
+        inst_run_nr   SMALLINT      NOT NULL
         )
        "
 

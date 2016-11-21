@@ -13,6 +13,7 @@ library(pool) # devtools::install_github("rstudio/pool")
 log_source = "find_new_files.R"
 
 
+
 # Get extension pattern ---------------------------------------------------
 search_pat <- 
                 MetabolomiQCsR.env$folders$include_ext %>% 
@@ -31,6 +32,7 @@ files <- list.files(path= MetabolomiQCsR.env$folders$base,
 
 
 # Apply include and exclude filters ---------------------------------------
+# include
 include_path <- 
                 MetabolomiQCsR.env$folders$include_path %>% 
                     strsplit(";",fixed=TRUE) %>% 
@@ -42,8 +44,8 @@ include_path <-
 files <- files[  grepl(files, pattern = include_path)   ]
 
 
-# we don't need to do this with include_path since empty will match anything
-if( str_trim(MetabolomiQCsR.env$folders$exclude_path) != "" ){
+# exclude
+if( str_trim(MetabolomiQCsR.env$folders$exclude_path) != "" ){ # we don't need to do this with include_path since empty will match anything
     exclude_path <- 
                     MetabolomiQCsR.env$folders$exclude_path %>% 
                         strsplit(";",fixed=TRUE) %>% 
@@ -52,6 +54,7 @@ if( str_trim(MetabolomiQCsR.env$folders$exclude_path) != "" ){
     
     files <- files[  !grepl(files,pattern = exclude_path)   ]   
 }
+
 
 
 # Establish connection ----------------------------------------------------
@@ -74,7 +77,6 @@ paste0("Found ",length(files)," files") %>%
 # clean up
 rm(search_pat, exclude_path, include_path)
 
-
 # If no files found quit the process. Else do rest of script
 if(length(files)==0) quit(save="no")
 
@@ -92,7 +94,6 @@ files_already_in_db <-  paste(files,collapse="','") %>%
 
 # Only paths not already in the queue (new_files table)
 files <- files[!(files %in% files_already_in_db)]
-
 
 # figure if files are already in the files table (so already processed)
 files_already_in_db <-  paste(files,collapse="','") %>% 
@@ -119,7 +120,9 @@ if(length(files)==0){
 }
 
 
-# Add the files to new_files ----------------------------------------------
+
+
+# Parse filenames ---------------------------------------------------------
 
 # Put in the log how many files we want to add to the queue
 paste0("Will attempt to parse ",length(files)," new filenames") %>% 
@@ -197,6 +200,7 @@ if(MetabolomiQCsR.env$files$mode_from_other_field){
 
 
 
+# Add the files to new_files ----------------------------------------------
 
 # write to the db
 con <- poolCheckout(pool)

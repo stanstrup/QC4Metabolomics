@@ -31,16 +31,7 @@ if(TRUE){
 # files -------------------------------------------------------------------
 sql <- "
         CREATE TABLE new_files (
-        file_key      INT(11)       NOT NULL AUTO_INCREMENT PRIMARY KEY,
-        path          TEXT(256)     NOT NULL,
-        project       VARCHAR(256)  NOT NULL,
-        instrument    TEXT(256)     NOT NULL,
-        mode          ENUM('pos', 'neg','unknown') NOT NULL,
-        date          DATE          NOT NULL,
-        batch_seq_nr  SMALLINT      NOT NULL,
-        sample_id     TEXT(256)     NOT NULL,
-        sample_ext_nr SMALLINT      NOT NULL,
-        inst_run_nr   SMALLINT      NOT NULL
+        path          TEXT(256)     NOT NULL
         )
        "
 
@@ -48,7 +39,15 @@ sql <- "
 sql <- c(sql, "
                 CREATE TABLE files (
                 path TEXT(256) NOT NULL,
-                file_md5 CHAR(32) PRIMARY KEY
+                file_md5 CHAR(32) PRIMARY KEY,
+                project       VARCHAR(256)  NOT NULL,
+                instrument    TEXT(256)     NOT NULL,
+                mode          ENUM('pos', 'neg','unknown') NOT NULL,
+                date          DATE          NOT NULL,
+                batch_seq_nr  SMALLINT      NOT NULL,
+                sample_id     TEXT(256)     NOT NULL,
+                sample_ext_nr SMALLINT      NOT NULL,
+                inst_run_nr   SMALLINT      NOT NULL
                 )
               "
              )

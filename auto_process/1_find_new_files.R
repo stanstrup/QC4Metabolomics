@@ -10,7 +10,7 @@ library(pool) # devtools::install_github("rstudio/pool")
  
 
 # Vars --------------------------------------------------------------------
-log_source = "find_new_files.R"
+log_source = "1_find_new_files.R"
 
 
 
@@ -121,93 +121,13 @@ if(length(files)==0){
 
 
 
+# Write to db -------------------------------------------------------------
 
-# Parse filenames ---------------------------------------------------------
-
-# Put in the log how many files we want to add to the queue
-paste0("Will attempt to parse ",length(files)," new filenames") %>% 
-    write_to_log(source = log_source, cat = "info", pool = pool)
-
-
-# parse filename
-file_tbl <- files %>% 
-            sub("\\.[^.]*$", "", .) %>% 
-            basename %>% 
-    
-            parse_filenames(MetabolomiQCsR.env$files$mask) %>% 
-            as.tbl %>%
-            mutate(path = files) %>% # we put back the original filenames with extension
-            select(-filename) %>% 
-            mutate_each(funs(as.numeric), batch_seq_nr, sample_ext_nr, inst_run_nr) %>% 
-            mutate(date = as.Date(date, MetabolomiQCsR.env$files$datemask) %>% format("%Y-%m-%d")) # date format that mysql likes
-
-
-
-# lets check if the coersion caused invalid names
-bad <- file_tbl %>% {rowSums(is.na(.)) > 0}
-
-file_tbl %<>% mutate(FLAG = ifelse(bad,TRUE,FALSE))
-
-
-
-# Does some have invalid file name?
-if(any(file_tbl$FLAG)){
-    
-    file_tbl %>% 
-        filter(FLAG) %>% 
-        slice(1) %>% select(path) %>%
-        paste0(sum(file_tbl$FLAG), " files had invalid filenames. First was: ",.,". They will be ignored. ") %>% 
-        write_to_log(cat = "warning", source = log_source, pool = pool)
-    
-    
-    file_tbl %<>% filter(!FLAG) %>% select(-FLAG)
-}
-
-
-
-# Do nothing if no new files
-if(nrow(file_tbl)==0){
-    write_to_log("No valid files to add to queue", cat = "info", source = log_source, pool = pool)
-    
-    # close connections
-    poolClose(pool)
-    rm(pool, files_already_in_db)
-    
-    # If no files found quit the process. Else do rest of script
-    quit(save="no")
-}
-
-
-            
-# get mode from other field. Steno work-around
-if(MetabolomiQCsR.env$files$mode_from_other_field){
-   
-  file_tbl %<>% mutate(mode = ifelse(
-                                     grepl(MetabolomiQCsR.env$files$mode_from_other_field_pos_trigger, file_tbl %>% extract2(MetabolomiQCsR.env$files$mode_from_other_field_which) ),
-                                     "pos",
-                                     "unknown"
-                                    )
-                      )
-    
-  file_tbl %<>% mutate(mode = ifelse(
-                                     grepl(MetabolomiQCsR.env$files$mode_from_other_field_neg_trigger, file_tbl %>% extract2(MetabolomiQCsR.env$files$mode_from_other_field_which) ),
-                                     "neg",
-                                     mode
-                                )
-                  )
-}
-
-
-
-
-# Add the files to new_files ----------------------------------------------
-
-# write to the db
 con <- poolCheckout(pool)
 
 dbBegin(con)
 
-res <- sqlAppendTable(con, "new_files", file_tbl) %>% 
+res <- sqlAppendTable(con, "new_files", data_frame(path = files)) %>% 
        dbSendQuery(con,.)
 
 res <- dbCommit(con)
@@ -226,4 +146,3 @@ if(res){
 
 # close connections
 poolClose(pool)
-rm(res, pool, con, files_already_in_db, bad)

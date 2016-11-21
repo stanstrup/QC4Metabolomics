@@ -160,7 +160,7 @@ if(any(file_tbl$FLAG)){
         write_to_log(cat = "warning", source = log_source, pool = pool)
     
     
-    file_tbl %<>% filter(!FLAG)
+    file_tbl %<>% filter(!FLAG) %>% select(-FLAG)
 }
 
 

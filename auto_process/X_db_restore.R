@@ -11,6 +11,11 @@ file <- "2016-11-21 17-18-45.RData"
 
 
 
+# Rebuild database --------------------------------------------------------
+source("../setup/Create_db_tables.R", local = TRUE)
+
+
+
 # Establish connection -----------------------------------------------
 pool <- dbPool(
                   drv = MySQL(),
@@ -27,15 +32,13 @@ load(paste0("backup/",file))
 
 
 
-
-
 # Get all tables ----------------------------------------------------------
 dbs <- names(tables)
 
 
 
 # Find tables with foreign keys -------------------------------------------
-
+# not tested but I think tables with foreign keys need to go last.
 foreign <- dbGetQuery(pool,"
                             select *
                             from INFORMATION_SCHEMA.TABLE_CONSTRAINTS
@@ -49,7 +52,7 @@ match <- match(foreign,dbs)
 
 if(length(match)==0) match <- 1
 
-dbs <- c(    dbs[match], dbs[-match]   )
+dbs <- c(    dbs[-match], dbs[match]   )
 
 
 
@@ -57,17 +60,22 @@ dbs <- c(    dbs[match], dbs[-match]   )
 
 for(i in seq_along(dbs)){
     
-    res <- dbRemoveTable(pool, dbs[i]) 
+    if(nrow(tables[[dbs[i]]])==0) next
+    
+    
+    con <- poolCheckout(pool)
+    
+    dbBegin(con)
+    
+    res <- res <- sqlAppendTable( pool, dbs[i], tables[[dbs[i]]]) %>% 
+                  dbSendQuery(con,.)
+    
+    res <- dbCommit(con)
+    
+    poolReturn(con)
+    
     
     if(res){
-        message(paste0(dbs[i], " was successfully removed."))
-    }else{
-        message(paste0(dbs[i], "could not be removed."))
-    }
-    
-    res <- dbWriteTable( pool, dbs[i], tables[[dbs[i]]])
-    
-        if(res){
         message(paste0(dbs[i], " was successfully restored."))
     }else{
         message(paste0(dbs[i], "could not be restored."))
@@ -79,5 +87,4 @@ for(i in seq_along(dbs)){
 
 # close connections -------------------------------------------------------
 poolClose(pool)
-
 

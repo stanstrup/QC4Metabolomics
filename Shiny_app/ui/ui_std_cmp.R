@@ -29,17 +29,17 @@ fluidPage(
              selectInput( "std_cmp_mode",     "Mode", c("","pos","neg"), "")
            ),
         div( style="display: inline-block;vertical-align: top;",
-             numericInput("std_cmp_mz",       "m/z", NULL)
+             numericInput("std_cmp_mz",       "m/z", NULL, step=0.0001)
            )
     ),
   
   
       div(
         div( style="display: inline-block;vertical-align: top;",
-             numericInput("std_cmp_rt1",      "rt1 (min)", NULL)
+             numericInput("std_cmp_rt1",      "rt1 (min)", NULL, step=0.01)
            ),
         div( style="display: inline-block;vertical-align: top;",
-             numericInput("std_cmp_rt2",      "rt2 (min)", NULL)
+             numericInput("std_cmp_rt2",      "rt2 (min)", NULL, step=0.01)
            )
     ),
   

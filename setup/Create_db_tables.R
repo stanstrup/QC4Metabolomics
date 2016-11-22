@@ -70,9 +70,9 @@ sql <- c(sql, "
                 cmp_id   int                NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 cmp_name TEXT               NOT NULL,
                 mode     ENUM('pos', 'neg') NOT NULL,
-                cmp_mz   FLOAT              NOT NULL,
-                cmp_rt1  FLOAT              NOT NULL,
-                cmp_rt2  FLOAT,
+                cmp_mz   DOUBLE             NOT NULL,
+                cmp_rt1  DOUBLE             NOT NULL,
+                cmp_rt2  DOUBLE,
                 enabled  BOOL               NOT NULL,
                 updated_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 KEY (updated_at)
@@ -93,7 +93,7 @@ sql <- c(sql, "
                 FOREIGN KEY(file_md5) REFERENCES files(file_md5),
                 FOREIGN KEY(stat_id)  REFERENCES std_stat_types(stat_id),
                 FOREIGN KEY(cmp_id)   REFERENCES std_compounds(cmp_id),
-                value FLOAT NULL,
+                value DOUBLE NULL,
                 PRIMARY KEY(file_md5, stat_id, cmp_id)
                 )
                "

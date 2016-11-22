@@ -124,7 +124,7 @@ observeEvent(   input$std_cmp_submit,
 # Display table -----------------------------------------------------------
 output$std_cmp_tbl <- renderDataTable({
 
-                                        std_cmp_tbl_read() %>% 
+                                        std_cmp_tbl_read() %>% mutate(enabled = as.logical(enabled)) %>% 
                                         datatable(colnames=c("Compound ID", "Compound Name", "Mode", "m/z", "RT 1", "RT 2", "Enabled?", "Changed"),
                                                   rownames = FALSE, 
                                                   selection = "single",

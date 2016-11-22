@@ -36,10 +36,10 @@ fluidPage(
   
       div(
         div( style="display: inline-block;vertical-align: top;",
-             numericInput("std_cmp_rt1",      "rt1", NULL)
+             numericInput("std_cmp_rt1",      "rt1 (min)", NULL)
            ),
         div( style="display: inline-block;vertical-align: top;",
-             numericInput("std_cmp_rt2",      "rt2", NULL)
+             numericInput("std_cmp_rt2",      "rt2 (min)", NULL)
            )
     ),
   

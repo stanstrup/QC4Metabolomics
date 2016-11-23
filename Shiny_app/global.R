@@ -13,11 +13,4 @@ library(tidyr)
 
 
 # Establish connection ----------------------------------------------------
-pool <- dbPool(
-                  drv = MySQL(),
-                  dbname = MetabolomiQCsR.env$db$db,
-                  host = MetabolomiQCsR.env$db$host,
-                  username = MetabolomiQCsR.env$db$user,
-                  password = MetabolomiQCsR.env$db$password,
-                  idleTimeout = 120*60*1000 # 120 minutes
-              )
+pool <- dbPool_MetabolomiQCs(120)

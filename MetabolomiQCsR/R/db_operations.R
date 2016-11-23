@@ -1,5 +1,35 @@
 #' Write message to QC4Metabolomics db
 #'
+#' @param idleTimeout The number of minutes that an idle object will be kept in the pool before it is destroyed.
+#'
+#' @return A \code{\link{dbPool}} object to connect to the MetabolomiQC database using settings in the ini file.
+#' @export
+#'
+#' @keywords internal
+#' 
+#' @importFrom pool dbPool
+#' @importFrom RMySQL MySQL
+#' 
+ 
+dbPool_MetabolomiQCs <- function(idleTimeout = 1){
+  
+  pool <- dbPool(
+                  drv = MySQL(),
+                  dbname = MetabolomiQCsR.env$db$db,
+                  host = MetabolomiQCsR.env$db$host,
+                  username = MetabolomiQCsR.env$db$user,
+                  password = MetabolomiQCsR.env$db$password,
+                  idleTimeout = idleTimeout*60*1000
+                )
+  
+  return(pool)
+  
+}
+  
+  
+
+#' Write message to QC4Metabolomics db
+#'
 #' @param msg The message. A character vector.
 #' @param cat The category ("info", "warning" or "error"). A character vector.
 #' @param Pool (see pool package) to use for writing. If null a new connection will be made reading the connection details from the conf file.
@@ -26,16 +56,7 @@ write_to_log <- function(msg, cat, source, pool = NULL){
   
   
     # if the user didn't give is a pool we close it here.
-    if(is.null(pool)){
-        pool <- dbPool(
-                      drv = MySQL(),
-                      dbname = MetabolomiQCsR.env$db$db,
-                      host = MetabolomiQCsR.env$db$host,
-                      username = MetabolomiQCsR.env$db$user,
-                      password = MetabolomiQCsR.env$db$password,
-                      idleTimeout = 5*60*1000 # 30 minutes
-                      )
-    }
+    if(is.null(pool)) dbPool_MetabolomiQCs(5)
     
     
     

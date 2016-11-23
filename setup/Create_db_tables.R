@@ -7,14 +7,7 @@ library(magrittr)
 
 
 # Establish connection ----------------------------------------------------
-pool <- dbPool(
-                  drv = MySQL(),
-                  dbname = MetabolomiQCsR.env$db$db,
-                  host = MetabolomiQCsR.env$db$host,
-                  username = MetabolomiQCsR.env$db$user,
-                  password = MetabolomiQCsR.env$db$password,
-                  idleTimeout = 5*60*1000 # 5 minutes
-)
+pool <- dbPool_MetabolomiQCs(5)
 
 
 # Kill existing tables ----------------------------------------------------

@@ -58,15 +58,7 @@ if( str_trim(MetabolomiQCsR.env$folders$exclude_path) != "" ){ # we don't need t
 
 
 # Establish connection ----------------------------------------------------
-pool <- dbPool(
-                  drv = MySQL(),
-                  dbname = MetabolomiQCsR.env$db$db,
-                  host = MetabolomiQCsR.env$db$host,
-                  username = MetabolomiQCsR.env$db$user,
-                  password = MetabolomiQCsR.env$db$password,
-                  idleTimeout = 30*60*1000 # 30 minutes
-)
-
+pool <- dbPool_MetabolomiQCs(30)
 
 
 # Log results -------------------------------------------------------------

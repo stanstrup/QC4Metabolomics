@@ -3,6 +3,7 @@
 export(EIC_calc)
 export(EIC_contaminants)
 export(closest_match)
+export(dbPool_MetabolomiQCs)
 export(extract_polarity)
 export(getEIC_C_wrap)
 export(get_EICs)

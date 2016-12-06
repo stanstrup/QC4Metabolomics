@@ -7,7 +7,7 @@ library(tools)
 library(DBI)
 library(RMySQL)
 library(pool) # devtools::install_github("rstudio/pool")   
-
+library(xml2)
 
 
 # Vars --------------------------------------------------------------------
@@ -44,7 +44,9 @@ file_tbl <- files %>%
             mutate(path = files) %>% # we put back the original filenames with extension
             select(-filename) %>% 
             mutate_each(funs(as.numeric), batch_seq_nr, sample_ext_nr, inst_run_nr) %>% 
-            mutate(date = as.Date(date, MetabolomiQCsR.env$files$datemask) %>% format("%Y-%m-%d")) # date format that mysql likes
+            mutate(time_filename = as.Date(date, MetabolomiQCsR.env$files$datemask) %>% format("%Y-%m-%d")) %>% # date format that mysql likes
+            select(-date)
+    
 
 
 
@@ -66,6 +68,9 @@ if(any(file_tbl$FLAG)){
     
     
     file_tbl %<>% filter(!FLAG) %>% select(-FLAG)
+    
+}else{
+  file_tbl %<>% select(-FLAG)  
 }
 
 
@@ -111,15 +116,23 @@ file_tbl %<>% mutate(file_md5 = path %>% as.character %>% paste0(MetabolomiQCsR.
 
 
 
+# Get run time from the XML data ------------------------------------------
+file2time <- . %>%  
+                    as.character %>% paste0(MetabolomiQCsR.env$folders$base,"/",.) %>% normalizePath %>% 
+                    read_xml %>% 
+                    xml_find_all("//@startTimeStamp") %>% 
+                    xml_text() %>% 
+                    strptime("%Y-%m-%dT%H:%M:%SZ", tz="UTC") %>% 
+                    format("%Y-%m-%d %H:%M:%S")
+
+file2time <- Vectorize(file2time)
+
+file_tbl %<>% mutate(time_run = file2time(path))
+
+
+
 # Establish connection to write parsed files --------------------------------------------
-pool <- dbPool(
-                  drv = MySQL(),
-                  dbname = MetabolomiQCsR.env$db$db,
-                  host = MetabolomiQCsR.env$db$host,
-                  username = MetabolomiQCsR.env$db$user,
-                  password = MetabolomiQCsR.env$db$password,
-                  idleTimeout = 30*60*1000 # 30 minutes.
-)
+pool <- dbPool_MetabolomiQCs(30)
 
 
 # Add the files to new_files ----------------------------------------------

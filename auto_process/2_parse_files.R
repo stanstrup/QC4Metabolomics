@@ -120,8 +120,9 @@ file_tbl %<>% mutate(file_md5 = path %>% as.character %>% paste0(MetabolomiQCsR.
 file2time <- . %>%  
                     as.character %>% paste0(MetabolomiQCsR.env$folders$base,"/",.) %>% normalizePath %>% 
                     read_xml %>% 
-                    xml_find_all("//@startTimeStamp") %>% 
-                    xml_text() %>% 
+                    xml_child(paste0(names(xml_ns(.)[1]),":mzML")) %>% 
+                    xml_child(paste0(names(xml_ns(.)[1]),":run")) %>% 
+                    xml_attr("startTimeStamp") %>% 
                     strptime("%Y-%m-%dT%H:%M:%SZ", tz="UTC") %>% 
                     format("%Y-%m-%d %H:%M:%S")
 

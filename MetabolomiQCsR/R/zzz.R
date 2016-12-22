@@ -63,6 +63,24 @@
     MetabolomiQCsR.env$files$mode_from_other_field_pos_trigger <<- ini$files$mode_from_other_field_pos_trigger %>% as.character
     MetabolomiQCsR.env$files$mode_from_other_field_neg_trigger <<- ini$files$mode_from_other_field_neg_trigger %>% as.character
     
+    MetabolomiQCsR.env$xcmsRaw$profparam                       <<- ini$xcmsRaw$profparam %>% as.numeric %>% {list(step=.)}
+
+    MetabolomiQCsR.env$std_match$ppm                           <<- ini$std_match$ppm %>% as.numeric
+    MetabolomiQCsR.env$std_match$rt_tol                        <<- ini$std_match$rt_tol %>% as.numeric
+    
+    MetabolomiQCsR.env$findPeaks$ROI_ppm                       <<- ini$findPeaks$ROI_ppm %>% as.numeric
+    
+    MetabolomiQCsR.env$findPeaks$method                        <<- ini$findPeaks$method %>% as.character
+    MetabolomiQCsR.env$findPeaks$snthr                         <<- ini$findPeaks$snthr %>% as.numeric
+    MetabolomiQCsR.env$findPeaks$ppm                           <<- ini$findPeaks$ppm %>% as.numeric
+    MetabolomiQCsR.env$findPeaks$peakwidth                     <<- ini$findPeaks$peakwidth %>% str_split(",") %>% unlist %>% as.numeric
+    MetabolomiQCsR.env$findPeaks$scanrange                     <<- if(ini$findPeaks$scanrange=="NULL"){NULL}else{ini$findPeaks$scanrange %>% str_split(",") %>% unlist %>% as.numeric}
+    MetabolomiQCsR.env$findPeaks$prefilter                     <<- ini$findPeaks$prefilter %>% str_split(",") %>% unlist %>% as.numeric
+    MetabolomiQCsR.env$findPeaks$integrate                     <<- ini$findPeaks$integrate %>% as.integer
+    MetabolomiQCsR.env$findPeaks$verbose.columns               <<- ini$findPeaks$verbose.columns %>% as.logical
+    MetabolomiQCsR.env$findPeaks$fitgauss                      <<- ini$findPeaks$fitgauss %>% as.logical
+    
+    
 }
 
 

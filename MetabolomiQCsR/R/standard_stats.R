@@ -127,6 +127,7 @@ peak_factor <- function(EIC, rt, factor="TF"){
 
     intensity <- per_max <- scan_rt <- NULL
     
+    if(is.na(rt)) return(NA)
     
     # C = midpoint = highest scan
     C <- rt/60 # EIC is in minutes so we change here

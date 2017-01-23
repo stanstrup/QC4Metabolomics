@@ -130,7 +130,7 @@ peak_factor <- function(EIC, rt, factor="TF"){
     if(is.na(rt)) return(NA)
     
     # C = midpoint = highest scan
-    C <- rt/60 # EIC is in minutes so we change here
+    C <- rt # EIC is in minutes so we change here
     
     C_scan <- EIC$scan[    which.min(abs(EIC$scan_rt-C))   ]
     

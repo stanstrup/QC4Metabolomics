@@ -51,12 +51,20 @@ sql <- c(sql, "
 sql <- c(sql, "
                 CREATE TABLE std_stat_types (
                 stat_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                stat_type VARCHAR(20) NOT NULL,
                 stat_name VARCHAR(20) NOT NULL
                 )
                "
          )
 
+sql <- c(sql, "
+                INSERT INTO std_stat_types (stat_name)
+                VALUES ('mz'),('mzmin'),('mzmax'),
+                       ('rt'),('rtmin'),('rtmax'),
+                       ('into'),('intb'),('maxo'),
+                       ('sn'),('egauss'),('mu'),('sigma'),('h'),('f'),
+                       ('mz_dev_ppm'),('rt_dev'),('FWHM'),('datapoints'),('TF'),('ASF');
+               "
+         )
 
 # std_compounds -----------------------------------------------------------
 sql <- c(sql, "
@@ -82,8 +90,9 @@ sql <- c(sql, "
 sql <- c(sql, "
                 CREATE TABLE std_stat_data (
                 file_md5 CHAR(32) NOT NULL, 
-                stat_id int NOT NULL,
-                cmp_id int NOT NULL,
+                stat_id  int      NOT NULL,
+                cmp_id   int      NOT NULL,
+                found    BOOL     NOT NULL,
                 FOREIGN KEY(file_md5) REFERENCES files(file_md5),
                 FOREIGN KEY(stat_id)  REFERENCES std_stat_types(stat_id),
                 FOREIGN KEY(cmp_id)   REFERENCES std_compounds(cmp_id),

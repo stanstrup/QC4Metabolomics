@@ -117,6 +117,8 @@ file_tbl %<>% mutate(file_md5 = path %>% as.character %>% paste0(MetabolomiQCsR.
 
 
 # Get run time from the XML data ------------------------------------------
+gc_pipe <- function(x){ gc();return(x)} # there seems to be a memory leak in the way I do it. So this will clean up after each file
+
 file2time <- . %>%  
                     as.character %>% paste0(MetabolomiQCsR.env$folders$base,"/",.) %>% normalizePath %>% 
                     read_xml %>% 
@@ -124,7 +126,8 @@ file2time <- . %>%
                     xml_child(paste0(names(xml_ns(.)[1]),":run")) %>% 
                     xml_attr("startTimeStamp") %>% 
                     strptime("%Y-%m-%dT%H:%M:%SZ", tz="UTC") %>% 
-                    format("%Y-%m-%d %H:%M:%S")
+                    format("%Y-%m-%d %H:%M:%S") %>% 
+                    gc_pipe
 
 file2time <- Vectorize(file2time)
 

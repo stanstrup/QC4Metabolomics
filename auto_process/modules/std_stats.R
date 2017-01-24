@@ -22,7 +22,7 @@ pool <- dbPool_MetabolomiQCs(30)
 
 
 # Get data from db --------------------------------------------------------
-# The selected files should only be the ones for the right mode
+# The selected files should only be the ones for the right mode. Should be in the controller FUN
 file_tbl <- dbReadTable(pool, "files") %>% 
             as.tbl %>% 
             mutate_each(funs(as.POSIXct(., tz="UTC")), time_filename, time_run) %>% 
@@ -37,6 +37,7 @@ std_compounds <- paste0("SELECT * from std_compounds WHERE mode=","'",mode,"'", 
                  mutate_each(funs(as.factor), mode, cmp_name) %>% 
                  filter(enabled)
 
+#TODO: check that there are actually compounds
 
 
 # Merge data --------------------------------------------------------------
@@ -95,7 +96,7 @@ file_stds_tbl %<>%
 file_stds_tbl %<>% mutate(peaks = map(peaks, ~ mutate(.x, row = {if(nrow(.x)==0){integer(0)}else{1:nrow(.x)}}         ))) # we add a row index we can match by later
              
 # apex mz
-# The mass given my XCMS cannot be trusted with supplied ROIs
+# The mass given by XCMS cannot be trusted with supplied ROIs
 # need to get XCMS fixed.
 
 
@@ -129,9 +130,8 @@ file_stds_tbl_flat <-    file_stds_tbl %>%
 # Additional peak stats ---------------------------------------------------
 # rt and mz deviations
 file_stds_tbl_flat %<>% mutate(mz_dev_ppm = ((mz.peaks - mz.stds)/mz.stds)*1E6 ) %>% 
-                        mutate(rt_dev = rt.peaks - rt.stds , 
-                               rt_dev_min = rt_dev/60
-                               )
+                        mutate_each(funs(./60),rt.stds, rt.peaks, rtmin, rtmax) %>% 
+                        mutate(rt_dev = rt.peaks - rt.stds)
 
 
 # FWHM
@@ -146,13 +146,38 @@ file_stds_tbl_flat %<>%    rowwise %>%
 
 
 # Tailing Factor and Assymmetry factor
-file_stds_tbl_flat %>%   mutate(TF =  map2_dbl(EIC,rt.peaks, ~ peak_factor(.x,.y,factor="TF"))) %>% 
+file_stds_tbl_flat %<>%  mutate(TF =  map2_dbl(EIC,rt.peaks, ~ peak_factor(.x,.y,factor="TF"))) %>% 
                          mutate(ASF = map2_dbl(EIC,rt.peaks, ~ peak_factor(.x,.y,factor="ASF")))
 
 
+
 # Fill zeros when not found -----------------------------------------------
+file_stds_tbl_flat %<>% mutate_each(funs(if_else(is.na(.),0,.)), into, intb, maxo,  FWHM, FWHM_dp)
 
 
 
 
+# write to db -------------------------------------------------------------
+std_stat_types <- dbReadTable(pool, "std_stat_types")
+con <- poolCheckout(pool)
+dbBegin(con)
 
+
+file_stds_tbl_flat %>% select(file_md5, cmp_id, found,
+                              mz = mz.peaks, mzmin, mzmax, 
+                              rt = rt.peaks, rtmin, rtmax, 
+                              into, intb, maxo, 
+                              sn, egauss, mu, sigma, h, f, 
+                              mz_dev_ppm, rt_dev, FWHM, datapoints = FWHM_dp,
+                              TF, ASF
+                              ) %>% 
+                        gather(stat_name, value, -file_md5, -cmp_id, -found) %>% 
+                        left_join(std_stat_types, by="stat_name") %>% 
+                        select(file_md5, stat_id, cmp_id, found, value) %>% 
+                        sqlAppendTable(pool, "std_stat_data", .) %>% 
+                        dbSendQuery(con, .)
+
+# TODO: error check --> log
+# Add TF and ASF to db
+dbCommit(con)
+poolReturn(con)

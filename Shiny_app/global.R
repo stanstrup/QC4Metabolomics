@@ -10,6 +10,9 @@ library(plyr)
 library(dplyr)
 library(magrittr)
 library(tidyr)
+library(tibble)
+library(plotly)
+library(ggthemes)
 
 
 # Establish connection ----------------------------------------------------

@@ -137,8 +137,8 @@ file_stds_tbl_flat %<>% mutate(mz_dev_ppm = ((mz.peaks - mz.stds)/mz.stds)*1E6 )
 # FWHM
 file_stds_tbl_flat %<>%    rowwise %>% 
                            mutate(FWHM_scan  = 2*sqrt(2*log(2))*sigma) %>% 
-                           mutate(FWHM_start = (scpos - FWHM_scan/2) %>% scan2rt_fun ) %>%
-                           mutate(FWHM_end   = (scpos + FWHM_scan/2) %>% scan2rt_fun ) %>% 
+                           mutate(FWHM_start = (scpos - FWHM_scan/2) %>% scan2rt_fun, FWHM_start = FWHM_start/60 ) %>%
+                           mutate(FWHM_end   = (scpos + FWHM_scan/2) %>% scan2rt_fun, FWHM_end = FWHM_end/60 ) %>% 
                            mutate(FWHM       =  FWHM_end - FWHM_start ) %>%
                            mutate(FWHM_dp    =  scmax - scmin + 1 ) %>% # data points
                            ungroup %>% 

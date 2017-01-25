@@ -735,3 +735,8 @@ Package: zlibbioc
 Source: Bioconductor
 Version: 1.20.0
 Hash: 82a75f02d6badbed62c3bd87ce0d35ca
+
+Package: zoo
+Source: CRAN
+Version: 1.7-14
+Hash: a4c3a385cd122b5d6af30732bf267060

@@ -1,6 +1,4 @@
 # functions ---------------------------------------------------------------
-stat_name2id <- . %>% paste0("SELECT * FROM std_stat_types WHERE stat_name = '",.,"'") %>% dbGetQuery(pool,.) %>% extract2("stat_id")
-
 std_stats_plot_common <- function(p){ p+
                                       geom_line() +
                                       geom_point(aes(text = paste("Filename:", filename))) +
@@ -9,43 +7,192 @@ std_stats_plot_common <- function(p){ p+
                                       labs(group="", color="")
                                     }
 
+std_stats_plotmargin_fix <- function(p){
+                                            p$x$layout$margin$l <- p$x$layout$margin$l + 30 # avoid cut axis titles
+                                            p$x$layout$margin$b <- p$x$layout$margin$b + 10
+                                            p$x$layout$legend$y <- 0.9 # legend at the top
+                                            
+                                            return(p)
+                                        }
+
+
+
+# Build data range selector -----------------------------------------------
+# Get time range available in the db
+files_date_range <-    reactive({
+                                    "
+                                     SELECT 
+                                     MIN(time_run) AS min,
+                                     MAX(time_run) AS max
+                                     FROM files
+                                    " %>% 
+                                    dbGetQuery(pool,.) %>% 
+                                    {setNames(as.POSIXct(as.character(.),format= "%Y-%m-%d %H:%M:%S"), names(.))}
+                                    
+                               })
+
+# build the ui
+output$file_date_range_ui <- renderUI({
+                                        dateRangeInput("file_date_range_input", 
+                                                       label = "Date range", 
+                                                       start = files_date_range()["min"] %>% as.Date %>% as.character, 
+                                                       end   = files_date_range()["max"] %>% as.Date %>% as.character, 
+                                                       min   = files_date_range()["min"] %>% as.Date %>% as.character,
+                                                       max   = files_date_range()["max"] %>% as.Date %>% as.character, 
+                                                       weekstart = 1
+                                                       )
+})
+
+
+
+
+# Build project selector --------------------------------------------------
+# Get avaiable projects
+std_stats_project_available <-    reactive({    "
+                                                 SELECT DISTINCT project
+                                                 FROM files
+                                                " %>% 
+                                                dbGetQuery(pool,.) %>% 
+                                                as.matrix %>% as.character
+                                           })
+
+
+# build the ui
+output$std_stats_project_select_ui <- renderUI({
+    
+                                                 selectInput("std_stats_project_select_input", 
+                                                               label = "Project", 
+                                                               choices  = std_stats_project_available(),
+                                                               selected = std_stats_project_available(),
+                                                               multiple = TRUE
+                                                             )
+
+})
+
+
+# Build mode selector --------------------------------------------------
+# Get avaiable modes
+std_stats_mode_available <-    reactive({    "
+                                                 SELECT DISTINCT mode
+                                                 FROM files
+                                                " %>% 
+                                                dbGetQuery(pool,.) %>% 
+                                                as.matrix %>% as.character
+                                           })
+
+
+# build the ui
+output$std_stats_mode_select_ui <- renderUI({
+    
+                                                 selectInput("std_stats_mode_select_input", 
+                                                               label = "Mode", 
+                                                               choices  = std_stats_mode_available(),
+                                                               selected = std_stats_mode_available(),
+                                                               multiple = TRUE
+                                                             )
+
+})
+
+
+
+# Reset button ------------------------------------------------------------
+observeEvent(input$std_stats_resetButton,{
+             
+             updateSelectInput(session,
+                               inputId  = "std_stats_project_select_input",
+                               choices  = std_stats_project_available(),
+                               selected = std_stats_project_available()
+                             )
+    
+             updateSelectInput(session,
+                               inputId  = "std_stats_mode_select_input",
+                               choices  = std_stats_mode_available(),
+                               selected = std_stats_mode_available()
+                         )
+    
+             updateDateRangeInput(session,
+                                  inputId = "file_date_range_input",
+                                  start = files_date_range()["min"] %>% as.Date %>% as.character %>% unname, 
+                                  end   = files_date_range()["max"] %>% as.Date %>% as.character %>% unname, 
+                                  min   = files_date_range()["min"] %>% as.Date %>% as.character %>% unname,
+                                  max   = files_date_range()["max"] %>% as.Date %>% as.character %>% unname
+                                  )
+             
+             
+             updateTextInput(session,
+                             inputId = "std_stats_sample_id",
+                             value = ""
+                             )
+            
+             
+             }
+             )
+
+
 # Get all data in selected range ------------------------------------------
 
-# Need time, project and mode limit selection
-# Filter by type: blank, std etc?
-
-files_tbl_selected <- "SELECT * FROM files" %>% dbGetQuery(pool,.) %>% as.tbl
-
-
-
-std_data_selected <- files_tbl_selected %>% 
-                     extract2("file_md5") %>% 
-                     paste(collapse="','") %>% 
-                     paste0("'",.,"'") %>% 
-                     paste0("
-                             SELECT std_stat_data.*, std_compounds.cmp_name, std_compounds.cmp_rt1, std_compounds.updated_at, files.time_run, files.path
-                             FROM std_stat_data
-                             LEFT JOIN std_compounds USING(cmp_id)
-                             LEFT JOIN files USING(file_md5)
-                             WHERE std_stat_data.file_md5 in (",.,")
-                            ") %>% 
-                     dbGetQuery(pool,.) %>% 
-                     as.tbl %>% 
-                    mutate_each(funs(as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S")), updated_at, time_run) %>% 
-                    mutate(filename = sub('\\..*$', '', basename(path)))
+# Get sample ID search string and make it slower to react/update/invalidate
+std_stats_sample_id_reactive <- reactive(input$std_stats_sample_id) %>% 
+                                debounce(2*1000)
 
 
 
+# Get the files in selected range
+files_tbl_selected <- reactive({
+
+                                    project_select <- input$std_stats_project_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
+                                    mode_select    <- input$std_stats_mode_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
+
+    
+                                    paste0(
+                                    "SELECT * FROM files ",
+                                    "WHERE ",
+                                    "(sample_id LIKE '%",std_stats_sample_id_reactive(),"%') AND ",
+                                    "(time_run BETWEEN '",input$file_date_range_input[1],"' AND '",input$file_date_range_input[2],"') AND ",
+                                    "(project in ",project_select,") AND",
+                                    "(mode in ",mode_select,")"
+                                    
+                                    ) %>% 
+                                    dbGetQuery(pool,.) %>% as.tbl
+                               })
 
 
-# Retention time deviation ------------------------------------------------
+
+# Get all the data available for the selected files
+std_data_selected <-  reactive({
+    
+                                      validate(
+                                                need(nrow(files_tbl_selected()) != 0, "No data selected. Please check your query.")
+                                                )
+    
+    
+                                     files_tbl_selected() %>% 
+                                     extract2("file_md5") %>% 
+                                     paste(collapse="','") %>% 
+                                     paste0("'",.,"'") %>% 
+                                     paste0("
+                                             SELECT std_stat_data.*, std_compounds.cmp_name, std_compounds.cmp_rt1, std_compounds.updated_at, files.time_run, files.path
+                                             FROM std_stat_data
+                                             LEFT JOIN std_compounds USING(cmp_id)
+                                             LEFT JOIN files USING(file_md5)
+                                             WHERE std_stat_data.file_md5 in (",.,")
+                                            ") %>% 
+                                     dbGetQuery(pool,.) %>% 
+                                     as.tbl %>% 
+                                    mutate_each(funs(as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S")), updated_at, time_run) %>% 
+                                    mutate(filename = sub('\\..*$', '', basename(path)))
+                                })
+
+
+
+
+# PLOT: Retention time deviation------------------------------------------------
 output$std_stats_rtplot <- renderPlotly({
      
-    p <- std_data_selected %>% 
-                                filter(stat_id == stat_name2id("rt")) %>% 
-                                mutate(rt_dev = value-cmp_rt1) %>% 
+    p <- std_data_selected() %>% 
+                                filter(stat_id == stat_name2id("rt_dev")) %>%
             
-                                ggplot(aes(x=time_run, y=rt_dev, group=cmp_name, color=cmp_name)) %>% 
+                                ggplot(aes(x=time_run, y=value, group=cmp_name, color=cmp_name)) %>% 
                                 {std_stats_plot_common(.) + 
                                 labs(y = "Retention time deviation (min)", x = "Run time") +
                                 ggtitle("Retention time deviation")} %>% 
@@ -54,20 +201,15 @@ output$std_stats_rtplot <- renderPlotly({
                                 plotly_build
     
     
-    
-    p$x$layout$margin$l <- p$x$layout$margin$l + 30 # avoid cut axis titles
-    p$x$layout$margin$b <- p$x$layout$margin$b + 10
-    p$x$layout$legend$y <- 0.9 # legend at the top
-    
-    print(p)
+    std_stats_plotmargin_fix(p) %>% print
     
 })
 
 
-# mz deviation ------------------------------------------------
+# PLOT: mz deviation ------------------------------------------------
 output$std_stats_mzplot <- renderPlotly({
      
-    p <- std_data_selected %>% 
+    p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("mz_dev_ppm")) %>% 
             
                                 ggplot(aes(x=time_run, y=value, group=cmp_name, color=cmp_name)) %>% 
@@ -79,11 +221,159 @@ output$std_stats_mzplot <- renderPlotly({
                                 plotly_build
     
     
-    
-    p$x$layout$margin$l <- p$x$layout$margin$l + 30 # avoid cut axis titles
-    p$x$layout$margin$b <- p$x$layout$margin$b + 10
-    p$x$layout$legend$y <- 0.9 # legend at the top
-    
-    print(p)
+    std_stats_plotmargin_fix(p) %>% print
     
 })
+
+
+
+# PLOT: Full Width at Half Maximum (FWHM) ---------------------------------
+output$std_stats_fwhmplot <- renderPlotly({
+     
+    p <- std_data_selected() %>% 
+                                filter(stat_id == stat_name2id("FWHM")) %>% 
+            
+                                ggplot(aes(x=time_run, y=value, group=cmp_name, color=cmp_name)) %>% 
+                                {std_stats_plot_common(.) + 
+                                labs(y = "FWHM (min)", x = "Run time") +
+                                ggtitle("Full Width at Half Maximum (FWHM)")} %>% 
+            
+                                ggplotly(dynamicTicks = TRUE, tooltip = c("group", "text", "x", "y")) %>% 
+                                plotly_build
+    
+    
+    std_stats_plotmargin_fix(p) %>% print
+    
+})
+
+
+
+
+# PLOT: Tailing Factor -----------------------------------
+output$std_stats_TFplot <- renderPlotly({
+     
+    p <- std_data_selected() %>% 
+                                filter(stat_id == stat_name2id("TF")) %>% 
+            
+                                ggplot(aes(x=time_run, y=value, group=cmp_name, color=cmp_name)) %>% 
+                                {std_stats_plot_common(.) + 
+                                labs(y = "Tailing Factor", x = "Run time") +
+                                ggtitle("Tailing Factor")} %>% 
+            
+                                ggplotly(dynamicTicks = TRUE, tooltip = c("group", "text", "x", "y")) %>% 
+                                plotly_build
+    
+    
+    std_stats_plotmargin_fix(p) %>% print
+    
+})
+
+
+# PLOT: Asymmetry Factor ---------------------------------
+output$std_stats_AFplot <- renderPlotly({
+     
+    p <- std_data_selected() %>% 
+                                filter(stat_id == stat_name2id("ASF")) %>% 
+            
+                                ggplot(aes(x=time_run, y=value, group=cmp_name, color=cmp_name)) %>% 
+                                {std_stats_plot_common(.) + 
+                                labs(y = "Asymmetry Factor", x = "Run time") +
+                                ggtitle("Asymmetry Factor")} %>% 
+            
+                                ggplotly(dynamicTicks = TRUE, tooltip = c("group", "text", "x", "y")) %>% 
+                                plotly_build
+    
+    
+    std_stats_plotmargin_fix(p) %>% print
+    
+})
+
+
+# PLOT: # data points ---------------------------------
+output$std_stats_DPplot <- renderPlotly({
+     
+    p <- std_data_selected() %>% 
+                                filter(stat_id == stat_name2id("datapoints")) %>% 
+            
+                                ggplot(aes(x=time_run, y=value, group=cmp_name, color=cmp_name)) %>% 
+                                {std_stats_plot_common(.) + 
+                                labs(y = "# Data points", x = "Run time") +
+                                ggtitle("Data points")} %>% 
+            
+                                ggplotly(dynamicTicks = TRUE, tooltip = c("group", "text", "x", "y")) %>% 
+                                plotly_build
+    
+    
+    std_stats_plotmargin_fix(p) %>% print
+    
+})
+
+
+# PLOT: # area ---------------------------------
+output$std_stats_areaplot <- renderPlotly({
+     
+    p <- std_data_selected() %>% 
+                                filter(stat_id == stat_name2id("into")) %>% 
+            
+                                ggplot(aes(x=time_run, y=value, group=cmp_name, color=cmp_name)) %>% 
+                                {std_stats_plot_common(.) + 
+                                labs(y = "Area", x = "Run time") +
+                                ggtitle("Area")} %>% 
+            
+                                ggplotly(dynamicTicks = TRUE, tooltip = c("group", "text", "x", "y")) %>% 
+                                plotly_build
+    
+    
+    std_stats_plotmargin_fix(p) %>% print
+    
+})
+
+
+
+# PLOT: # Area STD ---------------------------------
+output$std_stats_areastdplot <- renderPlotly({
+     
+    p <- std_data_selected() %>% 
+                                filter(stat_id == stat_name2id("into")) %>% 
+                                arrange(time_run) %>% 
+                                group_by(cmp_name) %>% 
+                                mutate(value = rollapplyr(value, FUN = sd, width=5, fill=NA) / rollapplyr(value, FUN = mean, width=5, fill=NA)) %>% 
+                                mutate(value = value*100) %>% 
+                                ungroup %>% 
+            
+                                ggplot(aes(x=time_run, y=value, group=cmp_name, color=cmp_name)) %>% 
+                                {std_stats_plot_common(.) + 
+                                labs(y = "Area %RSD (5 samples rolling)", x = "Run time") +
+                                ggtitle("Area std (5 preceding samples rolling)") +
+                                scale_y_continuous(labels = percent)} %>% 
+            
+                                ggplotly(dynamicTicks = TRUE, tooltip = c("group", "text", "x", "y")) %>% 
+                                plotly_build
+    
+    
+    std_stats_plotmargin_fix(p) %>% print
+    
+})
+
+                                
+
+
+# PLOT: # S/N ---------------------------------
+output$std_stats_SNplot <- renderPlotly({
+     
+    p <- std_data_selected() %>% 
+                                filter(stat_id == stat_name2id("sn")) %>% 
+            
+                                ggplot(aes(x=time_run, y=value, group=cmp_name, color=cmp_name)) %>% 
+                                {std_stats_plot_common(.) + 
+                                labs(y = "S/N", x = "Run time") +
+                                ggtitle("Signal to noise ratio")} %>% 
+            
+                                ggplotly(dynamicTicks = TRUE, tooltip = c("group", "text", "x", "y")) %>% 
+                                plotly_build
+    
+    
+    std_stats_plotmargin_fix(p) %>% print
+    
+})
+

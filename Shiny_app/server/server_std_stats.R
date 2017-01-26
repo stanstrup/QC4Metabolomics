@@ -142,12 +142,12 @@ files_tbl_selected <- reactive({
 
                                     project_select <- input$std_stats_project_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
                                     mode_select    <- input$std_stats_mode_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
-
+                                    REGEXP <- std_stats_sample_id_reactive() %>% ifelse(.=="",".*",.)
     
                                     paste0(
                                     "SELECT * FROM files ",
                                     "WHERE ",
-                                    "(sample_id LIKE '%",std_stats_sample_id_reactive(),"%') AND ",
+                                    "(sample_id REGEXP '",REGEXP,"') AND ",
                                     "(time_run BETWEEN '",input$file_date_range_input[1],"' AND '",input$file_date_range_input[2],"') AND ",
                                     "(project in ",project_select,") AND",
                                     "(mode in ",mode_select,")"

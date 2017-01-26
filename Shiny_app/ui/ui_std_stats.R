@@ -3,7 +3,7 @@ fluidPage(
             fluidRow(
                         column(2,uiOutput("std_stats_project_select_ui")),
                         column(2,uiOutput("std_stats_mode_select_ui")),
-                        column(2,textInput("std_stats_sample_id", "Sample ID", "")),
+                        column(2,textInput("std_stats_sample_id", "Sample ID", ""),helpText(HTML('<a href="https://www.tutorialspoint.com/mysql/mysql-regexps.htm">REGEXP</a>  supported.'))),
                         column(2,uiOutput("file_date_range_ui"))
                     ),
 

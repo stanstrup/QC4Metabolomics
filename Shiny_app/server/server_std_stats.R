@@ -124,6 +124,10 @@ observeEvent(input$std_stats_resetButton,{
                              value = ""
                              )
             
+             updateCheckboxInput(session,
+                             inputId = "std_stats_sample_id_inv",
+                             value = FALSE
+                             )
              
              }
              )

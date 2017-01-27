@@ -626,13 +626,13 @@ Requires: RColorBrewer, Rcpp, dichromat, labeling, munsell, plyr
 Package: shiny
 Source: github
 Version: 1.0.0.9000
-Hash: 8492b5b6d8bbf2de0fdfe1bf7843db36
+Hash: f72c09670a92436cb3e926fa4e60b97b
 Requires: R6, digest, htmltools, httpuv, jsonlite, mime, sourcetools,
     xtable
 GithubRepo: shiny
 GithubUsername: rstudio
 GithubRef: master
-GithubSha1: 53ec7edd06b81b616b4ff62c5b2ccf5103c11768
+GithubSha1: 73446af330015a360c63a277c272f6e53d50bfac
 
 Package: shinyjs
 Source: github

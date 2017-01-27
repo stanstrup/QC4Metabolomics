@@ -3,7 +3,6 @@ fluidPage(
             fluidRow(
                         column(2,
                                 uiOutput("std_stats_project_select_ui"),
-                                br(),
                                 actionButton("std_stats_resetButton", "Reset filters")
                                ),
                         column(2,uiOutput("std_stats_mode_select_ui")),

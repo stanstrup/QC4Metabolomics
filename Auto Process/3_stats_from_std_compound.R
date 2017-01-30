@@ -16,9 +16,11 @@ con <- dbConnect(MySQL(),
 
 
 # Figure if there are new files -------------------------------------------
-# COUNT > 0
+# complicated query to check if there are files in "files" that are not processed
 # if not quit
+# if one stat has been done but not another note in log
 
+#file_md5 <- paste0("SELECT * from files") %>% dbGetQuery(pool,.)
 
 # Process each file -------------------------------------------------------
 

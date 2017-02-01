@@ -1,19 +1,11 @@
 
 shinyUI(           navbarPage("Navigation bar",
-                                          tabPanel("Overview"),
-                                          tabPanel("Standard compounds", source("ui/ui_std_cmp.R", local=TRUE)$value),
                               
-                                          tabPanel("Standard stats",   source("ui/ui_std_stats.R", local=TRUE)$value ),
-                              
-                                          navbarMenu("More",
-                                                     tabPanel("Debug",   source("ui/ui_debug.R", local=TRUE)$value ),
-                                                     
-                                                     tabPanel("Log",     source("ui/ui_log.R", local=TRUE)$value   )
-                                                     
-                                                     )
-                                          
-                              
-                              
+                                                lapply(seq_along(module_names), 
+                                                       function(i){ do.call(paste0(module_names[i],"UI"),list(id = paste0("name",i)))
+                                                                  }
+                                                       )
+
                              )
         
                    

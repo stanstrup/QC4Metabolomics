@@ -2,10 +2,15 @@
 shinyServer(function(input, output, session) {
     
     
-    # Tabs --------------------------------------------------------------------
-    source("server/server_debug.R",local=TRUE)
-    source("server/server_log.R",local=TRUE)
-    source("server/server_std_cmp.R",local=TRUE)
-    source("server/server_std_stats.R",local=TRUE)
-    
+    # Modules
+
+    lapply(seq_along(module_names), 
+           function(i){ callModule(get(module_names[i]), paste0("name",i))
+                      }
+           )
+
+
 })
+
+
+

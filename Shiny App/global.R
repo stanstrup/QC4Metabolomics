@@ -1,4 +1,6 @@
 # Libraries ---------------------------------------------------------------
+library(ini)
+library(rlist)
 library(shiny)
 library(shinyjs)
 library(pool)
@@ -24,3 +26,15 @@ stat_name2id <- . %>% paste0("SELECT * FROM std_stat_types WHERE stat_name = '",
 # Establish connection ----------------------------------------------------
 pool <- dbPool_MetabolomiQCs(120)
 
+
+# Get enabled modules -----------------------------------------------------
+module_names <- "../Modules/conf.ini" %>%
+                read.ini %>%
+                list.filter(enabled == TRUE) %>%
+                names
+
+
+
+# Modules -----------------------------------------------------------------
+source("../Modules/TrackCmp/shiny_server.R")
+source("../Modules/TrackCmp/shiny_ui.R")

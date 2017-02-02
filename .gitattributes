@@ -1,6 +1,6 @@
 # packrat libraries
 Shiny_app/packrat/src/*/* filter=lfs diff=lfs merge=lfs -text
-"Shiny App/packrat/src/*/*" filter=lfs diff=lfs merge=lfs -text
+Shiny[[:space:]]App/packrat/src/*/* filter=lfs diff=lfs merge=lfs -text
 
 # raw data files
 *.mzML filter=lfs diff=lfs merge=lfs -text

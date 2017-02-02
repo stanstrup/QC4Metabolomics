@@ -1,0 +1,74 @@
+%\VignetteEngine{knitr}
+%\VignetteIndexEntry{Using mzID}
+%\VignetteKeywords{bioinformatics, proteomics, mass spectrometry}
+
+\documentclass[a4paper]{article}
+
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, urlcolor=blue}
+
+\title{Parsing mzIdentML files using mzID}
+\author{Thomas Lin Pedersen}
+
+\begin{document}
+
+\maketitle
+
+<<startup, results='hide', echo=FALSE, message=FALSE>>=
+library(mzID)
+ps.options(pointsize=12)
+
+@
+mzID is a parser for the mzIdentML file format defined by \href{<http://www.psidev.info/mzidentml>}{HUPO}. The mzIdentML file format is designed to be a standardized way of reporting results from peptide identification analyses used in proteomics. The file format is XML compliant and the parser relies heavily on the \texttt{XML} package.
+
+mzID is designed to be applicable to all instances of mzIdentML files. As there is a multitude of different ways to arrive at a protein identification result, the structure and content of different mzIdentML files can vary greatly. If an mzIdentML file that causes errors during parsing is encountered, please contact the package maintainer in order to get this sorted out.
+
+\section*{The mzID function}
+The meat of the mzID package is the mzID function which takes in a single path to an mzIdentML and reads it into an object of class mzID:
+
+<<parsing, tidy=TRUE>>=
+exampleFiles <- list.files(system.file('extdata', package = 'mzID'), 
+                           pattern = '*.mzid', full.names = TRUE)
+mzResults <- mzID(exampleFiles[5])
+mzResults
+
+@
+The structure of the mzID object is somewhat related to the structure of the mzIdentML XML specification, with slots holding different parts of the information:
+
+<<class_overview, tidy=TRUE>>=
+showClass('mzID')
+
+@
+The first slot contains a class that holds all information related to how the analysis was carried out - both the location of data files and the parameters used by the software. The psm slot contains a class that stores the scans and the related PSM's. This is usually the meat of the mzID class. The last three slots contains information on the peptides searched for, together with the possible modifications (the peptides slot), the proteins that constituted the database (the database slot) and a link between those two (the evidence slot).
+
+\section*{The flatten function}
+As most people usually think of peptide identifications in a flat tabular format, the \texttt{mzID} package comes with a function to flatten an mzID object into a \texttt{data.frame} with a row for each PSM in the object. This function is aptly named \texttt{flatten}.
+
+<<flattening, tidy=TRUE>>=
+flatResults <- flatten(mzResults)
+names(flatResults)
+nrow(flatResults)
+
+#The length of an mzID object is the number of PSM's
+length(mzResults)
+
+@
+As can be seen from the column names of the flattened results, care should be taken when interpreting the different columns, as ambiguity can arise when combining all the information in the object into a flat structure. For instance the column named 'length', could refer to both the length of the peptide sequence and the length of the protein from where it came (or the length of the nucleotide sequence coding for the protein). Inspection of the content reveal that the column indeed refers to the length of the nucleotide sequence coding for the protein.
+
+<<inspection, tidy=TRUE>>=
+flatResults$length
+nchar(flatResults$sequence)
+substr(flatResults$sequence, 1, 10)
+
+@
+This would also be apparent if one were deeply familiar with the mzIdentML specification and new that length only gets reported for the proteins, but this kind of knowledge is not expected from the regular user. Thus a bit of attention is required when inspecting the results.
+
+\section*{Future work}
+\begin{itemize}
+  \item mzID is intended as a very barebone parser to be used by other packages and the feature list is thus kept short. Together with the mzR package it provides parsing of the two most common file types used in proteomics. The third filetype: mzQuantML (for storing quantitative information from LC-MS/MS analyses) should be supported by a separate package in the future.
+  \item Automatic extraction of mzR-compatible acquisition number based on the SpectrumID and IDFormat.
+  \item Software awareness so that the parser understood what type of output is expected from e.g. a Mascot search.
+  \item Support for other file types could be neat, but is not a high priority at the moment.
+\end{itemize}
+
+\end{document}

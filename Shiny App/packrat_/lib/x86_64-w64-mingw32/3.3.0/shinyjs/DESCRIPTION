@@ -1,0 +1,40 @@
+Package: shinyjs
+Title: Easily Improve the User Experience of Your Shiny Apps in Seconds
+Version: 0.9.0.9000
+Authors@R: person("Dean", "Attali", email = "daattali@gmail.com", role
+    = c("aut", "cre"))
+Description: Perform common useful JavaScript operations in Shiny apps
+    that will greatly improve your apps without having to know any
+    JavaScript. Examples include: hiding an element, disabling an
+    input, resetting an input back to its original value, delaying code
+    execution by a few seconds, and many more useful functions for both
+    the end user and the developer. 'shinyjs' can also be used to
+    easily call your own custom JavaScript functions from R.
+URL: http://deanattali.com/shinyjs
+BugReports: https://github.com/daattali/shinyjs/issues
+Depends: R (>= 3.1.0)
+Imports: digest (>= 0.6.8), htmltools (>= 0.2.6), jsonlite, miniUI (>=
+    0.1.1), shiny (>= 0.11.1), stats
+Suggests: knitr (>= 1.7), rmarkdown, rstudioapi (>= 0.5), shinyAce,
+    testthat (>= 0.9.1), V8 (>= 0.6)
+License: MIT + file LICENSE
+SystemRequirements: pandoc with https support
+LazyData: true
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1
+Author: Dean Attali [aut, cre]
+Maintainer: Dean Attali <daattali@gmail.com>
+Built: R 3.3.0; ; 2017-01-24 14:30:56 UTC; windows
+RemoteType: github
+RemoteHost: https://api.github.com
+RemoteRepo: shinyjs
+RemoteUsername: daattali
+RemoteRef: master
+RemoteSha: 2b50604be40f9314ad537d08ffdf3acd8cc5bd0d
+GithubRepo: shinyjs
+GithubUsername: daattali
+GithubRef: master
+GithubSHA1: 2b50604be40f9314ad537d08ffdf3acd8cc5bd0d
+InstallAgent: packrat 0.4.8.1
+InstallSource: github
+Hash: 1025d71a8be889f8f0e057a51ac1be99

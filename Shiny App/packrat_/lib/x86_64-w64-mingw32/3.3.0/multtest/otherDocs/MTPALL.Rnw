@@ -1,0 +1,493 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \VignetteIndexEntry{Multiple Testing Procedures}
+% \VignetteKeywords{Expression Analysis}
+% \VignettePackage{multtest}
+
+\documentclass[11pt]{article}
+
+\usepackage{graphicx}    % standard LaTeX graphics tool
+\usepackage{Sweave}
+\usepackage{amsfonts}
+
+% these should probably go into a dedicated style file
+\newcommand{\Rpackage}[1]{\textit{#1}}
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\Rclass}[1]{\textit{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+% Our added packages and definitions
+ 
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{color}
+\usepackage{comment}
+\usepackage[authoryear,round]{natbib}
+
+\parindent 0in
+
+\definecolor{red}{rgb}{1, 0, 0}
+\definecolor{green}{rgb}{0, 1, 0}
+\definecolor{blue}{rgb}{0, 0, 1}
+\definecolor{myblue}{rgb}{0.25, 0, 0.75}
+\definecolor{myred}{rgb}{0.75, 0, 0}
+\definecolor{gray}{rgb}{0.5, 0.5, 0.5}
+\definecolor{purple}{rgb}{0.65, 0, 0.75}
+\definecolor{orange}{rgb}{1, 0.65, 0}
+
+\def\RR{\mbox{\it I\hskip -0.177em R}}
+\def\ZZ{\mbox{\it I\hskip -0.177em Z}}
+\def\NN{\mbox{\it I\hskip -0.177em N}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{procedure}{Procedure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\title{Applications of Multiple Testing Procedures: ALL Data} 
+\author{Katherine S. Pollard$^1$, Sandrine Dudoit$^2$, Mark J. van der Laan$^3$} 
+\maketitle
+
+\begin{center}
+1. Center for Biomolecular Science and Engineering, University of California, Santa Cruz, \url{ http://lowelab.ucsc.edu/katie/}\\
+2. Division of Biostatistics, University of California, Berkeley, \url{ http://www.stat.berkeley.edu/~sandrine/}\\
+3. Department of Statistics and Division of Biostatistics, University of California, Berkeley, \url{ http://www.stat.berkeley.edu/~laan/}\\
+\end{center}
+
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Overview}
+
+The Bioconductor R package \Rpackage{multtest} implements widely applicable resampling-based single-step and stepwise multiple testing procedures (MTP) for controlling a broad class of Type I error rates, in testing problems involving general data generating distributions (with arbitrary dependence structures among variables), null hypotheses, and test statistics \cite{Dudoit&vdLaanMTBook,DudoitetalMT1SAGMB04,vdLaanetalMT2SAGMB04,vdLaanetalMT3SAGMB04,Pollard&vdLaanJSPI04}. A key feature of these MTPs is the test statistics null distribution (rather than data generating null distribution) used to derive rejection regions (i.e., cut-offs) for the test statistics and the resulting adjusted $p$-values. 
+For general null hypotheses, defined in terms of submodels for the data generating distribution, this null distribution is the asymptotic distribution of the vector of null value shifted and scaled test statistics. 
+The current version of \Rpackage{multtest} provides MTPs for null hypotheses concerning means, differences in means, and regression parameters in linear,and Cox proportional hazards models.
+Both  non-parametric bootstrap and permutation estimators of the test statistics ($t$- or $F$-statistics) null distribution are available. 
+Procedures are provided to control Type I error rates defined as tail probabilities and expected values of arbitrary functions of the numbers of Type I errors, $V_n$, and rejected hypotheses, $R_n$. 
+These error rates include: 
+the generalized family-wise error rate, $gFWER(k) = Pr(V_n > k)$, or chance of at least $(k+1)$ false positives (the special case $k=0$ corresponds to the usual family-wise error rate, FWER); 
+tail probabilities $TPPFP(q) = Pr(V_n/R_n > q)$ for the proportion of false positives among the rejected hypotheses;
+the false discovery rate, $FDR=E[V_n/R_n]$.
+Single-step and step-down common-cut-off (maxT) and common-quantile (minP) procedures, that take into account the joint distribution of the test statistics, are implemented to control the FWER. 
+In addition, augmentation procedures are provided to control the gFWER and TPPFP, based on {\em any} initial FWER-controlling procedure.
+The results of a multiple testing procedure are summarized using rejection regions for the test statistics, confidence regions for the parameters of interest, and adjusted $p$-values.
+
+
+The modular design of the \Rpackage{multtest} package allows interested users to readily extend the package functionality by inserting additional functions for test statistics and testing procedures. 
+A class/method object-oriented programming approach was adopted to summarize the results of a MTP.
+
+
+The multiple testing procedures are applied to the Acute Lymphoblastic Leukemia (ALL) dataset of Chiaretti et al. \cite{Chiarettietal04}, available in the R package \Rpackage{ALL}, to identify genes whose expression measures are associated with (possibly censored) biological and clinical outcomes such as:  cytogenetic test status (normal vs. abnormal), tumor molecular subtype (BCR/ABL, NEG, ALL1/AF4, E2A/PBX1, p15/p16,  NUP-98), and patient survival.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Getting started}
+
+{\bf Installing the package.} To install the \Rpackage{multtest} package, first download the appropriate file for your platform from the Bioconductor website \url{http://www.bioconductor.org/}. For Windows, start R and select the \texttt{Packages} menu, then \texttt{Install package from local zip file...}.  Find and highlight the location of the zip file and click on {\tt open}. For Linux/Unix, use the usual command \texttt{R CMD INSTALL} or set the option \texttt{CRAN} to your nearest mirror site and use the command \texttt{install.packages} from within an R session.\\
+
+{\bf Loading the package.} To load the \Rpackage{multtest} package in your R session, type \texttt{library(multtest)}. \\
+
+{\bf Help files.}  Detailed information on \Rpackage{multtest} package functions can be obtained in the help files. For example, to view the help file for the function \texttt{MTP} in a browser, use \texttt{help.start} followed by \texttt{? MTP}.\\
+
+{\bf Case study.} We illustrate some of the functionality of the \Rpackage{multtest} package using the Acute Lymphoblastic Leukemia (ALL) microarray dataset of Chiaretti et al. \cite{Chiarettietal04}. 
+Available in the data package \Rpackage{ALL}, this dataset includes 21 phenotypes and 12,625 Affymetrix gene expression measures (chip series hgu95av2), for each of 128 ALL patients. The expression measures have been jointly normalized using RMA. To view a description of the experiments and data, type \texttt{? ALL}.\\
+
+{\bf Sweave.} This document was generated using the \Robject{Sweave} function from the R \Rpackage{tools} package. The source (.Rnw) file is in the \texttt{/inst/doc} directory of the \Rpackage{multtest} package.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Software Application: ALL microarray dataset}
+
+\subsection{}
+
+The main user-level function for resampling-based multiple testing is \Robject{MTP}. Its input/output and usage are described in the accompanying vignette (MTP). Here, we illustrate some of the functionality of the \Rpackage{multtest} package using the Acute Lymphoblastic Leukemia (ALL) microarray dataset of Chiaretti et al. \cite{Chiarettietal04}, available in the data package \Rpackage{ALL}. We begin by loading the necessary packages.
+
+<<loadPacks, eval=TRUE, echo=TRUE, results=hide>>=
+library(Biobase)
+library(multtest)
+<<setWidth, eval=TRUE, echo=FALSE, results=hide>>=
+options(width=60)
+@
+
+We use the \Robject{install.packages} command to get the necessary analysis and data pacakges from the R and Bioconductor repositories, after first checking if they are already installed.
+
+<<getDataPacksNew, eval=TRUE, echo=TRUE>>=
+reposList<-c("http://www.bioconductor.org/packages/bioc/devel",
+          "http://www.bioconductor.org/packages/data/devel",
+          "http://www.bioconductor.org/packages/omegahat/devel",
+          "http://cran.fhcrc.org")
+installed<-installed.packages()[,"Package"]
+if(!("genefilter"%in%installed))
+ try(install.packages("genefilter",repos=reposList,dependencies=c("Depends", "Imports")))
+library(genefilter)
+if(!("ALL"%in%installed))
+try(install.packages("ALL",repos=reposList,dependencies=c("Depends", "Imports")))
+library(ALL)
+if(!("hgu95av2"%in%installed))
+try(install.packages("hgu95av2",repos=reposList,dependencies=c("Depends", "Imports")))
+library(hgu95av2)
+@
+
+%<<getDataPacks, eval=TRUE, echo=TRUE>>=
+%z<-try(getReposEntry("http://www.bioconductor.org/data/experimental/repos"))
+%try(install.packages2("ALL",repEntry=z))
+%library(ALL)
+%try(install.packages2("hgu95av2"))
+%library(hgu95av2)
+%@
+
+\subsection{\Rpackage{ALL} data package and initial gene filtering}
+
+The Acute Lymphoblastic Leukemia (ALL) microarray dataset of Chiaretti et al. \cite{Chiarettietal04} consists of 21 {\em phenotypes} (i.e., patient level responses and covariates) and 12,625 Affymetrix {\em gene expression measures} (chip series HGU95Av2), for each of 128 ALL patients. 
+For greater detail, please consult the \Rpackage{ALL} package documentation.
+The main object in this package is \Robject{ALL}, an instance of the class \Rclass{ExpressionSet}, which contains the expression measures, phenotypes, and gene annotation information.  
+The genes-by-subjects matrix of expression measures is provided in the \Robject{exprs} slot of \Robject{ALL} and the phenotype data are stored in the \Robject{phenoData} slot. 
+Note that the expression measures have been obtained using the three-step robust multichip average (RMA) pre-processing method, implemented in the package \Rpackage{affy}. In particular, the expression measures have been subject to a base 2 logarithmic transformation.
+
+<<ALL, eval=TRUE, echo=TRUE>>=
+data(ALL)
+class(ALL)
+slotNames(ALL)
+show(ALL)
+names(varLabels(ALL))
+X <- exprs(ALL)
+pheno <- pData(ALL)
+@
+
+Our goal is to identify genes whose expression measures are associated with (possibly censored) biological and clinical outcomes such as: cytogenetic test status (normal vs. abnormal), tumor molecular subtype (BCR/ABL, NEG, ALL1/AF4, E2A/PBX1, p15/p16,  NUP-98), and time to relapse. 
+Before applying the multiple testing procedures, we perform initial gene filtering as in  Chiaretti et al. \cite{Chiarettietal04} and retain only those genes for which
+(i) at least 20\% of the subjects have a measured intensity of at least 100 and
+(ii)  the coefficient of variation (i.e., the ratio of the standard deviation to the mean) of the intensities across samples is between 0.7 and 10.
+These two filtering criteria can be readily applied using functions from the \Rpackage{genefilter} package.
+
+<<genefilter, eval=TRUE, echo=TRUE>>=
+ffun <- filterfun(pOverA(p=0.2, A=100), cv(a=0.7, b=10))
+filt <- genefilter(2^X, ffun)
+filtX <- X[filt,]
+dim(filtX)
+filtALL <- ALL[filt,]
+@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Association of expression measures and cytogenetic test status: two-sample $t$-statistics}
+
+\paragraph{Step-down minP FWER-controlling MTP with two-sample Welch $t$-statistics and bootstrap null distribution}
+
+The phenotype data include an indicator variable, \Robject{cyto.normal}, for cytogenetic test status (1 for normal vs. 0 for abnormal). To identify genes with higher mean expression measures in the abnormal compared to the normal cytogenetics subjects, one-sided two-sample $t$-tests can be performed. We choose to use the Welch $t$-statistic and to control the FWER using the bootstrap-based step-down minP procedure with $B=100$ bootstrap iterations (though many more are recommended in practice).
+
+<<cytoBoot, eval=TRUE, echo=TRUE>>=
+seed <- 99
+cyto.boot <- MTP(X=filtALL, Y="cyto.normal", alternative="less", B=100, method="sd.minP", seed=seed)
+@
+
+Let us examine the results of the MTP stored in the object \Robject{cyto.boot}.
+
+<<cytoOut, eval=TRUE, echo=TRUE>>=
+class(cyto.boot)
+slotNames(cyto.boot)
+print(cyto.boot)
+summary(cyto.boot) 
+@
+
+The following commands may be used to obtain a list of genes that are differentially expressed in normal vs. abnormal cytogenetics patients at nominal FWER level $\alpha=0.05$, i.e., genes with adjusted $p$-values less than or equal to 0.05. 
+Functions from the \Rpackage{annotate} and \Rpackage{annaffy}  packages may then be used to obtain annotation information on these genes (e.g., gene names, PubMed abstracts, GO terms) and to generate HTML tables of the results. 
+
+<<cytoGenes, eval=TRUE, echo=TRUE>>=
+cyto.diff <- cyto.boot@adjp<=0.05
+sum(cyto.diff)
+cyto.AffyID <- geneNames(filtALL)[cyto.diff]
+mget(cyto.AffyID, env=hgu95av2GENENAME)
+@
+
+Various graphical summaries of the results may be obtained using the \Robject{plot} method, by selecting appropriate values of the argument \Robject{which} (Figure \ref{f:cytoPlot}).
+
+<<cytoPlot, echo=TRUE, fig=TRUE, prefix=FALSE, include=FALSE>>=
+par(mfrow=c(2,2))
+plot(cyto.boot)
+@
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=3in,height=3in,angle=0]{cytoPlot}
+\end{center}
+\caption{
+{\em Cytogenetic test status --- Step-down minP FWER-controlling MTP.} By default, four graphical summaries are produced by the \Robject{plot} method for instances of the class \Rclass{MTP}.}
+\protect\label{f:cytoPlot}
+\end{figure}
+
+
+
+\paragraph{Marginal FWER-controlling MTPs with two-sample Welch $t$-statistics and bootstrap null distribution}
+
+Given a vector of unadjusted $p$-values, the \Robject{mt.rawp2adjp} function computes adjusted $p$-values for the marginal FWER-controlling MTPs of Bonferroni, Holm \cite{Holm79}, Hochberg \cite{Hochberg88}, and  $\check{\rm S}$id\'{a}k \cite{Sidak67}, discussed in detail in Dudoit et al. \cite{DudoitetalStatSci03}. 
+The \Robject{mt.plot} function may then be used to compare the different procedures in terms of their adjusted $p$-values.
+
+<<cytoMarg, eval=TRUE, echo=TRUE>>=
+marg <- c("Bonferroni", "Holm", "Hochberg", "SidakSS", "SidakSD")
+cyto.marg <- mt.rawp2adjp(rawp=cyto.boot@rawp, proc=marg)
+comp.marg <- cbind(cyto.boot@adjp, cyto.marg$adjp[order(cyto.marg$index),-1])
+@
+
+<<cytoMargPlot, echo=TRUE, fig=TRUE, prefix=FALSE, include=FALSE>>=
+par(mfrow=c(1,1))
+mt.plot(adjp=comp.marg, teststat=cyto.boot@statistic, proc=c("SD minP", marg), leg=c(0.1,400), col=1:6, lty=1:6, lwd=3)
+title("Comparison of marginal and step-down minP FWER-controlling MTPs")
+@
+
+In this dataset, most of the FWER-controlling MTPs perform similarly, making very few rejections at nominal Type I error rates near zero. 
+As expected, the bootstrap-based step-down minP procedure, which takes into account the joint distribution of the test statistics, leads to slightly more rejections than the marginal methods (Figure \ref{f:cytoMargPlot}).
+The results also illustrate that stepwise MTPs are less conservative than their single-step analogues (e.g., Holm and Hochberg vs. Bonferroni; step-down  \v{S}id\'{a}k vs. single-step \v{S}id\'{a}k).
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=3in,height=3in,angle=0]{cytoMargPlot}
+\end{center}
+\caption{
+{\em Cytogenetic test status --- Marginal vs. joint FWER-controlling MTPs.} Plot of number of rejected hypotheses vs. nominal Type I error rate for comparing  bootstrap-based marginal and step-down minP FWER-controlling MTPs.}
+\protect\label{f:cytoMargPlot}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{Step-down minP FWER-controlling MTP with two-sample Welch $t$-statistics and permutation null distribution}
+
+Because the sample sizes are not equal for the two cytogenetic groups and the expression measures may have different covariance structures in the two populations, we expect the bootstrap and permutation null distributions to yield different sets of rejected hypotheses (Pollard \& van der Laan \cite{Pollard&vdLaanJSPI04}). 
+To compare the two approaches, we apply the permutation-based step-down minP procedure, first using the old \Robject{mt.minP} function and then using the new \Robject{MTP} function (which calls \Robject{mt.minP}). 
+Please note that while the \Robject{MTP} and \Robject{mt.minP} functions produce the same results, these are presented in a different manner. In particular, for the new function \Robject{MTP}, the results (e.g., test statistics, parameter estimates, unadjusted $p$-values, adjusted $p$-values, cut-offs) are given in the original order of the null hypotheses, while in the \Robject{mt.minP} function, the hypotheses are sorted first according to their adjusted $p$-values, next their unadjusted $p$-values, and finally their test statistics. 
+In addition, the new function \Robject{MTP} implements a broader range of MTPs and has adopted the S4 class/method design for representing and summarizing the results of a MTP.
+
+<<cytoPermOld, eval=TRUE, echo=TRUE>>=
+set.seed(99)
+NAs <- is.na(pheno$cyto.normal)
+cyto.perm.old <- mt.minP(X=filtX[,!NAs], classlabel=pheno$cyto.normal[!NAs], side="lower", B=100)
+names(cyto.perm.old)
+sum(cyto.perm.old$adjp<=0.05)
+@
+
+<<cytoPermNew, eval=TRUE, echo=TRUE>>=
+set.seed(99)
+cyto.perm.new <- MTP(X=filtX, Y=pheno$cyto.normal, alternative="less", nulldist="perm", B=100, method="sd.minP")
+@
+
+<<cytoPermNewOut, eval=TRUE, echo=TRUE>>=
+summary(cyto.perm.new)
+sum(cyto.perm.new@adjp<=0.05)
+sum(cyto.perm.new@adjp<=0.05 & cyto.boot@adjp<=0.05)
+@
+
+At nominal FWER level $\alpha=0.05$, the permutation step-down minP procedure identifies \Sexpr{sum(cyto.perm.new@adjp<=0.05)} genes as differentially expressed between patients with normal and abnormal cytogenetic test status. 
+In contrast, the bootstrap version of the step-down minP procedure identifies \Sexpr{sum(cyto.boot@adjp<=0.05)} differentially expressed genes.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{Step-down minP FWER-controlling MTP with robust two-sample $t$-statistics and bootstrap null distribution}
+
+The Wilcoxon rank sum statistic (also known as the Mann-Whitney statistic) is a robust alternative to the usual two-sample $t$-statistic. 
+
+<<cytoWilcox, eval=TRUE, echo=TRUE>>=
+cyto.wilcox <- MTP(X=filtALL, Y="cyto.normal", robust=TRUE, alternative="less", B=100, method="sd.minP", seed=seed)
+@
+
+<<cytoWilcoxOut, eval=TRUE, echo=TRUE>>=
+sum(cyto.wilcox@adjp<=0.05)
+sum(cyto.wilcox@adjp<=0.05 & cyto.boot@adjp<=0.05)
+@
+
+At nominal FWER level $\alpha=0.05$, the bootstrap step-down minP MTP based on the robust Wilcoxon test statistic identifies \Sexpr{sum(cyto.wilcox@adjp<=0.05)} genes as differentially expressed, compared to  \Sexpr{sum(cyto.boot@adjp<=0.05)} genes for the same MTP based on the Welch $t$-statistic. 
+\Sexpr{sum(cyto.wilcox@adjp<=0.05 & cyto.boot@adjp<=0.05)} genes are identified by both procedures.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Augmentation procedures for gFWER, TPPFP, and FDR control}
+
+In the context of microarray gene expression data analysis or other high-dimensional inference problems, one is often willing to accept some false positives, provided their number is small in comparison to the number of rejected hypotheses.
+In this case, the FWER is not a suitable choice of Type I error rate and one should consider other rates that lead to larger sets of rejected hypotheses.
+The augmentation procedures implemented in the function \Robject{MTP}, allow one to reject additional hypotheses, while controlling an error rate such as the generalized family-wise error rate (gFWER), the tail probability of the proportion of false positives (TPPFP), or the false discovery rate (FDR). 
+We illustrate the use of the \Robject{fwer2gfwer}, \Robject{fwer2tppfp}, and \Robject{fwer2fdr} functions, but note that the gFWER, TPPFP, and FDR can also be controlled directly using the \Robject{MTP} function with appropriate choices of arguments \Robject{typeone}, \Robject{k}, \Robject{q}, and \Robject{fdr.method}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{gFWER control}
+
+<<cytogfwer, echo=TRUE, fig=TRUE, prefix=FALSE, include=FALSE>>=
+k <- c(5, 10, 50, 100)
+cyto.gfwer <- fwer2gfwer(adjp=cyto.boot@adjp, k=k)
+comp.gfwer <- cbind(cyto.boot@adjp, cyto.gfwer)
+mtps <- paste("gFWER(",c(0,k),")", sep="")
+mt.plot(adjp=comp.gfwer, teststat=cyto.boot@statistic, proc=mtps, leg=c(0.1,400),col=1:5, lty=1:5, lwd=3)
+title("Comparison of gFWER(k)-controlling AMTPs based on SD minP MTP")
+@
+
+For gFWER-controlling AMTPs, Figure \ref{f:cytogfwer} illustrates that the number of rejected hypotheses increases linearly with the number $k$ of allowed false positives, for nominal levels $\alpha$ such that the initial FWER-controlling MTP does not reject more than $M-k$ hypotheses. 
+That is, the curve for the $gFWER(k)$--controlling AMTP is obtained from that of the initial FWER-controlling procedure by a simple vertical shift of $k$.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{TPPFP control}
+
+<<cytotppfp, echo=TRUE, fig=TRUE, prefix=FALSE, include=FALSE>>=
+q <- c(0.05,0.1,0.5)
+cyto.tppfp <- fwer2tppfp(adjp=cyto.boot@adjp, q=q)
+comp.tppfp <- cbind(cyto.boot@adjp, cyto.tppfp)
+mtps <- c("FWER",paste("TPPFP(",q,")", sep=""))
+mt.plot(adjp=comp.tppfp, teststat=cyto.boot@statistic, proc=mtps, leg=c(0.1,400), col=1:4, lty=1:4, lwd=3)
+title("Comparison of TPPFP(q)-controlling AMTPs based on SD minP MTP")
+@
+
+For TPPFP control,  Figure \ref{f:cytotppfp} shows that, as expected, the number of rejections,  while controlling $TPPFP(q)$ at a given level $\alpha$, increases with the allowed proportion $q$ of false positives, though not linearly.
+Furthermore, for the ALL dataset, the increases in the number of rejections are not very large. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{FDR control}
+
+Given any TPPFP-controlling MTP, van der Laan et al. \cite{vdLaanetalMT3SAGMB04} derive two simple (conservative) FDR-controlling MTPs. 
+Here, we compare these two FDR-controlling approaches, based on a TPPFP-controlling augmentation of the step-down minP procedure, to the marginal Benjamini \& Hochberg \cite{Benjamini&Hochberg95} and Benjamini \& Yekutieli \cite{Benjamini&Yekutieli01} procedures, implemented in the function \Robject{mt.rawp2adjp}.
+
+<<cytofdr, echo=TRUE, fig=TRUE, prefix=FALSE, include=FALSE>>=
+cyto.fdr <- fwer2fdr(adjp=cyto.boot@adjp, method="both")$adjp
+cyto.marg.fdr <- mt.rawp2adjp(rawp=cyto.boot@rawp, proc=c("BY","BH"))
+comp.fdr <- cbind(cyto.fdr, cyto.marg.fdr$adjp[order(cyto.marg.fdr$index),-1])
+mtps <- c("AMTP Cons", "AMTP Rest", "BY", "BH")
+mt.plot(adjp=comp.fdr, teststat=cyto.boot@statistic, proc=mtps, leg=c(0.1,400), col=c(2,2,3,3), lty=rep(1:2,2), lwd=3)
+title("Comparison of FDR-controlling MTPs")
+@
+
+Figure \ref{f:cytofdr} shows that for most values of the nominal FDR level $\alpha$, the usual Benjamini \& Hochberg ("BH") MTP leads by far to the largest number of rejected hypotheses.
+The Benjamini \& Yekutieli ("BY") MTP, a conservative version of the Benjamini \& Hochberg MTP (with $\sim \log M$ penalty on the $p$-values), leads to much fewer rejections.
+The AMTPs based on conservative bounds for the FDR ("AMTP Cons" and "AMTP Rest") are much more conservative than the Benjamini \& Hochberg MTP and only lead to an increased number of rejections for very high nominal FDR levels.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}
+\begin{center}
+\includegraphics[width=3in,height=3in,angle=0]{cytogfwer}
+\end{center}
+\caption{
+{\em Cytogenetic test status --- gFWER-controlling AMTPs.} Plot of number of rejected hypotheses vs. nominal Type I error rate for comparing gFWER-controlling AMTPs, based on the bootstrap step-down minP FWER-controlling procedure, with different allowed numbers $k$ of false positives.}
+\protect\label{f:cytogfwer}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=3in,height=3in,angle=0]{cytotppfp}
+\end{center}
+\caption{
+{\em Cytogenetic test status --- TPPFP-controlling AMTPs.} Plot of number of rejected hypotheses vs. nominal Type I error rate for comparing TPPFP-controlling AMTPs, based on the bootstrap step-down minP FWER-controlling procedure, with different allowed proportions $q$ of false positives.}
+\protect\label{f:cytotppfp}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=3in,height=3in,angle=0]{cytofdr}
+\end{center}
+\caption{
+{\em Cytogenetic test status --- FDR-controlling MTPs.} Plot of number of rejected hypotheses vs. nominal Type I error rate for comparing four FDR-controlling MTPs.}
+\protect\label{f:cytofdr}
+\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Association of expression measures and tumor molecular subtype: multi-sample $F$-statistics}
+
+To identify genes with differences in mean expression measures between different tumor molecular subtypes (BCR/ABL, NEG, ALL1/AF4, E2A/PBX1, p15/p16,  NUP-98), one can perform a family of $F$-tests. 
+Tumor subtypes with fewer than 10 subjects are merged into one group. 
+Adjusted $p$-values and test statistic cut-offs (for nominal levels $\alpha$ of 0.01 and 0.1) are computed as follows for the bootstrap-based single-step maxT FWER-controlling procedure. 
+
+<<mbBoot, eval=TRUE, echo=TRUE>>=
+mb <- as.character(pheno$mol.biol)
+table(mb)
+other <- c("E2A/PBX1", "NUP-98", "p15/p16")
+mb[mb%in%other] <- "other"
+table(mb)
+mb.boot <- MTP(X=filtX, Y=mb, test="f", alpha=c(0.01,0.1), B=100, get.cutoff=TRUE, seed=seed)
+@
+
+Let us examine the results of the MTP.
+
+<<mbOut, eval=TRUE, echo=TRUE>>=
+summary(mb.boot)
+mb.diff <- mb.boot@adjp<=0.01
+sum(mb.diff)
+sum(mb.boot@statistic>=mb.boot@cutoff[,"alpha=0.01"] & mb.diff)
+@
+
+For control of the FWER at nominal level $\alpha=0.01$, the bootstrap-based single-step maxT procedure with $F$-statistics identifies 
+\Sexpr{sum(mb.diff)} genes (out of the \Sexpr{sum(filt)} filtered genes) 
+as having significant differences in mean expression measures between tumor molecular subtypes.  
+This set can be identified through either adjusted $p$-values or cut-offs for the test statistics. 
+The plot of test statistics and corresponding cut-offs in Figure \ref{f:mbPlot} illustrates that the $F$-statistics for the 10 genes with the smallest adjusted $p$-values are much larger than expected by chance under the null distribution.
+
+<<mbPlot, echo=TRUE, fig=TRUE, prefix=FALSE, include=FALSE>>=
+plot(mb.boot,which=6)
+@
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=3in,height=3in,angle=0]{mbPlot}
+\end{center}
+\caption{
+{\em Tumor molecular subtype --- Single-step maxT FWER-controlling MTP.} Plot of $F$-statistics and corresponding cut-offs for the 10 genes with the smallest adjusted $p$-values, based on the bootstrap single-step maxT FWER-controlling procedure (\Robject{plot} method, \texttt{which=6}).}
+\protect\label{f:mbPlot}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Association of expression measures and time to relapse: Cox $t$-statistics}
+
+The bootstrap-based MTPs implemented in the main \Robject{MTP} function (\Robject{nulldist="boot"}) allow the test of hypotheses concerning regression parameters in models for which the subset pivotality condition may not hold (e.g., logistic and Cox proportional hazards models). 
+The phenotype information in the \Rpackage{ALL} package includes the original remission status of the ALL patients (\Robject{remission} variable in the \Rclass{data.frame} \Robject{pData(ALL)}). 
+There are 88 subjects who experienced original complete remission (\texttt{remission="CR"}) and who were followed up for remission status at a later date. 
+We apply the single-step maxT procedure to test for a significant association between expression measures and time to relapse amongst these 88 subjects, adjusting for sex. 
+Note that most of the code below is concerned with extracting the (censored) time to relapse outcome and covariates from slots of the \Rclass{ExpressionSet} instance \Robject{ALL}.
+
+<<coxphPrep, eval=TRUE, echo=TRUE>>=
+library(survival)
+# Patients with original complete remission and who were followed up
+cr.ind <- pheno$remission=="CR"
+cr.pheno <- pheno[cr.ind,]
+times <- strptime(cr.pheno$"date last seen", "%m/%d/%Y")-strptime(cr.pheno$date.cr, "%m/%d/%Y")
+time.ind <- !is.na(times)
+times <- times[time.ind]
+# Patients who haven't relapsed are treated as censored
+cens <- ((1:length(times))%in%grep("CR", cr.pheno[time.ind,"f.u"]))
+# Time to relapse
+rel.times <- Surv(times, !cens)
+patients <- (1: ncol(filtX))[cr.ind][time.ind]
+# Prepare data for MTP
+relX <- filtX[, patients]
+relZ <- pheno[patients,]
+@
+
+<<coxphBoot, eval=TRUE, echo=TRUE>>=
+cox.boot <- MTP(X=relX, Y=rel.times, Z=relZ, Z.incl="sex", Z.test=NULL, test="coxph.YvsXZ", B=100, get.cr=TRUE, seed=seed)
+@
+
+<<coxphOut, eval=TRUE, echo=TRUE>>=
+summary(cox.boot)
+cox.diff <- cox.boot@adjp<=0.05
+sum(cox.diff)
+cox.AffyID <- geneNames(filtALL)[cox.diff]
+mget(cox.AffyID, env=hgu95av2GENENAME)
+@
+
+<<coxphPlot, echo=TRUE, fig=TRUE, prefix=FALSE, include=FALSE>>=
+plot(cox.boot, which=5)
+abline(h=0, col=2, lwd=2)
+@
+
+For control of the FWER at nominal level $\alpha=0.05$, the bootstrap-based single-step maxT procedure identifies \Sexpr{sum(cox.diff)} genes whose expression measures are significantly associated with time to relapse.
+Equivalently, Figure \ref{f:coxphPlot} illustrates that the level $\alpha=0.05$ confidence regions corresponding to these \Sexpr{sum(cox.diff)} genes do not include the null value $\psi_0=0$ for the Cox regression parameters (indicated by red horizontal line). 
+%The confidence intervals for the next four genes barely cover $\psi_0=0$. 
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=3in,height=3in,angle=0]{coxphPlot}
+\end{center}
+\caption{
+{\em Time to relapse --- Single-step maxT FWER-controlling MTP.} Plot of Cox regression coefficient estimates and corresponding confidence intervals for the 10 genes with the smallest adjusted $p$-values, based on the bootstrap single-step maxT FWER-controlling procedure (\Robject{plot} method, \texttt{which=5}).}
+\protect\label{f:coxphPlot}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{plainnat}
+
+\bibliography{multtest}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}

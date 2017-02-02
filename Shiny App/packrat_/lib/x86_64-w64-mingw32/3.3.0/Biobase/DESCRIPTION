@@ -1,0 +1,29 @@
+Package: Biobase
+Title: Biobase: Base functions for Bioconductor
+Version: 2.34.0
+Author: R. Gentleman, V. Carey, M. Morgan, S. Falcon
+Description: Functions that are needed by many other packages or which
+    replace R functions.
+Suggests: tools, tkWidgets, ALL, RUnit, golubEsets
+Depends: R (>= 2.10), BiocGenerics (>= 0.3.2), utils
+Imports: methods
+Maintainer: Bioconductor Package Maintainer
+    <maintainer@bioconductor.org>
+License: Artistic-2.0
+Collate: tools.R strings.R environment.R vignettes.R packages.R
+    AllGenerics.R VersionsClass.R VersionedClasses.R
+    methods-VersionsNull.R methods-VersionedClass.R DataClasses.R
+    methods-aggregator.R methods-container.R methods-MIAxE.R
+    methods-MIAME.R methods-AssayData.R methods-AnnotatedDataFrame.R
+    methods-eSet.R methods-ExpressionSet.R methods-MultiSet.R
+    methods-SnpSet.R methods-NChannelSet.R anyMissing.R rowOp-methods.R
+    updateObjectTo.R methods-ScalarObject.R zzz.R
+LazyLoad: yes
+biocViews: Infrastructure
+NeedsCompilation: yes
+Packaged: 2016-10-17 22:53:47 UTC; biocbuild
+Built: R 3.3.1; i386-w64-mingw32; 2016-10-18 01:16:56 UTC; windows
+Archs: i386, x64
+InstallAgent: packrat 0.4.8.1
+InstallSource: Bioconductor
+Hash: cd3d884ba3f526861c54f24f5f52203d

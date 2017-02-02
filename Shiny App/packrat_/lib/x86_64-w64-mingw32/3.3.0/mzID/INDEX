@@ -1,0 +1,23 @@
+flatten                 Flatten an mzID related class into a table
+mzID                    Parse an mzIdentML file
+mzID-class              A class to contain data from mzIdentML-files
+mzID-getters            Getter functions for identification data
+mzID-package            A parser for the mzIdentML file format
+mzIDCollection          Create a new mzIDCollection
+mzIDCollection-class    A class to handle a set of mzID objects
+mzIDdatabase            A constructor for the mzIDdatabase class
+mzIDdatabase-class      A class to store database information from an
+                        mzIdentML file
+mzIDevidence            A constructor for the mzIDevidence class
+mzIDevidence-class      A class to store peptide evidence information
+                        from an mzIdentML file
+mzIDparameters          A constructor for the mzIDparameters class
+mzIDparameters-class    A Class to store analysis information from the
+                        mzIdentML file
+mzIDpeptides            A constructor for the mzIDpeptides class
+mzIDpeptides-class      A class to store peptide information from an
+                        mzIdentML file
+mzIDpsm                 A constructor for the mzIDpsm class
+mzIDpsm-class           A class to store psm information from an
+                        mzIdentML file
+removeDecoy             Remove decoy identification

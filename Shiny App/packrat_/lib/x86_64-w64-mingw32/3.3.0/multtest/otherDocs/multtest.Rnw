@@ -1,0 +1,394 @@
+% \VignetteIndexEntry{multtest Tutorial}
+% \VignetteKeywords{Expression Analysis}
+% \VignettePackage{multtest}
+\documentclass[11pt]{article}
+
+\usepackage{amsmath,epsfig,fullpage}
+\usepackage{graphicx}
+\usepackage[authoryear,round]{natbib}
+\usepackage{hyperref}
+
+\parindent 0in
+
+\bibliographystyle{abbrvnat}
+
+\begin{document}
+
+\title{\bf Bioconductor's multtest package}
+\author{Sandrine Dudoit$^1$ and Yongchao Ge$^2$}
+
+\maketitle
+
+\begin{center}
+1. Division of Biostatistics, University of California, Berkeley,
+   \url{http://www.stat.berkeley.edu/~sandrine}\\
+2. Department of Biomathematical Sciences, Mount Sinai School of Medicine, New York,
+   {\tt yongchao.ge@mssm.edu}\\
+\end{center}
+
+\tableofcontents
+
+% library(tools)
+% Rnwfile<- file.path("/home/sandrine/CVS_stuff/madman/Rpacks/multtest/inst/doc",
+%                     "multtest.Rnw") 
+% Sweave(Rnwfile,pdf=TRUE,eps=TRUE,stylepath=TRUE,driver=RweaveLatex())
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Overview}
+
+The {\tt multtest} package contains a collection of functions for
+multiple hypothesis testing. These functions can be used to identify
+differentially expressed genes in microarray experiments, i.e., genes
+whose expression levels are associated with a response or covariate of
+interest. \\  
+
+{\bf Introduction to multiple testing.} This document provides a
+tutorial for using the {\tt multtest} package. For a detailed
+introduction to multiple testing consult the document {\tt
+  multtest.intro} in the {\tt inst/doc} directory of the package. See
+also \cite{Shaffer95} and  \cite{Dudoit&Shaffer02} for a review of
+multiple testing procedures and complete references.\\ 
+
+{\bf Multiple testing procedures implemented in {\tt multtest}.}
+The {\tt multtest} package implements multiple testing procedures for
+controlling different Type I error rates. It includes procedures for
+controlling the family--wise Type I error rate (FWER): Bonferroni,
+\cite{Hochberg88}, \cite{Holm79}, Sidak, \cite{Westfall&Young93} minP
+and maxT procedures. It also includes procedures for controlling the
+false discovery rate (FDR): \cite{Benjamini&Hochberg95} and
+\cite{Benjamini&Yekutieli01} step--up procedures. These procedures are
+implemented for tests based on $t$--statistics, $F$--statistics,
+paired $t$--statistics, block $F$--statistics, Wilcoxon
+statistics. The results of the procedures are summarized using
+adjusted $p$--values, which reflect for each gene the overall
+experiment Type I error rate when genes with a smaller $p$--value are
+declared differentially expressed. Adjusted $p$--values may be
+obtained either from the nominal distribution of the test statistics
+or by permutation. The permutation algorithm for the maxT and minP
+procedures is described in \cite{Ge&Dudoit}.\\ 
+
+{\bf Help files.}  As with any R package, detailed information on
+functions, their arguments and value, can be obtained in the help
+files. For instance, to view the help file for the function {\tt
+  mt.maxT} in a browser, use {\tt help.start()} followed by {\tt ?
+  mt.maxT}. 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Case study: the ALL/AML leukemia dataset of Golub et al. (1999)}
+
+ We demonstrate the functionality of this package using gene
+ expression data from the leukemia ALL/AML study of
+ \cite{Golubetal}. To load the leukemia dataset, use {\tt
+   data(golub)}, and to view a description of the experiments and
+ data, type {\tt ? golub}.  
+
+%<<eval=TRUE, echo=TRUE>>=
+<<>>=
+library(multtest, verbose=FALSE)
+data(golub)
+@
+
+\cite{Golubetal} were interested in identifying genes that are
+differentially expressed in patients with two type of leukemias, acute
+lymphoblastic leukemia (ALL, class 0) and acute myeloid leukemia (AML,
+class 1). Gene expression levels were measured using Affymetrix
+high--density oligonucleotide chips containing $p=6,817$ human
+genes. The learning set comprises $n=38$ samples, 27 ALL cases and 11
+AML cases (data available at {\tt
+  http://www.genome.wi.mit.edu/MPR}). Following Golub et al. (personal
+communication, Pablo Tamayo), three preprocessing steps were applied
+to the normalized matrix of intensity values available on the website:
+(i) thresholding: floor 
+of 100 and ceiling of 16,000; (ii) filtering: exclusion of genes with
+$\max/\min \leq 5$ or $(\max-\min) \leq 500$, where $\max$ and $\min$ refer
+respectively to the maximum and minimum intensities for a
+particular gene across mRNA samples; (iii) base 10 logarithmic
+transformation. Boxplots of the expression levels for each of the 38
+samples revealed the need to standardize the expression levels within
+arrays before combining data across samples. The data were then
+summarized by a $3,051 \times 38 $ matrix $X=(x_{ji})$, where $x_{ji}$
+denotes the expression level for gene $j$ in tumor mRNA sample $i$. \\
+
+
+The dataset {\tt golub} contains the gene expression data for the 38
+training set tumor mRNA samples and 3,051 genes retained after
+pre--processing. The dataset includes 
+
+\begin{itemize}
+\item
+{{\tt golub}:} a $3,051 \times 38 $ matrix of expression levels;
+\item
+{{\tt golub.gnames}:} a $3,051 \times 3 $ matrix of gene identifiers;
+\item
+{{\tt golub.cl}:} a vector of tumor class labels (0 for ALL, 1 for AML). 
+\end{itemize}
+
+%<<eval=TRUE, echo=TRUE>>=
+<<>>=
+dim(golub)
+golub[1:4,1:4]
+dim(golub.gnames)
+golub.gnames[1:4,]
+golub.cl
+@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The {\tt mt.teststat} and {\tt mt.teststat.num.denum} functions}
+
+
+The {\tt mt.teststat} and {\tt mt.teststat.num.denum} functions
+provide a convenient way to compute test statistics for each row of a
+data frame, e.g., two--sample Welch $t$--statistics, Wilcoxon
+statistics, $F$--statistics, paired $t$--statistics, block
+$F$--statistics. To compute two--sample $t$--statistics comparing, for
+each gene, expression in the ALL cases to expression in the AML cases 
+
+%<<eval=TRUE, echo=TRUE>>=
+<<>>=
+teststat<-mt.teststat(golub,golub.cl)
+@
+
+The following produces a normal Quantile--Quantile (Q--Q) plot of the
+test statistics (Figure \ref{fig:mtQQ})
+. In our application, we are
+not so much interested in testing whether the test statistics follow a
+particular distribution, but in using the Q--Q plot as a visual aid
+for identifying genes with ``unusual'' test statistics. Q--Q plots
+informally correct for the large number of comparisons and the points
+which deviate markedly from an otherwise linear relationship are
+likely to correspond to those genes whose expression levels differ
+between the control and treatment groups.
+
+%%<<mtQQ,fig=TRUE,prefix=FALSE,echo=TRUE,include=FALSE>>=
+%%\begin{verbatim}
+<<>>=
+postscript("mtQQ.eps")
+qqnorm(teststat)
+qqline(teststat)
+dev.off()
+pdf("mtQQ.pdf")
+qqnorm(teststat)
+qqline(teststat)
+dev.off()
+@
+%%\end{verbatim}
+%%@
+
+We may also wish to look at plots of the numerators and denominators
+of the test statistics (Figure \ref{fig:mtNumDen}) 
+
+%%<<mtNumDen,fig=TRUE,prefix=FALSE,echo=TRUE,include=FALSE>>=
+%%\begin{verbatim}
+<<>>=
+tmp<-mt.teststat.num.denum(golub,golub.cl,test="t")
+num<-tmp$teststat.num
+denum<-tmp$teststat.denum
+postscript("mtNumDen.eps")
+plot(sqrt(denum),num)
+dev.off()
+pdf("mtNumDen.pdf")
+plot(sqrt(denum),num)
+dev.off()
+@
+%%\end{verbatim}
+%%@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The {\tt mt.rawp2adjp} function}
+
+This function computes adjusted $p$--values for simple multiple
+testing procedures from a vector of raw (unadjusted) $p$--values. The
+procedures include the 
+Bonferroni, \cite{Holm79}, \cite{Hochberg88}, and Sidak procedures for
+strong control of the family--wise Type I error rate (FWER), and the
+\cite{Benjamini&Hochberg95} and \cite{Benjamini&Yekutieli01}
+procedures for (strong) control of the false discovery rate (FDR). \\ 
+
+As a first approximation, compute raw nominal two--sided $p$--values
+for the $3,051$ test statistics using the standard Gaussian
+distribution 
+
+%%<<eval=TRUE, echo=TRUE>>=
+<<>>=
+rawp0<-2*(1-pnorm(abs(teststat)))
+@
+
+Adjusted $p$--values for these seven multiple testing procedures can
+be computed as follows and stored in the original gene order in {\tt
+  adjp} using {\tt order(res\$index)} 
+
+%%<<eval=TRUE, echo=TRUE>>=
+<<>>=
+procs<-c("Bonferroni","Holm","Hochberg","SidakSS","SidakSD","BH","BY")
+res<-mt.rawp2adjp(rawp0,procs)
+adjp<-res$adjp[order(res$index),]
+round(adjp[1:10,],2)
+@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The {\tt mt.maxT} and {\tt mt.minP} functions}
+
+The {\tt mt.maxT} and {\tt mt.minP} functions compute permutation
+adjusted $p$--values for the maxT and minP step--down multiple testing
+procedure described in \cite{Westfall&Young93}. These procedure
+provide strong control of the FWER and also incorporate the joint
+dependence structure between the test statistics. There are thus in
+general less conservative than the standard Bonferroni procedure. The
+permutation algorithm for the maxT and minP procedures is described in
+\cite{Ge&Dudoit}.\\
+
+Permutation unadjusted $p$--values and adjusted $p$--values for the
+maxT procedure with Welch $t$--statistics are computed as
+follows. {\tt mt.maxT} returns $p$--values sorted in decreasing order
+of the absolute $t$--statistics and {\tt order(resT\$index)} is used
+to obtain $p$--values and test statistics in the original gene
+order. In practice, the number of permutations $B$ should be several
+thousands, we set $B=1,000$ here for illustration purposes.
+
+%%<<eval=TRUE, echo=TRUE>>=
+<<>>=
+resT<-mt.maxT(golub,golub.cl,B=1000)
+ord<-order(resT$index)
+rawp<-resT$rawp[ord]
+maxT<-resT$adjp[ord]
+teststat<-resT$teststat[ord]
+@
+
+
+Three functions related to the {\tt mt.maxT} and {\tt mt.minP}
+functions are {\tt mt.sample.teststat}, {\tt mt.sample.rawp}, and {\tt
+mt.sample.label}. These functions provide tools to investigate the
+permutation distribution of test statistics, raw (unadjusted)
+$p$--values, and class labels, respectively.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The {\tt mt.reject} function}
+
+The function {\tt mt.reject} returns the identity and number of rejected
+     hypotheses for several multiple testing procedures and different 
+     nominal Type I error rates. The number of hypotheses rejected
+     using unadjusted $p$--values and maxT $p$--values for different
+     Type I error rates ($\alpha=0, 0.1, 0.2, \ldots, 1$) can be
+     obtained by 
+
+%%<<eval=TRUE, echo=TRUE>>=
+<<>>=
+mt.reject(cbind(rawp,maxT),seq(0,1,0.1))$r
+@
+
+The genes with maxT $p$--values less than or equal to 0.01 are 
+
+%%<<eval=TRUE, echo=TRUE>>=
+<<>>=
+which<-mt.reject(cbind(rawp,maxT),0.01)$which[,2]
+golub.gnames[which,2]
+@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The {\tt mt.plot} function}
+
+The {\tt mt.plot} function produces a number of graphical summaries
+for the results of multiple testing procedures and their corresponding
+adjusted $p$--values. To produce plots of sorted permutation
+unadjusted $p$--values and adjusted $p$--values for the Bonferroni,
+maxT, \cite{Benjamini&Hochberg95}, and \cite{Benjamini&Yekutieli01}
+procedures use 
+
+%%<<eval=TRUE, echo=TRUE>>=
+<<>>=
+res<-mt.rawp2adjp(rawp,c("Bonferroni","BH","BY"))
+adjp<-res$adjp[order(res$index),]
+allp<-cbind(adjp,maxT)
+dimnames(allp)[[2]]<-c(dimnames(adjp)[[2]],"maxT")
+procs<-dimnames(allp)[[2]]
+procs<-procs[c(1,2,5,3,4)]
+cols<-c(1,2,3,5,6)
+ltypes<-c(1,2,2,3,3)
+@
+
+For plotting sorted adjusted $p$--values set the argument {\tt plottype="pvsr"}
+
+%%<<mtpvsr,fig=TRUE,prefix=FALSE,echo=TRUE,include=FALSE>>=
+%%\begin{verbatim}
+<<>>=
+postscript("mtpvsr.eps")
+mt.plot(allp[,procs],teststat,plottype="pvsr",
+        proc=procs,leg=c(2000,0.4),lty=ltypes,col=cols,lwd=2) 
+dev.off()
+pdf("mtpvsr.pdf")
+mt.plot(allp[,procs],teststat,plottype="pvsr",
+        proc=procs,leg=c(2000,0.4),lty=ltypes,col=cols,lwd=2) 
+dev.off()
+@
+%%\end{verbatim}
+%%@
+
+and for plotting adjusted $p$--values vs. the test statistics use {\tt
+  plottype="pvst"} 
+
+%%<<mtpvst,fig=TRUE,prefix=FALSE,echo=TRUE,include=FALSE>>=
+%%\begin{verbatim}
+<<>>=
+postscript("mtpvst.eps")
+mt.plot(allp[,procs],teststat,plottype="pvst",
+        logscale=TRUE,proc=procs,leg=c(-0.5,2),pch=ltypes,col=cols)
+dev.off()
+pdf("mtpvst.pdf")
+mt.plot(allp[,procs],teststat,plottype="pvst",
+        logscale=TRUE,proc=procs,leg=c(-0.5,2),pch=ltypes,col=cols)
+dev.off()
+@
+%%\end{verbatim}
+%%@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliography{multtest} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{figure}[ht]
+  %%\centerline{\epsfig{figure=mtQQ.eps,width=4in,height=4in,angle=0}}
+  \begin{center}
+    \includegraphics[width=4in,height=4in,angle=0]{mtQQ}
+  \end{center}
+  \caption{Normal Q--Q plot of $t$--statistics for leukemia data.}
+  \protect\label{fig:mtQQ}
+\end{figure}
+
+\begin{figure}[ht]
+  %%\centerline{\epsfig{figure=mtNumDen.eps,width=4in,height=4in,angle=0}}
+  \begin{center}
+    \includegraphics[width=4in,height=4in,angle=0]{mtNumDen}
+  \end{center}
+  \caption{Numerator vs. square root of denominator of the
+    $t$--statistics for the leukemia data.} 
+  \protect\label{fig:mtNumDen}
+\end{figure}
+
+\begin{figure}[ht]
+  %%\centerline{\epsfig{figure=mtpvsr.eps,width=4in,height=4in,angle=0}}
+  \begin{center}
+    \includegraphics[width=4in,height=4in,angle=0]{mtpvsr}
+  \end{center}
+  \caption{Sorted adjusted $p$--values for the leukemia data.}
+  \protect\label{fig:mtpvsr}
+\end{figure}
+
+\begin{figure}[ht]
+  %%\centerline{\epsfig{figure=mtpvst.eps,width=4in,height=4in,angle=0}}
+  \begin{center}
+    \includegraphics[width=4in,height=4in,angle=0]{mtpvst}
+  \end{center}
+  \caption{Adjusted $p$--values (log scale) vs. $t$--statistics for the
+    leukemia data.}  
+  \protect\label{fig:mtpvst}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}

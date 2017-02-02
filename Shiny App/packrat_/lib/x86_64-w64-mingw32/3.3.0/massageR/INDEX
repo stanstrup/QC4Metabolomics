@@ -1,0 +1,14 @@
+attr_rem                Remove attribute of an object in a pipe
+                        friendly way
+edges2diff_mat          Letter notation for overlapping confidence
+                        intervals.
+group_correct           Batch-correct dataset feature-wise
+half.min                Replacement of NA values
+heat.clust              Prepare dendrograms for gplots' heatmap.2.
+is_between_1range       is_between
+loc_mat_2_group_idx     Title
+longest_piece_above     Longest interval where X is more than Y
+normalize01             Data normalization
+ratio.w.invert          Fold change
+seq_rel                 Sequence generation of relative interval sizes
+which.median            Find then index of the first median value

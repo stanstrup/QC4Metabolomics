@@ -1,0 +1,14 @@
+citHeader("To cite package multtest in publications use:")
+
+citEntry(
+ entry="Book",
+ title="Multiple Testing Procedures: R multtest Package and Applications to Genomics, in Bioinformatics and Computational Biology Solutions Using R and Bioconductor",
+ year="2005",
+ author=personList(as.person("Katherine S. Pollard"),
+	as.person("Sandrine Dudoit"),
+	as.person("Mark J. van der Laan")),
+ publisher="Springer",
+ textVersion="K.S Pollard, S. Dudoit, M.J. van der Laan (2005). Multiple Testing Procedures: R multtest Package and Applications to Genomics, in Bioinformatics and Computational Biology Solutions Using R and Bioconductor, R. Gentleman, V. Carey, W. Huber, R. Irizarry, S. Dudoit (Editors). Springer (Statistics for Biology and Health Series), pp. 251-272.")
+
+
+

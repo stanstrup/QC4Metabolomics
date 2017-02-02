@@ -1,0 +1,27 @@
+EBMTP                   A function to perform empirical Bayes
+                        resampling-based multiple hypothesis testing
+EBMTP-class             Class "EBMTP", classes and methods for
+                        empirical Bayes multiple testing procedure
+                        output
+Hsets                   Functions for generating guessed sets of true
+                        null hypotheses in empirical Bayes
+                        resampling-based multiple hypothesis testing
+MTP                     A function to perform resampling-based multiple
+                        hypothesis testing
+MTP-class               Class "MTP", classes and methods for multiple
+                        testing procedure output
+MTP-methods             Methods for MTP and EBMTP objects in Package
+                        'multtest'
+golub                   Gene expression dataset from Golub et al.
+                        (1999)
+mt.maxT                 Step-down maxT and minP multiple testing
+                        procedures
+mt.plot                 Plotting results from multiple testing
+                        procedures
+mt.rawp2adjp            Adjusted p-values for simple multiple testing
+                        procedures
+mt.reject               Identity and number of rejected hypotheses
+mt.sample.teststat      Permutation distribution of test statistics and
+                        raw (unadjusted) p-values
+mt.teststat             Computing test statistics for each row of a
+                        data frame

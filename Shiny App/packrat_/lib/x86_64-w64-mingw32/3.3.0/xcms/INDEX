@@ -1,0 +1,167 @@
+AutoLockMass-methods    Automatic parameter for Lock mass fixing
+                        'AutoLockMass' ~~
+SSgauss                 Gaussian Model
+[,xcmsRaw,logicalOrNumeric,missing,missing-method
+                        Subset an xcmsRaw object by scans
+absent                  Determine which peaks are absent / present in a
+                        sample class
+binYonX                 Aggregate values in y for bins defined on x
+breaks_on_binSize       Generate breaks for binning using a defined bin
+                        size.
+breaks_on_nBins         Generate breaks for binning
+c.xcmsSet               Combine xcmsSet objects
+calibrate               Calibrate peaks for correcting unprecise m/z
+                        values
+collect-methods         Collect MS^n peaks into xcmsFragments
+detectFeatures          Feature detection methods.
+diffreport              Create report of analyte differences
+do_detectFeatures_MSW   Core API function for single-spectrum
+                        non-chromatography MS data feature detection
+do_detectFeatures_centWave
+                        Core API function for centWave feature
+                        detection
+do_detectFeatures_centWaveWithPredIsoROIs
+                        Core API function for two-step centWave feature
+                        detection with feature isotopes
+do_detectFeatures_massifquant
+                        Core API function for massifquant feature
+                        detection
+do_detectFeatures_matchedFilter
+                        Core API function for matchedFilter feature
+                        detection
+etg                     Empirically Transformed Gaussian function
+featureDetection-MSW    Single-spectrum non-chromatography MS data
+                        feature detection
+featureDetection-centWave
+                        Feature detection using the centWave method
+featureDetection-centWaveWithPredIsoROIs
+                        Two-step centWave feature detection considering
+                        also feature isotopes
+featureDetection-massifquant
+                        Feature detection using the massifquant method
+featureDetection-matchedFilter
+                        Peak detection in the chromatographic time
+                        domain
+fillPeaks               Integrate areas of missing peaks
+fillPeaks.MSW           Integrate areas of missing peaks in FTICR-MS
+                        data
+fillPeaks.chrom         Integrate areas of missing peaks
+findMZ                  Find fragment ions in xcmsFragment objects
+findPeaks-methods       Feature detection for GC/MS and LC/MS Data -
+                        methods
+findPeaks.MS1           Collecting MS1 precursor peaks
+findPeaks.MSW,xcmsRaw-method
+                        Feature detection for single-spectrum
+                        non-chromatography MS data
+findPeaks.addPredictedIsotopeFeatures
+                        Feature detection based on predicted isotope
+                        features for high resolution LC/MS data
+findPeaks.centWave      Feature detection for high resolution LC/MS
+                        data
+findPeaks.centWaveWithPredictedIsotopeROIs
+                        Feature detection with centWave and additional
+                        isotope features
+findPeaks.massifquant   Feature detection for XC-MS data.
+findPeaks.matchedFilter,xcmsRaw-method
+                        Feature detection in the chromatographic time
+                        domain
+findneutral             Find neutral losses in xcmsFragment objects
+getEIC                  Get extracted ion chromatograms for specified
+                        m/z ranges
+getPeaks                Get peak intensities for specified regions
+getScan                 Get m/z and intensity values for a single mass
+                        scan
+getSpec                 Get average m/z and intensity values for
+                        multiple mass scans
+getXcmsRaw              Load the raw data for one or more files in the
+                        xcmsSet
+group-methods           Group peaks from different samples together
+group.density           Group peaks from different samples together
+group.mzClust           Group Peaks via High Resolution Alignment
+group.nearest           Group peaks from different samples together
+groupnames              Generate unque names for peak groups
+groupval                Extract a matrix of peak values for each group
+image,xcmsRaw-method    Plot log intensity image of a xcmsRaw object
+imputeLinInterpol       Impute values for empty elements in a vector
+                        using linear interpolation
+levelplot,xcmsRaw-method
+                        Plot log intensity image of a xcmsRaw object
+loadRaw-methods         Read binary data from a source
+medianFilter            Apply a median filter to a matrix
+msn2xcmsRaw             Copy MSn data in an xcmsRaw to the MS slots
+peakPlots-methods       Plot a grid of a large number of peaks
+peakTable               Create report of aligned peak intensities
+plot.xcmsEIC            Plot extracted ion chromatograms from multiple
+                        files
+plotChrom               Plot extracted ion chromatograms from the
+                        profile matrix
+plotEIC                 Plot extracted ion chromatograms for specified
+                        m/z range
+plotPeaks               Plot a grid of a large number of peaks
+plotQC                  Plot m/z and RT deviations for QC purposes
+                        without external reference data
+plotRaw                 Scatterplot of raw data points
+plotScan                Plot a single mass scan
+plotSpec                Plot mass spectra from the profile matrix
+plotSurf                Plot profile matrix 3D surface using OpenGL
+plotTIC                 Plot total ion count
+plotrt                  Plot retention time deviation profiles
+profMat,xcmsRaw-method
+                        The profile matrix
+profMedFilt             Median filtering of the profile matrix
+profMethod              Get and set method for generating profile data
+profRange               Specify a subset of profile mode data
+profStep                Get and set m/z step for generating profile
+                        data
+rawEIC                  Get extracted ion chromatograms for specified
+                        m/z range
+rawMat-methods          Get a raw data matrix
+retcor-methods          Correct retention time from different samples
+retcor.obiwarp          Align retention times across samples with
+                        Obiwarp
+retcor.peakgroups       Align retention times across samples
+retexp                  Set retention time window to a specified width
+sampnames               Get sample names
+showError,xcmsSet-method
+                        Extract processing errors
+specDist-methods        Distance methods for xcmsSet, xcmsRaw and
+                        xsAnnotate
+specDist.cosine         a Distance function based on matching peaks
+specDist.meanMZmatch    a Distance function based on matching peaks
+specDist.peakCount-methods
+                        a Distance function based on matching peaks
+specNoise               Calculate noise for a sparse continuum mass
+                        spectrum
+specPeaks               Identify peaks in a sparse continuum mode
+                        spectrum
+split.xcmsRaw           Divide an xcmsRaw object
+split.xcmsSet           Divide an xcmsSet object
+stitch-methods          Correct gaps in data
+updateObject,xcmsSet-method
+                        Update an 'xcmsSet' object
+useOriginalCode         Enable usage of old xcms code
+verify.mzQuantML        Verify an mzQuantML file
+write.cdf               Save an xcmsRaw object to file
+write.mzQuantML         Save an xcmsSet object to an PSI mzQuantML file
+write.mzdata            Save an xcmsRaw object to a file
+writeMzTab              Save a grouped xcmsSet object in mzTab-1.1
+                        format file
+xcms-deprecated         Deprecated functions in package 'xcms'
+xcmsEIC-class           Class xcmsEIC, a class for multi-sample
+                        extracted ion chromatograms
+xcmsFileSource-class    Base class for loading raw data from a file
+xcmsFragments           Constructor for xcmsFragments objects which
+                        holds Tandem MS peaks
+xcmsFragments-class     Class xcmsFragments, a class for handling
+                        Tandem MS and MS$^n$ data
+xcmsPapply              _Deprecated_: xcmsPapply
+xcmsPeaks-class         A matrix of peaks
+xcmsRaw                 Constructor for xcmsRaw objects which reads
+                        NetCDF/mzXML files
+xcmsRaw-class           Class xcmsRaw, a class for handling raw data
+xcmsSet                 Constructor for xcmsSet objects which finds
+                        peaks in NetCDF/mzXML files
+xcmsSet-class           Class xcmsSet, a class for preprocessing peak
+                        data
+xcmsSource-class        Virtual class for raw data sources
+xcmsSource-methods      Create an 'xcmsSource' object in a flexible way

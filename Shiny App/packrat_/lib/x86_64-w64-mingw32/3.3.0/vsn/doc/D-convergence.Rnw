@@ -1,0 +1,14 @@
+%\VignetteIndexEntry{Verifying and assessing the performance with simulated data}
+%\VignetteDepends{Biobase,vsn}
+%\VignetteKeywords{Expression Analysis}
+%\VignettePackage{vsn}
+
+\documentclass[11pt]{article}
+\begin{document}
+
+\section*{Verifying and assessing the performance with simulated data}
+
+Please see the .Rnw and .pdf file in the inst/vignettes folder of the vsn package.
+It takes several hours to run, therefore it is not included here.
+
+\end{document}

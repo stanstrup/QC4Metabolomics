@@ -1,0 +1,46 @@
+AbstractMassObject-class
+                        Class "AbstractMassObject"
+MALDIquant-package      Quantitative Analysis of Mass Spectrometry Data
+MALDIquant-parallel     Parallel Support in Package 'MALDIquant'
+MassPeaks-class         Class "MassPeaks"
+MassSpectrum-class      Class "MassSpectrum"
+alignSpectra            Align MassSpectrum objects.
+averageMassSpectra      Averages 'MassSpectrum' objects.
+binPeaks                Align Peaks into discrete bins.
+calibrateIntensity      Calibrates intensities of a MassSpectrum
+                        object.
+createMassPeaks         Creates a MassPeaks object.
+createMassSpectrum      Creates a MassSpectrum object.
+detectPeaks             Detects peaks in a MassSpectrum object.
+determineWarpingFunctions
+                        Determine warping functions of MassPeaks
+                        objects.
+estimateBaseline        Estimates the baseline of a MassSpectrum
+                        object.
+estimateNoise           Estimates the noise of a MassSpectrum object.
+fiedler2009subset       Example Mass Spectra (raw)
+filterPeaks             Removes less frequent peaks.
+findEmptyMassObjects    Finds or removes empty AbstractMassObject
+                        objects in a list.
+intensityMatrix         Converts a list of MassPeaks objects into a
+                        matrix.
+isMassSpectrum          Tests for MassSpectrum or MassPeaks object.
+isMassSpectrumList      Tests a list of MassSpectrum or MassPeaks
+                        objects.
+labelPeaks              Draws peak labels to plot.
+match.closest           Relaxed Value Matching
+mergeMassPeaks          Merges 'MassPeaks' objects.
+monoisotopicPeaks       Finds monoisotopic peaks in a MassPeaks object.
+msiSlices               Turn a list of AbstractMassObjects into a mass
+                        spectrometry imaging slice.
+plot,AbstractMassObject,missing-method
+                        Plots an AbstractMassObject object.
+plotMsiSlice            Plots a Mass Spectrometry Imaging dataset.
+referencePeaks          Creates a reference 'MassPeaks' object.
+removeBaseline          Removes the baseline of a MassSpectrum object.
+smoothIntensity         Smoothes intensities of a MassSpectrum object.
+transformIntensity      Transforms intensities of an AbstractMassObject
+                        object.
+trim                    Trim an AbstractMassObject object.
+warpMassSpectra         Run warping functions on AbstractMassObject
+                        objects.

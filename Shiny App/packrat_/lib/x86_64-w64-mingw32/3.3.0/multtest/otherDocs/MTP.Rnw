@@ -1,0 +1,908 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \VignetteIndexEntry{Multiple Testing Procedures}
+% \VignetteKeywords{Expression Analysis}
+% \VignettePackage{multtest}
+
+\documentclass[11pt]{article}
+
+\usepackage{graphicx}    % standard LaTeX graphics tool
+\usepackage{Sweave}
+\usepackage{amsfonts}
+
+% these should probably go into a dedicated style file
+\newcommand{\Rpackage}[1]{\textit{#1}}
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\Rclass}[1]{\textit{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+% Our added packages and definitions
+ 
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{color}
+\usepackage{comment}
+\usepackage[authoryear,round]{natbib}
+
+\parindent 0in
+
+\definecolor{red}{rgb}{1, 0, 0}
+\definecolor{green}{rgb}{0, 1, 0}
+\definecolor{blue}{rgb}{0, 0, 1}
+\definecolor{myblue}{rgb}{0.25, 0, 0.75}
+\definecolor{myred}{rgb}{0.75, 0, 0}
+\definecolor{gray}{rgb}{0.5, 0.5, 0.5}
+\definecolor{purple}{rgb}{0.65, 0, 0.75}
+\definecolor{orange}{rgb}{1, 0.65, 0}
+
+\def\RR{\mbox{\it I\hskip -0.177em R}}
+\def\ZZ{\mbox{\it I\hskip -0.177em Z}}
+\def\NN{\mbox{\it I\hskip -0.177em N}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{procedure}{Procedure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\title{Multiple Testing Procedures} 
+\author{Katherine S. Pollard$^1$, Sandrine Dudoit$^2$, Mark J. van der Laan$^3$} 
+\maketitle
+
+\begin{center}
+1. Center for Biomolecular Science and Engineering, University of California, Santa Cruz, \url{ http://lowelab.ucsc.edu/katie/}\\
+2. Division of Biostatistics, University of California, Berkeley, \url{ http://www.stat.berkeley.edu/~sandrine/}\\
+3. Department of Statistics and Division of Biostatistics, University of California, Berkeley, \url{ http://www.stat.berkeley.edu/~laan/}\\
+\end{center}
+
+\tableofcontents
+
+\label{anal:mult:multtest}
+
+\section{Introduction}
+\label{anal:mult:s:intro}
+
+\subsection{Overview}
+The Bioconductor R package \Rpackage{multtest} implements widely applicable resampling-based single-step and stepwise multiple testing procedures (MTP) for controlling a broad class of Type I error rates, in testing problems involving general data generating distributions (with arbitrary dependence structures among variables), null hypotheses, and test statistics \cite{Dudoit&vdLaanMTBook,DudoitetalMT1SAGMB04,vdLaanetalMT2SAGMB04,vdLaanetalMT3SAGMB04,Pollard&vdLaanJSPI04}. 
+The current version of \Rpackage{multtest} provides MTPs for null hypotheses concerning means, differences in means, and regression parameters in linear and Cox proportional hazards models.
+Both bootstrap and permutation estimators of the test statistics ($t$- or $F$-statistics) null distribution are available. 
+Procedures are provided to control Type I error rates defined as tail probabilities and expected values of arbitrary functions of the numbers of Type I errors, $V_n$, and rejected hypotheses, $R_n$. 
+These error rates include: 
+the generalized family-wise error rate, $gFWER(k) = Pr(V_n > k)$, or chance of at least $(k+1)$ false positives (the special case $k=0$ corresponds to the usual family-wise error rate, FWER); 
+tail probabilities $TPPFP(q) = Pr(V_n/R_n > q)$ for the proportion of false positives among the rejected hypotheses;
+the false discovery rate, $FDR=E[V_n/R_n]$.
+Single-step and step-down common-cut-off (maxT) and common-quantile (minP) procedures, that take into account the joint distribution of the test statistics, are implemented to control the FWER. 
+In addition, augmentation procedures are provided to control the gFWER, TPPFP, and FDR, based on {\em any} initial FWER-controlling procedure.
+The results of a multiple testing procedure are summarized using rejection regions for the test statistics, confidence regions for the parameters of interest, and adjusted $p$-values.
+The modular design of the \Rpackage{multtest} package allows interested users to readily extend the package's functionality, by inserting additional functions for test statistics and testing procedures. 
+The S4 class/method object-oriented programming approach was adopted to summarize the results of a MTP.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Motivation}
+
+Current statistical inference problems in areas such as genomics, astronomy, and marketing routinely involve the simultaneous test of thousands, or even millions, of null hypotheses. 
+Examples of testing problems in genomics include: 
+\begin{itemize}
+\item
+the identification of differentially expressed genes in microarray experiments, i.e., genes whose expression measures are associated with possibly censored responses or covariates interest; 
+\item
+tests of association between gene expression measures and Gene Ontology (GO) annotation (\url{www.geneontology.org});
+\item
+the identification of transcription factor binding sites in ChIP-Chip experiments, where chromatin immunoprecipitation (ChIP) of transcription factor bound DNA is followed by microarray hybridization (Chip) of the IP-enriched DNA \cite{KelesetalTechRep147}; 
+\item
+the genetic mapping of complex traits using single nucleotide polymorphisms (SNP). 
+\end{itemize}
+The above testing problems share the following general characteristics: 
+\begin{itemize}
+\item
+inference for  high-dimensional multivariate distributions, with complex and unknown dependence structures among variables;
+\item
+broad range of parameters of interest, such as, regression coefficients in model relating patient survival to genome-wide transcript levels or DNA copy numbers, pairwise gene correlations between transcript levels; 
+\item
+many null hypotheses, in the thousands or even millions; 
+\item
+complex dependence structures among test statistics, e.g., Gene Ontology directed acyclic graph (DAG).
+\end{itemize}
+
+Motivated by these applications, we have developed resampling-based single-step and step-down multiple testing procedures (MTP) for controlling a broad class of Type I error rates, in testing problems involving general data generating distributions (with arbitrary dependence structures among variables), null hypotheses, and test statistics \cite{Dudoit&vdLaanMTBook,DudoitetalMT1SAGMB04,vdLaanetalMT2SAGMB04,vdLaanetalMT3SAGMB04,Pollard&vdLaanJSPI04}. 
+In particular, Dudoit et al. \cite{DudoitetalMT1SAGMB04} and Pollard \& van der Laan \cite{Pollard&vdLaanJSPI04} derive
+{\em single-step common-cut-off and common-quantile procedures} for controlling arbitrary parameters of the distribution of the number of Type I errors, such as the generalized family-wise error rate, $gFWER(k)$, or chance of at least $(k+1)$ false positives. 
+van der Laan et al. \cite{vdLaanetalMT2SAGMB04} focus on control of the family-wise error rate, $FWER = gFWER(0)$, and provide {\em step-down common-cut-off and common-quantile procedures}, based on maxima of test statistics (maxT) and minima of unadjusted $p$-values (minP), respectively. 
+Dudoit \& van der Laan \cite{Dudoit&vdLaanMTBook} and van der Laan et al. \cite{vdLaanetalMT3SAGMB04} propose a general class of {\em augmentation multiple testing procedures} (AMTP), obtained by adding suitably chosen null hypotheses to the set of null hypotheses already rejected by an initial MTP. In particular, given {\em any} FWER-controlling procedure, they show how one can trivially obtain 
+procedures controlling tail probabilities for the number (gFWER) and proportion (TPPFP) of false positives among the rejected hypotheses.
+ 
+A key feature of our proposed MTPs is the {\em test statistics null distribution} (rather than data generating null distribution) used to derive rejection regions (i.e., cut-offs) for the test statistics and resulting adjusted $p$-values \cite{Dudoit&vdLaanMTBook,DudoitetalMT1SAGMB04,vdLaanetalMT2SAGMB04,vdLaanetalMT3SAGMB04,Pollard&vdLaanJSPI04}. 
+For general null hypotheses, defined in terms of submodels for the data generating distribution, this null distribution is the asymptotic distribution of the vector of null value shifted and scaled test statistics. 
+Resampling procedures (e.g., based on the non-parametric or model-based bootstrap) are proposed to conveniently obtain consistent estimators of the null distribution and the resulting test statistic cut-offs and adjusted $p$-values \cite{DudoitetalMT1SAGMB04,vdLaanetalMT2SAGMB04,Pollard&vdLaanJSPI04}.
+
+The Bioconductor R package \Rpackage{multtest} provides software implementations of the above multiple testing procedures. 
+
+\subsection{Outline}
+
+The present vignette provides a summary of our proposed multiple testing procedures (\cite{Dudoit&vdLaanMTBook,DudoitetalMT1SAGMB04,vdLaanetalMT2SAGMB04,vdLaanetalMT3SAGMB04,Pollard&vdLaanJSPI04}. Section \ref{anal:mult:s:methods}), 
+discusses their software implementation in the Bioconductor R package \Rpackage{multtest} (Section \ref{anal:mult:s:software}). 
+The accompanying vignette (MTPALL) describes their application to the ALL dataset of Chiaretti et al. \cite{Chiarettietal04}.
+
+Specifically, given a multivariate dataset (stored as a \Rclass{matrix}, \Rclass{data.frame}, or microarray object of class \Rclass{ExpressionSet}) 
+and user-supplied choices for the test statistics, Type I error rate and its target level, resampling-based estimator of the test statistics null distribution, and procedure for error rate control, the main user-level function \Robject{MTP} returns unadjusted and adjusted $p$-values, cut-off vectors for the test statistics, and estimates and confidence regions for the parameters of interest. 
+Both bootstrap and permutation estimators of the test statistics null distribution are available and can optionally be output to the user. 
+The variety of models and hypotheses, test statistics, Type I error rates, and MTPs currently implemented are discussed in Section \ref{anal:mult:s:MTP}.
+The S4 class/method object-oriented programming approach was adopted to represent the results of a MTP. 
+Several methods are defined to produce numerical and graphical summaries of these results (Section \ref{anal:mult:s:summaries}).
+A modular programming approach, which utilizes function closures, allows interested users to readily extend the package's functionality, 
+by inserting functions for new test statistics and testing procedures (Section \ref{anal:mult:s:design}).
+Ongoing efforts are discussed in Section \ref{anal:mult:s:disc}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Methods}
+\label{anal:mult:s:methods}
+
+\subsection{Multiple hypothesis testing framework}
+\label{anal:mult:s:framework}
+
+{\em Hypothesis testing} is concerned with using observed data to test hypotheses, i.e.,  make decisions, regarding properties of the unknown data generating distribution. 
+Below, we discuss in turn the main ingredients of a multiple testing problem, namely: data, null and alternative hypotheses, test statistics, multiple testing procedure (MTP) to define rejection regions for the test statistics, Type I and Type II errors, and adjusted $p$-values. 
+The crucial choice of a test statistics null distribution is addressed in Section \ref{anal:mult:s:nullDistn}. 
+Specific proposals of MTPs are given in Sections \ref{anal:mult:s:SS} -- \ref{anal:mult:s:AMTP}.\\
+
+\noindent
+{\bf Data.} Let $X_1,\ldots,X_n$ be a {\em random sample} of $n$ independent and identically distributed (i.i.d.) random variables, $X \sim P\in {\cal M}$, where the {\em data generating distribution} $P$ is known to be an element of a particular {\em statistical model} ${\cal M}$ (i.e., a set of possibly non-parametric distributions).\\
+
+\noindent
+{\bf Null and alternative hypotheses.} 
+In order to cover a broad class of testing problems, define $M$
+null hypotheses in terms of a collection of {\em submodels}, ${\cal
+  M}(m)\subseteq {\cal M}$,  $m=1,\ldots,M$, for the data generating
+distribution $P$. The $M$ {\em null hypotheses} are defined as
+$H_0(m) \equiv \mathrm{I}(P\in {\cal M}(m))$ and the corresponding {\em
+  alternative hypotheses} as $H_1(m) \equiv \mathrm{I}(P \notin {\cal M}(m))$.
+
+In many testing problems, the submodels concern {\em parameters}, i.e., functions of the data generating distribution $P$, $\Psi(P) = \psi= (\psi(m):m=1,\ldots,M)$, such as means, differences in means, correlations, and parameters in linear models, generalized linear models, survival models, time-series models, dose-response models, etc. One distinguishes between two types of testing problems: {\em one-sided tests}, where $H_0(m) = \mathrm{I}(\psi(m) \leq \psi_0(m))$, and {\em two-sided tests}, where $H_0(m) = \mathrm{I}(\psi(m) =
+\psi_0(m))$.
+The hypothesized {\em null values}, $\psi_0(m)$, are frequently zero.
+
+ Let ${\cal H}_0={\cal H}_0(P)\equiv \{m:H_0(m)=1\} = \{m: P \in {\cal M}(m)\}$ be the set of $h_0 \equiv |{\cal H}_0|$ true null hypotheses, where we note that ${\cal H}_0$ depends on the data generating distribution $P$. Let ${\cal H}_1={\cal H}_1(P) \equiv {\cal H}_0^c(P) = \{m: H_1(m) = 1\} = \{m: P \notin {\cal M}(m)\}$
+be the set of  $h_1 \equiv |{\cal H}_1|  = M-h_0$ false null hypotheses, i.e., true positives.  
+The goal of a multiple testing
+  procedure is to accurately estimate the set ${\cal H}_0$, and thus its
+  complement ${\cal H}_1$, while controlling probabilistically the number
+  of false positives at a user-supplied level $\alpha$.\\
+
+\noindent
+{\bf Test statistics.} A testing procedure is a data-driven rule for deciding whether or not to {\em reject}  each of the $M$ null hypotheses $H_0(m)$, i.e., declare that $H_0(m)$ is false (zero) and hence $P \notin {\cal M}(m)$. 
+The decisions to reject or not the null hypotheses are based on an $M$--vector of
+{\em test statistics}, $T_n
+  =(T_n(m):m=1,\ldots,M)$, that are functions of the
+data, $X_1, \ldots, X_n$. Denote the typically unknown (finite sample) {\em joint distribution} of the test statistics $T_n$ by $Q_n=Q_n(P)$. 
+
+
+Single-parameter null hypotheses are commonly tested using {\em $t$-statistics}, i.e., standardized differences,
+\begin{equation}\label{anal:mult:e:tstat}
+T_n(m) \equiv \frac{\mbox{Estimator} - \mbox{Null value}}{\mbox{Standard error}} = \sqrt{n}\frac{\psi_n(m) - \psi_0(m)}{{\sigma_n(m)}}.
+\end{equation}
+In general, the $M$--vector $\psi_n = (\psi_n(m): m=1,\ldots, M)$ denotes an asymptotically linear {\em estimator} of the parameter $M$--vector $\psi = (\psi(m): m=1,\ldots,M)$ and $(\sigma_n(m)/\sqrt{n}:
+m=1,\ldots, M)$ denote consistent estimators of the {\em standard errors} of the components of $\psi_n$. 
+For tests of means, one recovers the usual one-sample and two-sample $t$-statistics, where the $\psi_n(m)$ and $\sigma_n(m)$ are based on sample means and variances, respectively.
+In some settings, it may be appropriate to use (unstandardized) {\em difference statistics}, $T_n(m) \equiv \sqrt{n}(\psi_n(m) - \psi_0(m))$ \cite{Pollard&vdLaanJSPI04}.
+Test statistics for other types of null hypotheses include $F$-statistics, $\chi^2$-statistics, and likelihood ratio statistics. \\
+
+
+\noindent
+{\bf Example: ALL microarray dataset.}
+Suppose that, as in the analysis of the ALL dataset of  Chiaretti et al. \cite{Chiarettietal04} (See accompanying vignette MTPALL), one is interested in identifying genes that are differentially expressed in two populations of  ALL cancer patients, those with normal cytogenetic test status and those with abnormal test. 
+The data consist of random $J$--vectors $X$, where the first $M$ entries of $X$ are microarray expression measures on $M$ genes of interest and the last entry, $X(J)$, is an indicator for cytogenetic test status (1 for normal, 0 for abnormal). 
+Then, the parameter of interest is an $M$--vector of differences in mean expression measures in the two populations, $\psi(m) = E[X(m) | X(J)=0] - E[X(m) | X(J)=1]$, $m=1,\ldots,M$. 
+To identify genes with higher mean expression measures in the abnormal compared to the normal cytogenetics subjects, one can test the one-sided null hypotheses $H_0(m) = \mathrm{I}(\psi(m) \leq 0)$ vs. the alternative hypotheses $H_1(m) = \mathrm{I}(\psi(m) > 0)$, using two-sample Welch $t$-statistics 
+\begin{equation}
+T_n(m) \equiv \frac{\bar{X}_{0,n_0}(m) - \bar{X}_{1,n_1}(m)}{\sqrt{\frac{\sigma_{0,n_0}^2(m)}{n_0} + \frac{\sigma_{1,n_1}^2(m)}{n_1}}},
+\end{equation}
+where $n_k$, $\bar{X}_{k,n_k}(m)$, and $\sigma_{k,n_k}^2(m)$ denote, respectively, the sample size, sample means, and sample variances, for patients with test status $k$, $k=0,\, 1$. The null hypotheses are rejected, i.e., the corresponding genes are declared differentially expressed, for large values of the test statistics $T_n(m)$.\\
+
+\noindent
+{\bf Multiple testing procedure.} A {\em multiple testing procedure} (MTP) provides {\em rejection regions}, ${\cal C}_n(m)$, i.e., sets of values for each test statistic $T_n(m)$ that lead to the decision to reject the null hypothesis $H_0(m)$. 
+In other words, a MTP produces a random (i.e., data-dependent) subset ${\cal R}_n$ of rejected hypotheses that estimates ${\cal H}_1$, the set of true positives,
+\begin{equation}
+{\cal R}_n={\cal R}(T_n, Q_{0n},\alpha) \equiv 
+\{m:\mbox{$H_0(m)$ is rejected}\} = \{m: T_n(m) \in {\cal C}_n(m)\},
+\end{equation}
+where ${\cal C}_n(m)={\cal C}(T_n,Q_{0n},\alpha)(m)$, $m=1,\ldots,M$, denote possibly random rejection regions. The long notation ${\cal R}(T_n, Q_{0n},\alpha)$ and ${\cal C}(T_n, Q_{0n},\alpha)(m)$ emphasizes that the MTP depends on:
+(i) the {\em data}, $X_1, \ldots, X_n$,
+ through the $M$--vector of {\em test statistics}, $T_n = (T_n(m): m=1,\ldots,
+ M)$;
+ (ii) a test statistics {\em null distribution}, $Q_{0n}$ (Section \ref{anal:mult:s:nullDistn}); and 
+(iii) the {\em nominal level} $\alpha$ of the MTP, i.e., the desired upper bound for a suitably defined false positive rate. 
+
+Unless specified otherwise, it is assumed that large values of the test statistic $T_n(m)$ provide evidence against the corresponding null hypothesis $H_0(m)$, that is, we consider rejection regions of the form ${\cal C}_n(m) = (c_n(m),\infty)$, where $c_n(m)$ are to-be-determined {\em cut-offs}, or {\em critical values}.\\ 
+
+\noindent
+{\bf Type I and Type II errors.} In any
+testing situation, two types of errors can be committed: a {\em false
+positive}, or {\em Type I error}, is committed by rejecting a true
+null hypothesis, and a {\em false negative}, or {\em Type
+II error}, is committed when the test procedure fails to reject a false null
+hypothesis. The situation can be summarized by Table \ref{anal:mult:t:TypeIandII}, below, where
+the number of Type I errors is $V_n \equiv \sum_{m \in {\cal H}_0} \mathrm{I}(T_n(m) \in {\cal C}_n(m)) = |{\cal R}_n \cap {\cal H}_0|$ and the number
+of Type II errors is $U_n \equiv \sum_{m \in {\cal H}_1} \mathrm{I}(T_n(m) \notin {\cal C}_n(m)) = |{\cal R}_n^c \cap {\cal H}_1|$. Note that both $U_n$
+and $V_n$ depend on the unknown data generating distribution $P$ through
+the unknown set of true null hypotheses ${\cal H}_0 = {\cal H}_0(P)$. The numbers $h_0=|{\cal H}_0|$ and $h_1 = |{\cal H}_1| = M-h_0$ of true and false null hypotheses are
+{\em unknown parameters}, the number of rejected hypotheses $R_n \equiv \sum_{m=1}^M  \mathrm{I}(T_n(m) \in {\cal C}_n(m)) = |{\cal R}_n|$ is an {\em observable random variable}, and the entries in the body of the table, $U_n$, $h_1 -
+U_n$, $V_n$, and $h_0-V_n$, are
+{\em unobservable random variables} (depending on $P$, through ${\cal H}_0(P)$). 
+\begin{table}[hhh]
+\caption{Type I and Type II errors in multiple hypothesis testing.}
+\label{anal:mult:t:TypeIandII}
+\begin{tabular}{ll|cc|l}
+\multicolumn{5}{c}{} \\
+\multicolumn{2}{c}{} & \multicolumn{2}{c}{Null hypotheses} & \multicolumn{1}{c}{}\\
+\multicolumn{2}{c}{} & \multicolumn{1}{c}{not rejected} & \multicolumn{1}{c}{rejected} & \multicolumn{1}{c}{} \\
+%%% \multicolumn{5}{c}{}\\
+\cline{3-4}
+&&&&\\
+& true & $| {\cal R}_n^c \cap {\cal H}_0 |$ &
+$V_n = | {\cal R}_n \cap {\cal H}_0 |$ &
+$h_0=| {\cal H}_0|$\\
+&&&(Type I errors)&\\
+Null hypotheses&&&&\\
+& false & $U_n = | {\cal R}_n^c \cap {\cal H}_1 |$ & $| {\cal R}_n \cap {\cal H}_1 |$ & $h_1=| {\cal H}_1
+|$\\
+&&(Type II errors)&&\\
+&&&&\\
+\cline{3-4}
+%%% \multicolumn{5}{c}{}\\
+\multicolumn{2}{c}{}& \multicolumn{1}{c}{$M-R_n$} &
+\multicolumn{1}{c}{ $R_n = | {\cal R}_n|$}
+&\multicolumn{1}{l}{$M$}\\
+\end{tabular}
+\end{table}
+
+Ideally, one would like to simultaneously minimize both the chances of committing a Type I error and a Type II error. Unfortunately, this is not feasible and one seeks a {\em trade-off} between the two types of errors. A standard approach is to specify an acceptable level $\alpha$ for the Type I error rate and derive testing procedures, i.e., rejection regions, that aim to minimize the Type II error rate, i.e., maximize {\em power}, within the class of tests with Type I error rate at most $\alpha$. \\
+
+
+\noindent
+{\bf Type I error rates.}
+When testing multiple hypotheses, there are many possible definitions for the Type I error rate (and power). Accordingly, we adopt a general definition of Type I error rates, as parameters, $\theta_n = \theta(F_{V_n,R_n})$, of the joint distribution $F_{V_n,R_n}$ of the numbers of Type I errors $V_n$ and rejected hypotheses $R_n$. 
+Such a general representation covers the following commonly-used Type I error rates.
+\begin{enumerate}
+\item 
+{\em Generalized family-wise error rate} (gFWER), or 
+ probability of at least $(k+1)$ Type I errors, $k=0,\ldots, (h_0-1)$,
+\begin{equation}\label{anal:mult:e:gFWER}
+gFWER(k) \equiv Pr(V_n > k) = 1 - F_{V_n}(k).
+\end{equation}
+When $k=0$, the gFWER is the usual {\em family-wise error rate}, FWER, controlled by the classical Bonferroni procedure.
+\item
+{\em Per-comparison error rate} (PCER), or expected 
+proportion of Type I errors among the $M$ tests,
+\begin{equation}\label{anal:mult:e:PCER}
+PCER \equiv \frac{1}{M} E[V_n] = \frac{1}{M} \int v dF_{V_n}(v).
+\end{equation}
+\item
+{\em Tail probabilities for the proportion of false positives} (TPPFP) among the rejected hypotheses,
+\begin{equation}\label{anal:mult:e:TPPFP}
+TPPFP(q) \equiv Pr(V_n/R_n > q) = 1 - F_{V_n/R_n}(q), \qquad q \in (0,1),
+\end{equation}
+with the convention that $V_n/R_n \equiv 0$, if $R_n=0$.
+\item
+{\em False discovery rate} (FDR), or  expected value of the proportion of false positives among the rejected hypotheses, 
+\begin{equation}\label{anal:mult:e:FDR}
+FDR \equiv E[V_n/R_n] = \int q dF_{V_n/R_n}(q),
+\end{equation}
+again with the convention that $V_n/R_n \equiv 0$, if $R_n=0$ \cite{Benjamini&Hochberg95}. 
+\end{enumerate}
+Note that while the gFWER is a parameter of only the {\em marginal} distribution $F_{V_n}$ for the number of Type I errors $V_n$ (tail probability, or survivor function, for $V_n$), the TPPFP is a parameter of the {\em joint} distribution of $(V_n,R_n)$ (tail probability, or survivor function, for $V_n/R_n$). 
+ Error rates based on the {\em proportion} of false positives (e.g., TPPFP and FDR) are especially appealing for the large-scale testing problems encountered in genomics, compared to error rates based on the {\em number} of false positives (e.g., gFWER), as they do not increase exponentially with the number of hypotheses. 
+The above four error rates are part of the broad class of Type I error rates considered in Dudoit \& van der Laan \cite{Dudoit&vdLaanMTBook} and defined as tail probabilities $Pr(g(V_n,R_n) > q)$ and expected values $E[g(V_n,R_n)]$ for an arbitrary function $g(V_n,R_n)$ of the numbers of false positives $V_n$ and rejected hypotheses $R_n$. The gFWER and TPPFP correspond to the special cases $g(V_n,R_n) = V_n$ and $g(V_n,R_n) = V_n/R_n$, respectively.\\
+
+
+\noindent
+{\bf Adjusted $p$-values.} The notion of $p$-value extends directly to multiple testing problems, as follows. 
+Given a MTP, ${\cal R}_n = {\cal R}(T_n,Q_{0n}, \alpha)$, the {\em adjusted $p$-value}, $\widetilde{P}_{0n}(m) = \widetilde{P}(T_n,Q_{0n})(m)$, for null hypothesis $H_0(m)$, is defined as the smallest Type I error level $\alpha$ at which one would reject $H_0(m)$, that is,
+\begin{eqnarray}
+\widetilde{P}_{0n}(m) &\equiv& \inf \left \{ \alpha \in [0,1]: \mbox{Reject $H_0(m)$ at MTP level $\alpha$}\right \}\\
+&=& \inf\left \{\alpha \in [0,1]: m \in {\cal R}_n \right \}\nonumber \\
+&=& \inf\left \{\alpha \in [0,1]: T_n(m) \in {\cal C}_n(m) \right \}, \qquad m=1,\ldots, M.\nonumber
+\end{eqnarray}
+As in single hypothesis tests, the smaller the adjusted $p$-value, the stronger the evidence against the corresponding null hypothesis. The main difference between unadjusted (i.e., for the test of a single hypothesis) and adjusted $p$-values is that the latter are defined in terms of the Type I error rate for the {\em entire} testing procedure, i.e., take into account the multiplicity of tests.
+For example, the adjusted $p$-values for the classical Bonferroni procedure for FWER control are given by $\widetilde{P}_{0n}(m) = \min(M P_{0n}(m), 1)$, 
+where $P_{0n}(m)$ is the unadjusted $p$-value for the test of single hypothesis $H_0(m)$.
+
+We now have two representations for a MTP, in terms of rejection regions for the test statistics  and in terms of adjusted $p$-values 
+\begin{equation}
+{\cal R}_n = \{m: T_n(m) \in {\cal C}_n(m) \} = \{m: \widetilde{P}_{0n}(m) \leq \alpha\}.
+\end{equation}
+Again, as in the single hypothesis case, an
+advantage of reporting adjusted $p$-values, as opposed to only
+rejection or not of the hypotheses, is that the level $\alpha$ of the test does
+not need to be determined in advance, that is, results of the multiple
+testing procedure are provided for all $\alpha$. 
+ Adjusted $p$-values are convenient and flexible summaries of the strength of the evidence against each null hypothesis, in terms of the Type I error rate for the entire MTP (gFWER, TPPFP, FDR, or any other suitably defined error rate). \\
+
+\noindent
+{\bf Stepwise multiple testing procedures.} 
+One usually distinguishes between two main classes of multiple testing
+procedures, single-step and stepwise procedures.  
+ In {\em single-step procedures}, each null hypothesis is
+ evaluated using a rejection region that is  independent of the results of the tests of other hypotheses.
+Improvement in power, while preserving Type I error rate
+control, may be achieved by {\em stepwise procedures}, in which 
+rejection of a particular null hypothesis depends on the outcome of
+the tests of other hypotheses. 
+That is, the (single-step) test procedure is applied to a sequence of successively smaller nested random (i.e., data-dependent) subsets of null hypotheses, defined by the ordering of the test statistics (common cut-offs) or unadjusted $p$-values (common-quantile cut-offs).
+In {\em step-down procedures}, the hypotheses
+corresponding to the {\em most significant} test statistics (i.e., largest absolute test
+statistics or smallest unadjusted $p$-values) are considered successively, with further tests depending
+on the outcome of earlier ones.
+As soon as one fails to reject a null hypothesis, no further
+hypotheses are rejected. 
+In contrast, for {\em step-up procedures},
+the hypotheses corresponding to the {\em least significant} test
+statistics are considered successively, again with further tests
+depending on the outcome of earlier ones. As soon as one hypothesis
+is rejected, all remaining more significant hypotheses are rejected.\\
+
+
+
+\noindent
+{\bf Confidence regions.} 
+For the test of single-parameter null hypotheses and for any Type I error rate of the form $\theta(F_{V_n})$, Dudoit \& van der Laan \cite{Dudoit&vdLaanMTBook} and Pollard \& van der Laan \cite{Pollard&vdLaanJSPI04} provide results on the correspondence between single-step MTPs and $\theta$--specific {\em confidence regions}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Test statistics null distribution}
+\label{anal:mult:s:nullDistn}
+
+\noindent
+{\bf Test statistics null distribution.}
+One of the main tasks in specifying a MTP is to derive rejection regions for the test statistics such that the Type I error rate is controlled at a desired level $\alpha$, i.e., such that $\theta(F_{V_n,R_n}) \leq \alpha$, for finite sample control, or $\limsup_n \theta(F_{V_n,R_n}) \leq \alpha$, for asymptotic control.
+However, one is immediately faced with the problem that the {\em true distribution} $Q_n=Q_n(P)$ of the test statistics $T_n$ is usually {\em unknown}, and hence, so are the distributions of the numbers of Type I errors, $V_n = \sum_{m \in {\cal H}_0} \mathrm{I}(T_n(m) \in {\cal C}_n(m))$, and rejected hypotheses, $R_n = \sum_{m=1}^M  \mathrm{I}(T_n(m) \in {\cal C}_n(m))$. 
+In practice, the test statistics {\em true distribution} $Q_n(P)$ is replaced by a {\em null distribution} $Q_0$ (or estimate thereof, $Q_{0n}$), in order to derive rejection regions, ${\cal C}(T_n,Q_0,\alpha)(m)$, and resulting adjusted $p$-values, $\widetilde{P}(T_n,Q_0)(m)$. 
+
+The choice of null distribution $Q_0$ is crucial, in order
+to ensure that (finite sample or asymptotic) control of the Type I
+error rate under the {\em assumed} null distribution $Q_0$ does indeed provide the required control under the {\em true} distribution $Q_n(P)$.
+For proper control, the null distribution $Q_0$ must be such that the Type I error rate under this assumed null distribution {\em dominates} the Type I error rate under the true distribution $Q_n(P)$. That is, one must have $\theta(F_{V_n,R_n}) \leq \theta(F_{V_0,R_0})$, for finite sample control, and $\limsup_n \theta(F_{V_n,R_n}) \leq  \theta(F_{V_0,R_0})$, for asymptotic control, where $V_0$ and $R_0$ denote, respectively, the numbers of Type I errors and rejected hypotheses under the assumed null distribution $Q_0$.  
+
+
+For error rates $\theta(F_{V_n})$, defined as arbitrary parameters of the distribution of the number of Type I errors $V_n$, we propose as null distribution the asymptotic distribution $Q_0$ of the vector of null value shifted and scaled test statistics \cite{Dudoit&vdLaanMTBook,DudoitetalMT1SAGMB04,vdLaanetalMT2SAGMB04,vdLaanetalMT3SAGMB04,Pollard&vdLaanJSPI04}:
+\begin{equation}
+Z_n(m) \equiv 
+ \sqrt{\min \left(1,
+  \frac{\tau_0(m)}{Var[T_n(m)]}\right)} \Bigl( T_n(m) + \lambda_0(m) - E[T_n(m)] \Bigr).
+\end{equation}
+For the test of single-parameter null hypotheses using $t$-statistics, the null values are $\lambda_0(m)=0$ and $\tau_0(m)=1$. For testing the equality of $K$ population means using $F$-statistics, the null values are  $\lambda_0(m)= 1$ and $\tau_0(m) = 2/(K-1)$, under the assumption of equal variances in the different populations.
+Dudoit et al. \cite{DudoitetalMT1SAGMB04} and van der Laan et al. \cite{vdLaanetalMT2SAGMB04} prove that this null distribution does indeed provide the desired asymptotic control of the Type I error rate $\theta(F_{V_n})$, for
+ general data generating distributions (with arbitrary dependence structures among variables), null hypotheses (defined in terms of submodels for the data generating distribution), and test statistics (e.g., $t$-statistics, $F$-statistics).
+
+For a broad class of testing problems, such as the test of single-parameter null hypotheses using $t$-statistics (as in Equation (\ref{anal:mult:e:tstat})), the null distribution $Q_0$ is an $M$--variate Gaussian distribution with mean vector zero and covariance matrix $\Sigma^*(P)$: $Q_0 = Q_0(P) \equiv N(0,\Sigma^*(P))$. 
+For tests of means, where the parameter of interest is the $M$--dimensional mean vector $\Psi(P) = \psi = E[X]$, the estimator $\psi_n$ is simply the $M$--vector of sample averages and $\Sigma^*(P)$ is the correlation matrix of $X \sim P$, $Cor[X]$. More generally, for an asymptotically linear estimator $\psi_n$, $\Sigma^*(P)$ is the correlation matrix of the vector influence curve (IC).
+
+Note that the following important points distinguish our approach from existing approaches to Type I error rate control. 
+Firstly, we are only concerned with Type I error control under the {\em true data generating distribution} $P$. The notions of weak and strong control (and associated subset pivotality, Westfall \& Young \cite{Westfall&Young93},
+p. 42--43) are therefore irrelevant to our approach. 
+Secondly, we propose a {\em null distribution for the test statistics} ($T_n \sim Q_0$), and not a data generating null distribution ($X \sim P_0\in \cap_{m=1}^M {\cal M}(m)$). 
+The latter practice does not necessarily provide proper Type I error control, as the test statistics' {\em assumed} null distribution $Q_n(P_0)$ and their {\em true} distribution $Q_n(P)$ may have different dependence structures (in the limit) for the true null hypotheses ${\cal H}_0$.\\
+
+
+\noindent
+{\bf Bootstrap estimation of the test statistics null distribution.}
+In practice, since the data generating distribution $P$ is unknown, then so is the proposed null distribution $Q_0=Q_0(P)$.  Resampling procedures, such as bootstrap Procedure \ref{anal:mult:proc:boot}, below, may be used to conveniently obtain consistent estimators $Q_{0n}$ of the null distribution $Q_0$ and of the resulting test statistic cut-offs and adjusted $p$-values. 
+
+Dudoit et al. \cite{DudoitetalMT1SAGMB04} and van der Laan et al. \cite{vdLaanetalMT2SAGMB04} show that single-step and step-down procedures based on consistent estimators of the null distribution $Q_0$ also provide asymptotic control of the Type I error rate. The reader is referred to these two articles and to Dudoit \& van der Laan \cite{Dudoit&vdLaanMTBook} for details on the choice of null distribution and various approaches for estimating this null distribution.
+
+Having selected a suitable test statistics null distribution, there remains the main task of specifying rejection regions for each null hypothesis, i.e., cut-offs for each test statistic. 
+Among the different approaches for defining rejection regions, we distinguish between single-step vs. stepwise procedures, and common cut-offs (i.e., the same cut-off $c_0$ is used for each test statistic) vs. common-quantile cut-offs (i.e., the cut-offs are the $\delta_0$--quantiles of the marginal null distributions of the test statistics). 
+The next three subsections discuss three main approaches for deriving rejection regions and corresponding adjusted $p$-values: single-step common-cut-off and common-quantile procedures for control of general Type I error rates $\theta(F_{V_n})$ (Section \ref{anal:mult:s:SS});  step-down  common-cut-off (maxT) and common-quantile (minP) procedures for control of the FWER (Section \ref{anal:mult:s:SD}); augmentation procedures for control of the gFWER and TPPFP, based on an initial FWER-controlling procedure (Section \ref{anal:mult:s:AMTP}).
+
+\begin{center}
+\fbox{\parbox{4.5in}{%
+\begin{procedure}
+\label{anal:mult:proc:boot}
+{\bf [Bootstrap estimation of the null distribution $Q_0$]}
+\begin{enumerate} 
+\item
+ Let $P_n^{\star}$ denote an estimator of the data generating distribution
+$P$. For the {\em non-parametric bootstrap},  $P_n^{\star}$ is simply the
+empirical distribution $P_n$, that is, samples of size $n$ are drawn
+at random, with replacement from the observed data $X_1, \ldots, X_n$. For
+the {\em model-based bootstrap}, $P_n^{\star}$ is based on a model ${\cal
+  M}$ for the data generating distribution $P$, such
+as the family of $M$--variate Gaussian distributions.
+\item
+Generate $B$ bootstrap samples, each consisting of $n$ i.i.d. realizations of a random variable $X^{\#} \sim P_n^{\star}$. 
+\item
+For the $b$th bootstrap sample, $b=1,\ldots, B$, compute an $M$--vector of test statistics, $T_n^{\#}(\cdot,b) = (T_n^{\#}(m,b): m=1,\ldots,M)$.  Arrange these bootstrap statistics in an $M \times B$ matrix, $\mathbf{T}_n^{\#} = \bigl(T_n^{\#}(m,b)\bigr)$, with rows corresponding to the $M$ null hypotheses and columns to the $B$ bootstrap samples.
+\item
+Compute row means, $E[T_n{^\#}(m,\cdot)]$, and row variances, $Var[T_n{^\#}(m,\cdot)]$, of the matrix $\mathbf{T}_n^{\#}$, to yield estimates of the true means $E[T_n(m)]$ and variances $Var[T_n(m)]$ of the test statistics, respectively.
+\item
+Obtain an $M \times B$ matrix, $\mathbf{Z}_n^{\#} = \bigl(Z_n^{\#}(m,b)\bigr)$, of
+null value shifted and scaled bootstrap statistics $Z_n^{\#}(m,b)$, by row-shifting and scaling the matrix
+$\mathbf{T}_n^{\#}$ using the bootstrap estimates of $E[T_n(m)]$ and
+$Var[T_n(m)]$ and the user-supplied null values $\lambda_0(m)$ and
+$\tau_0(m)$. That is, compute 
+\begin{eqnarray}
+Z_n^{\#}(m,b) &\equiv&  \sqrt{\min \left(1,
+  \frac{\tau_0(m)}{Var[T_n{^\#}(m,\cdot)]}\right)}\\
+&& \qquad \times \ \Bigl( T_n^{\#}(m,b) + \lambda_0(m) - E[T_n{^\#}(m,\cdot)] \Bigr)  \nonumber .
+\end{eqnarray}
+\item
+The bootstrap
+estimate $Q_{0n}$ of the null distribution $Q_0$ is the empirical distribution of the $B$ columns $Z_n^{\#}(\cdot,b)$ of matrix $\mathbf{Z}_n^{\#}$.
+\end{enumerate}
+\end{procedure}
+}}
+\end{center}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Single-step procedures for control of general Type I error rates $\theta(F_{V_n})$}
+\label{anal:mult:s:SS}
+
+
+Dudoit et al. \cite{DudoitetalMT1SAGMB04} and Pollard \& van der Laan \cite{Pollard&vdLaanJSPI04} propose single-step common-cut-off and common-quantile procedures for controlling arbitrary parameters $\theta(F_{V_n})$ of the distribution of the number of Type I errors. 
+The main idea is to substitute control of the parameter $\theta(F_{V_n})$, for the {\em  unknown, true distribution} $F_{V_n}$ of the number of Type I errors, by control of the corresponding parameter $\theta(F_{R_0})$, for the {\em known, null distribution} $F_{R_0}$ of the number of rejected hypotheses. 
+That is, consider single-step procedures of the form ${\cal R}_n \equiv \{m: T_n(m)> c_n(m) \}$, 
+where the cut-offs $c_n(m)$ are chosen so that $\theta(F_{R_0}) \leq
+\alpha$, for $R_0 \equiv \sum_{m=1}^M \mathrm{I}(Z(m) >  c_n(m))$
+and $Z \sim Q_0$.
+Among the class of MTPs that satisfy $\theta(F_{R_0}) \leq \alpha$, 
+Dudoit et al. \cite{DudoitetalMT1SAGMB04} and Pollard \& van der Laan \cite{Pollard&vdLaanJSPI04} propose two procedures, based on common cut-offs and common-quantile cut-offs, respectively. 
+The procedures are summarized below and the reader is referred to the articles for proofs and details on the derivation of cut-offs and adjusted $p$-values.\\
+
+\noindent
+{\bf Single-step common-cut-off procedure.} The set of rejected hypotheses for the {\em $\theta$--controlling single-step common-cut-off procedure} is of the form
+${\cal R}_n \equiv \{m: T_n(m)> c_0 \}$, where the common cut-off $c_0$ is the {\em smallest}  (i.e., least conservative) value for which $\theta(F_{R_0}) \leq \alpha$.
+
+For $gFWER(k)$ control (special case $\theta(F_{V_n}) = 1 - F_{V_n}(k)$), the procedure is based on the {\em $(k+1)$st ordered test statistic}.  
+Specifically, the adjusted $p$-values are given by
+\begin{equation}\label{anal:mult:e:SScut}
+\widetilde{p}_{0n}(m) = Pr_{Q_0} \left(Z^{\circ}(k+1) \geq t_n(m) \right),  \qquad m=1,\ldots, M,
+\end{equation}
+where $Z^{\circ}(m)$ denotes the $m$th ordered component of $Z = (Z(m): m=1,\ldots,M) \sim Q_0$, so that $Z^{\circ}(1) \geq \ldots \geq Z^{\circ}(M)$. 
+For FWER control ($k=0$), the procedure reduces to the  {\em single-step maxT procedure}, based on the {\em maximum test statistic}, $Z^{\circ}(1)$.\\
+
+\noindent
+{\bf Single-step common-quantile procedure.} The set of rejected hypotheses for the {\em $\theta$--controlling single-step common-quantile procedure} is of the form
+${\cal R}_n \equiv \{m: T_n(m)> c_0(m) \}$, where $c_0(m) = Q_{0,m}^{-1}(\delta_0)$ is the $\delta_0$--quantile of the marginal null distribution $Q_{0,m}$ of the $m$th test statistic, i.e., the smallest value $c$ such that $Q_{0,m}(c) = Pr_{Q_0}(Z(m) \leq c) \geq \delta_0$ for $Z \sim Q_0$. Here, $\delta_0$ is chosen as the {\em smallest} (i.e., least conservative) value for which $\theta(F_{R_0}) \leq \alpha$.
+
+For $gFWER(k)$ control, the procedure is based on the {\em $(k+1)$st ordered unadjusted $p$-value}. 
+Specifically, let $\bar{Q}_{0,m} \equiv 1 - Q_{0,m}$ denote the survivor functions for the marginal null distributions $Q_{0,m}$ and define unadjusted $p$-values $P_0(m) \equiv  \bar{Q}_{0,m}(Z(m))$ and $P_{0n}(m) \equiv  \bar{Q}_{0,m}(T_n(m))$, for $Z \sim Q_0$ and  $T_n \sim Q_n$, respectively. Then, the adjusted $p$-values for the common-quantile procedure are given by
+\begin{equation}\label{anal:mult:e:SSquant}
+\widetilde{p}_{0n}(m) = Pr_{Q_0} \left(P_0^{\circ}(k+1) \leq p_{0n}(m) \right),  \qquad m=1,\ldots, M,
+\end{equation}
+where $P_0^{\circ}(m)$ denotes the $m$th ordered component of the $M$--vector of unadjusted $p$-values $(P_0(m): m=1,\ldots,M)$, so that $P_0^{\circ}(1) \leq \ldots \leq P_0^{\circ}(M)$.  
+For FWER control ($k=0$), one recovers the {\em single-step minP procedure}, based on the {\em minimum unadjusted $p$-value}, $P_0^{\circ}(1)$.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Step-down procedures for control of the family-wise error rate}
+\label{anal:mult:s:SD}
+
+van der Laan et al. \cite{vdLaanetalMT2SAGMB04} propose step-down common-cut-off (maxT) and common-quantile (minP) procedures for controlling the family-wise error rate, FWER. 
+These procedures are similar in spirit to their single-step counterparts in Section \ref{anal:mult:s:SS} (special case $\theta(F_{V_n}) = 1 - F_{V_n}(0)$), with the important step-down distinction that hypotheses are considered successively, from most significant to least significant, with further tests depending on the outcome of earlier ones. 
+That is, the test procedure is applied to a sequence of successively smaller nested random (i.e., data-dependent) subsets of null hypotheses, defined by the ordering of the test statistics (common cut-offs) or unadjusted $p$-values (common-quantile cut-offs). \\
+
+\noindent
+{\bf Step-down common-cut-off (maxT) procedure.}
+Rather than being based solely on the distribution of the maximum test statistic over all $M$ hypotheses, the step-down common cut-offs and corresponding adjusted $p$-values are based on the distributions of maxima of test statistics over successively smaller nested random subsets of null hypotheses. 
+Specifically, let $O_n(m)$ denote the indices for the ordered test statistics $T_n(m)$, so that $T_n(O_n(1)) \geq \ldots \geq T_n(O_n(M))$. 
+The step-down common-cut-off procedure is then based on the distributions of maxima of test statistics over the nested subsets of ordered hypotheses $\overline{\cal O}_n(h) \equiv \{O_n(h),\ldots,O_n(M)\}$. 
+The adjusted $p$-values for the {\em step-down maxT procedure} are given by 
+\begin{equation}\label{anal:mult:e:SDmaxT}
+\widetilde{p}_{0n}(o_n(m)) =  \max_{h=1,\ldots, m}\ \left\{ Pr_{Q_0}\left(
+  \max_{l \in \overline{\cal o}_n(h)} Z(l) \geq t_n(o_n(h))\right)
+  \right \},
+\end{equation}
+where $Z=(Z(m): m=1,\ldots, M)  \sim Q_0$. 
+Taking maxima of the probabilities over $h \in \{1, \ldots, m\}$ enforces monotonicity of the adjusted $p$-values and ensures that the procedure is indeed step-down, that is, one can only reject a particular hypothesis provided all hypotheses with
+more significant (i.e., larger) test statistics were rejected beforehand.\\
+
+\noindent
+{\bf Step-down common-quantile (minP) procedure.}
+Likewise, the step-down common-quantile cut-offs and corresponding adjusted $p$-values are based on the distributions of minima of unadjusted $p$-values over successively smaller nested random subsets of null hypotheses.
+Specifically, let $O_n(m)$ denote the indices for the ordered unadjusted $p$-values $P_{0n}(m)$, so that $P_{0n}(O_n(1)) \leq \ldots \leq P_{0n}(O_n(M))$. 
+The step-down common-quantile procedure is then based on the distributions of minima of unadjusted $p$-values over the nested subsets of ordered hypotheses $\overline{\cal O}_n(h) \equiv \{O_n(h),\ldots,O_n(M)\}$. 
+The adjusted $p$-values for the {\em step-down minP procedure} are given by
+\begin{equation}\label{anal:mult:e:SDminP}
+\widetilde{p}_{0n}(o_n(m)) = \max_{h=1,\ldots, m}\ \left\{ Pr_{Q_0}\left(
+  \min_{l \in \overline{\cal o}_n(h)} P_0(l) \leq p_{0n}(o_n(h))\right)
+  \right \},
+\end{equation}
+where $P_0(m) = \bar{Q}_{0,m}(Z(m))$ and $Z=(Z(m): m=1,\ldots, M)  \sim Q_0$. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Augmentation multiple testing procedures}
+\label{anal:mult:s:AMTP}
+
+Dudoit \& van der Laan \cite{Dudoit&vdLaanMTBook} and van der Laan et al. \cite{vdLaanetalMT3SAGMB04} discuss {\em augmentation multiple testing procedures} (AMTP), obtained by adding suitably chosen null hypotheses to the set of null hypotheses already rejected by an initial MTP. 
+Specifically, given {\em any} initial procedure controlling the generalized family-wise error rate, augmentation procedures are derived for controlling Type I error rates defined as tail probabilities and expected values for arbitrary functions $g(V_n,R_n)$ of the numbers of Type I errors and rejected hypotheses (e.g., proportion $g(V_n,R_n)=V_n/R_n$ of false positives among the rejected hypotheses). 
+Adjusted $p$-values for the AMTP are shown to be simply shifted versions of the adjusted $p$-values of the original MTP. 
+The important practical implication of these results is that {\em any} FWER-controlling MTP and its
+corresponding adjusted $p$-values, provide, without additional work, multiple testing procedures controlling a broad class of Type I error rates and their adjusted $p$-values.
+One can therefore build on the large pool of available FWER-controlling procedures, such as the single-step and step-down maxT and minP procedures discussed in Sections \ref{anal:mult:s:SS} and \ref{anal:mult:s:SD}, above. 
+
+Augmentation procedures for controlling tail probabilities of the number (gFWER) and proportion (TPPFP) of false positives, based on an initial FWER-controlling procedure, are treated in detail in van der Laan et al. \cite{vdLaanetalMT3SAGMB04} and are summarized below. The gFWER and TPPFP correspond to the special cases $g(V_n,R_n) = V_n$ and  $g(V_n,R_n) = V_n/R_n$, respectively. 
+Denote the adjusted $p$-values for the initial FWER-controlling procedure by $\widetilde{P}_{0n}(m)$. Order the $M$ null hypotheses according to these $p$-values, from smallest to largest, that is, define indices $O_n(m)$, so that $\widetilde{P}_{0n}(O_n(1))\leq \ldots \leq \widetilde{P}_{0n}(O_n(M))$. Then, for a nominal level $\alpha$ test, the initial FWER-controlling procedure rejects the $R_n$ null hypotheses 
+\begin{equation}
+{\cal R}_n \equiv \{m: \widetilde{P}_{0n}(m) \leq \alpha\}.
+\end{equation}
+
+\noindent
+{\bf Augmentation procedure for controlling the gFWER.} For control of $gFWER(k)$ at level $\alpha$, given an initial FWER-controlling procedure, reject the $R_n$ hypotheses specified by this MTP, as well as the next $A_n = \min\{k, M-R_n\}$ most significant null hypotheses. 
+The adjusted $p$-values $\widetilde{P}_{0n}^{+}(O_n(m))$ for the new gFWER-controlling AMTP are simply $k$--shifted versions of the adjusted $p$-values of the initial FWER-controlling MTP:
+\begin{equation}\label{anal:mult:e:adjpgFWER}
+\widetilde{P}_{0n}^{+}(O_n(m)) =
+\begin{cases}
+0, & \text{if $m=1,\ldots,k$},\\
+\widetilde{P}_{0n}(O_n(m-k)), & \text{if $m=k+1, \ldots, M$}.
+\end{cases}
+\end{equation}
+That is, the first $k$ adjusted $p$-values are set to zero and the remaining $p$-values are the adjusted $p$-values of the FWER-controlling MTP shifted by $k$. The AMTP thus guarantees at least $k$ rejected hypotheses.\\
+
+
+\noindent
+{\bf Augmentation procedure for controlling the TPPFP.} For control of $TPPFP(q)$ at level $\alpha$, given an initial FWER-controlling procedure, reject the $R_n$ hypotheses specified by this MTP, as well as the next $A_n$ most significant null hypotheses, 
+\begin{eqnarray}
+\label{anal:mult:e:augTPPFP}
+A_n &=& \max\left\{m \in \{0,\ldots, M - R_n\}:\frac{m}{m+ R_n}\leq q\right\} \nonumber\\
+&=& \min \left\{ \left \lfloor \frac{q R_n}{1-q} \right \rfloor, M-R_n \right\},
+\end{eqnarray}
+where the {\em floor} $\lfloor x \rfloor$ denotes the greatest integer less than or equal to $x$, i.e., $\lfloor x \rfloor \leq x < \lfloor x \rfloor + 1$. That is, keep rejecting null hypotheses until the ratio of additional rejections to the total number of rejections reaches the allowed proportion $q$ of false positives. 
+The adjusted $p$-values $\widetilde{P}_{0n}^{+}(O_n(m))$ for the new TPPFP-controlling AMTP are simply shifted versions of the adjusted $p$-values of the initial FWER-controlling MTP, that is,
+\begin{equation}\label{anal:mult:e:adjpTPPFP}
+\widetilde{P}_{0n}^{+}(O_n(m)) = \widetilde{P}_{0n}(O_n(\lceil(1-q)m\rceil)), \qquad m=1,\ldots,M,
+\end{equation}
+where the {\em ceiling} $\lceil x \rceil$ denotes the least integer greater than or equal to $x$, i.e., $\lceil x \rceil -1 < x \leq \lceil x \rceil$. \\
+
+
+\noindent
+{\bf FDR-controlling procedures.}
+Given any TPPFP-controlling procedure, van der Laan et al. \cite{vdLaanetalMT3SAGMB04} derive two simple (conservative) FDR-controlling procedures. 
+The more general and conservative procedure controls the FDR at nominal level $\alpha$, by controlling $TPPFP(\alpha/2)$ at level $\alpha/2$. 
+The less conservative procedure controls the FDR at nominal level $\alpha$, by controlling $TPPFP(1 - \sqrt{1-\alpha})$ at level $1 - \sqrt{1-\alpha}$.
+In what follows, we refer to these two MTPs as "conservative" and "restricted", respectively.
+The reader is referred to the original article for details and proofs of FDR control (Section 2.4, Theorem 3).
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Software implementation: \Rpackage{multtest} package}
+\label{anal:mult:s:software}
+
+\subsection{Overview}
+
+The MTPs proposed in Sections \ref{anal:mult:s:SS} -- \ref{anal:mult:s:AMTP} are implemented in the latest version of the Bioconductor R package \Rpackage{multtest} (version 1.5.0, Bioconductor release 1.5). 
+New features include: 
+expanded class of tests (e.g., for regression parameters in linear models and in Cox proportional hazards models);
+control of a wider selection of Type I error rates (e.g., gFWER, TPPFP, FDR); 
+bootstrap estimation of the test statistics null distribution; 
+augmentation multiple testing procedures;  
+confidence regions for the parameter vector of interest.
+Because of their general applicability and novelty, we focus in this section on MTPs that utilize a bootstrap estimated test statistics null distribution and that are available through the package's main user-level function: \Robject{MTP}.
+Note that for many testing problems, MTPs based on permutation (rather than bootstrap) estimated null distributions are also available in the present and earlier versions of \Rpackage{multtest}.
+In particular, permutation-based step-down maxT and minP FWER-controlling MTPs are implemented in the functions \Robject{mt.maxT} and \Robject{mt.minP}, respectively, and can also be applied directly through a call to the \Robject{MTP} function.
+
+We stress that {\em all} the bootstrap-based MTPs implemented in \Rpackage{multtest} can be performed using the main user-level function \Robject{MTP}. 
+Most users will therefore only need to be familiar with this function. 
+Other functions are provided primarily for the benefit of more advanced users, interested in extending the package's functionality (Section \ref{anal:mult:s:design}).
+For greater detail on \Rpackage{multtest} functions, the reader is referred to the package documentation, in the form of help files, e.g., \Robject{? MTP}, and vignettes, e.g., \Robject{openVignette("multtest")}. 
+
+One needs to specify the following main ingredients when applying a MTP: 
+the {\em data}, $X_1, \ldots, X_n$; 
+suitably defined {\em test statistics}, $T_n$, for each of the null hypotheses under consideration (e.g., one-sample $t$-statistics, robust rank-based $F$-statistics, $t$-statistics for regression coefficients in Cox proportional hazards model); 
+a choice of {\em Type I error rate}, $\theta(F_{V_n,R_n})$, providing an appropriate measure of false positives for the particular testing problem (e.g., $TPPFP(0.10)$);
+a proper {\em joint null distribution}, $Q_0$ (or estimate thereof, $Q_{0n})$, for the test statistics (e.g., bootstrap null distribution as in Procedure \ref{anal:mult:proc:boot}); 
+given the previously defined components, a {\em multiple testing procedure}, ${\cal R}_n={\cal R}(T_n, Q_{0n},\alpha)$, for controlling the error rate $\theta(F_{V_n,R_n})$ at a target level $\alpha$.
+Accordingly, the \Rpackage{multtest} package has adopted a modular and extensible approach to the implementation of MTPs, with the following four main types of functions.
+\begin{itemize}
+
+\item 
+Functions for computing the {\em test statistics}, $T_n$. These are internal functions (e.g., \Robject{meanX}, \Robject{coxY}), i.e., functions that are generally not called directly by the user. 
+As shown in Section \ref{anal:mult:s:MTP}, below, the type of test statistic is specified by the \Robject{test} argument of the main user-level function \Robject{MTP}.  
+Advanced users, interested in extending the class of tests available in \Rpackage{multtest}, can simply add their own test statistic functions to the existing library of such internal functions (see Section \ref{anal:mult:s:design}, below, for a brief discussion of the closure approach for specifying test statistics).
+
+\item
+Functions for obtaining the {\em test statistics null distribution}, $Q_0$, or an estimate thereof, $Q_{0n}$.  The main function currently available is the internal function \Robject{boot.resample}, implementing the non-parametric version of bootstrap Procedure \ref{anal:mult:proc:boot} (Section \ref{anal:mult:s:nullDistn}). 
+
+\item
+Functions for implementing the {\em multiple testing procedure}, ${\cal R}(T_n, Q_{0n},\alpha)$, i.e., for deriving rejection regions, confidence regions, and adjusted $p$-values. 
+The main function is the  user-level wrapper function \Robject{MTP}, which implements the single-step and step-down maxT and minP procedures for FWER control (Sections \ref{anal:mult:s:SS} and \ref{anal:mult:s:SD}). 
+The functions \Robject{fwer2gfwer}, \Robject{fwer2tppfp}, and \Robject{fwer2fdr} implement, respectively, gFWER-, TPPFP-, and FDR-controlling augmentation multiple testing procedures, based on adjusted $p$-values from {\em any} FWER-controlling procedure, and can be called via the \Robject{typeone} argument to \Robject{MTP} (Section \ref{anal:mult:s:AMTP}). 
+
+\item
+Functions for {\em numerical and graphical summaries} of a MTP. As described in Section \ref{anal:mult:s:summaries}, below, a number of summary methods are available to operate on objects of class \Rclass{MTP}, output from the main \Robject{MTP} function.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Resampling-based multiple testing procedures: \Robject{MTP} function}
+\label{anal:mult:s:MTP}
+
+The main user-level function for resampling-based multiple testing is \Robject{MTP}. Its input/output and usage are described next. 
+
+<<loadPacks, eval=TRUE, echo=TRUE>>=
+library(Biobase)
+library(multtest)
+@
+
+<<argsMTP, eval=TRUE, echo=TRUE>>=
+args(MTP)
+@
+
+\noindent
+{\bf  INPUT.}
+\begin{description}
+
+\item{\em Data.} 
+The data, \Robject{X}, consist of a $J$--dimensional random vector, observed on each of $n$ sampling units (patients, cell lines, mice, etc). 
+These data can be stored in a $J \times n$ \Rclass{matrix}, \Rclass{data.frame}, or \Rclass{exprs} slot of an object of class \Rclass{ExpressionSet}.
+In some settings,  a $J$--vector of weights may be associated with each observation, and stored in a $J \times n$ weight matrix, \Robject{W} (or an $n$--vector \Robject{W}, if the weights are the same for each of the $J$ variables). 
+One may also observe a possibly censored continuous or polychotomous outcome, \Robject{Y}, for each sampling unit, as obtained, for example, from the \Rclass{phenoData} slot of an object of class \Rclass{ExpressionSet}. 
+In some studies, $L$ additional covariates may be measured on each sampling unit and stored in \Robject{Z}, an $n \times L$ \Rclass{matrix} or \Rclass{data.frame}. 
+When the tests concern parameters in regression models with covariates from \Robject{Z} (e.g., values \Robject{lm.XvsZ}, \Robject{lm.YvsXZ}, and \Robject{coxph.YvsXZ}, for the argument \Robject{test}, described below), the arguments \Robject{Z.incl} and \Robject{Z.test} specify, respectively, which covariates (i.e., which columns of \Robject{Z}, including \Robject{Z.test}) should be included in the model and which regression parameter is to be tested (only when \texttt{test="lm.XvsZ"}). 
+The covariates can be specified either by a numeric column index or character string.
+If \Robject{X} is an instance of the class \Rclass{ExpressionSet}, \Robject{Y} can be a column index or character string referring to the variable in the \Rclass{data.frame} \Robject{pData(X)} to use as outcome. 
+Likewise, \Robject{Z.incl} and \Robject{Z.test} can be column indices or character strings referring to the variables in \Robject{pData(X)} to use as covariates.
+The data components (\Robject{X}, \Robject{W}, \Robject{Y}, \Robject{Z}, \Robject{Z.incl}, and \Robject{Z.test}) are the first six arguments to the \Robject{MTP} function. 
+Only \Robject{X} is a required argument; the others are by default \Robject{NULL}.
+The argument \Robject{na.rm} allows one to control the treatment of "Not Available" or \Robject{NA} values. It is set to \Robject{TRUE}, by default, so that an
+observation with a missing value in any of the data objects' $j$th component ($j=1,\ldots,J$) is excluded from computation of any of the relevant test statistics.
+
+
+\item{\em Test statistics.} 
+
+The test statistics should be chosen based on the parameter of interest (e.g., location, scale, or regression parameters) and the hypotheses one wishes to test. In the current implementation of \Rpackage{multtest}, the following test statistics are available through the argument \Robject{test}, with default value \Robject{t.twosamp.unequalvar}, for the two-sample Welch $t$-statistic. 
+\begin{itemize}
+\item 
+\Robject{t.onesamp}: One-sample $t$-statistic for tests of means.
+\item 
+\Robject{t.twosamp.equalvar}: Equal variance two-sample $t$-statistic for tests of differences in means.
+\item 
+\Robject{t.twosamp.unequalvar}: Unequal variance two-sample $t$-statistic for tests of differences in means (also known as two-sample Welch $t$-statistic). 
+\item 
+\Robject{t.pair}: Two-sample paired $t$-statistic for tests of differences in means.
+\item 
+\Robject{f}: Multi-sample $F$-statistic for tests of equality of population means.
+\item 
+\Robject{f.block}: Multi-sample $F$-statistic for tests of equality of population means in a block design.
+\item 
+
+\Robject{lm.XvsZ}: 
+$t$-statistic for tests of regression coefficients for variable \Robject{Z.test} in linear models each with outcome \Robject{X[j,]} ($j=1,\ldots,J$), and possibly additional covariates \Robject{Z.incl} from the \Rclass{matrix} \Robject{Z} (in the case of no covariates, one recovers the one-sample $t$-statistic, \Robject{t.onesamp}).
+\item 
+\Robject{lm.YvsXZ}: 
+$t$-statistic for tests of regression coefficients in linear models with outcome \Robject{Y} and each \Robject{X[j,]} ($j=1,\ldots,J$) as covariate of interest, with possibly other covariates \Robject{Z.incl} from the \Rclass{matrix} \Robject{Z}.
+\item 
+\Robject{coxph.YvsXZ}: $t$-statistic for tests of regression coefficients in Cox proportional hazards survival models with outcome \Robject{Y} and each \Robject{X[j,]} ($j=1,\ldots,J$) as covariate of interest, with possibly other covariates \Robject{Z.incl} from the \Rclass{matrix} \Robject{Z}.
+\end{itemize}
+
+
+{\em Robust}, {\em rank-based} versions of the above test statistics can be specified by setting the argument \Robject{robust} to \Robject{TRUE} (the default value is \Robject{FALSE}). 
+Consideration should be given to whether {\em standardized} (Equation (\ref{anal:mult:e:tstat})) or {\em unstandardized} difference statistics are most appropriate (see Pollard \& van der Laan \cite{Pollard&vdLaanJSPI04} for a comparison). Both options are available through the argument \Robject{standardize}, by default \Robject{TRUE}. 
+The type of alternative hypotheses is specified via the \Robject{alternative} argument: default value of \Robject{two.sided}, for two-sided test, and values of \Robject{less} or \Robject{greater}, for one-sided tests. 
+The (common) null value for the parameters of interest is specified through the \Robject{psi0} argument, by default zero.  
+
+
+\item{\em Type I error rate.} 
+The \Robject{MTP} function controls by default the family-wise error rate (FWER), or chance of at least one false positive (argument \Robject{typeone="fwer"}). 
+Augmentation procedures (Section \ref{anal:mult:s:AMTP}), controlling other Type I error rates such as the gFWER, TPPFP, and FDR, can be specified through the argument \Robject{typeone}.
+Related arguments include \Robject{k} and \Robject{q}, for the allowed number and proportion of false positives for control of $gFWER(k)$ and $TPPFP(q)$, respectively, and \Robject{fdr.method}, for the type of TPPFP-based FDR-controlling procedure (i.e., \Robject{"conservative"} or \Robject{"restricted"} methods).
+The nominal level of the test is determined by the argument \Robject{alpha}, by default 0.05. 
+Testing can be performed for a range of nominal Type I error rates by specifying a vector of levels \Robject{alpha}. 
+
+
+\item{\em Test statistics null distribution.} 
+In the current implementation of \Robject{MTP}, the test statistics null distribution is estimated by default using the non-parametric version of bootstrap Procedure~\ref{anal:mult:proc:boot} (argument \Robject{nulldist="boot"}). 
+The bootstrap procedure is implemented in the internal function \Robject{boot.resample}, which calls C to compute test statistics for each bootstrap sample.
+The values of the shift ($\lambda_0$) and scale ($\tau_0$) parameters are determined by the type of test statistics (e.g., $\lambda_0=0$ and $\tau_0=1$ for $t$-statistics). When \Robject{csnull=TRUE} (default), these values will be used to center and scale the estimated test statistics distribution, producing a null distribution. One may specify \Robject{csnull=FALSE} to compute a non-null test statistics distribution.
+Permutation null distributions are also available via \Robject{nulldist="perm"}.
+The number of resampling steps is specified by the argument \Robject{B}, by default 1,000. 
+Since the upper tail of a the bootstrap distribution may be difficult to estimate, particularly for small values of \Robject{B}, a kernal density estimator may be used for the tail of the distribution by setting \Robject{smooth.null=TRUE} (default is FALSE). 
+
+\item{\em Multiple testing procedures.} 
+Several methods for controlling the chosen Type I error rate are available in \Rpackage{multtest}. 
+\begin{itemize}
+\item
+{\em FWER-controlling procedures.}
+For FWER control, the \Robject{MTP} function implements the single-step and step-down (common-cut-off) maxT and (common-quantile) minP MTPs, described in Sections~\ref{anal:mult:s:SS} and \ref{anal:mult:s:SD}, and specified through the argument \Robject{method} (internal functions \Robject{ss.maxT}, \Robject{ss.minP}, \Robject{sd.maxT}, and \Robject{sd.minP}).
+The default MTP is the single-step maxT procedure (\Robject{method="ss.maxT"}), since it requires the least computation.
+\item 
+{\em gFWER-, TPPFP-, and FDR-controlling augmentation procedures.} 
+As discussed in Section \ref{anal:mult:s:AMTP}, any FWER-controlling MTP can be trivially augmented to control additional Type I error rates, such as the gFWER and TPPFP.
+Two FDR-controlling procedures can then be derived from the TPPFP-controlling AMTP.
+The AMTPs are implemented in the functions \Robject{fwer2gfwer}, \Robject{fwer2tppfp}, and \Robject{fwer2fdr}, that take FWER adjusted $p$-values as input and return augmentation adjusted $p$-values for control of the gFWER, TPPFP, and FDR, respectively. 
+Note that the aforementioned AMTPs can be applied directly via the \Robject{typeone} argument of the main function \Robject{MTP}.
+\end{itemize}
+
+\item{\em Parallel processing.}
+MTP can be run on a computer cluster with multiple nodes. This functionality requires the package \Rpackage{snow}. In addition, the packages \Rpackage{multtest} and \Rpackage{Biobase} must be
+installed on each node. \Robject{MTP} will load these packages as long as they are in the library
+search path. Else the user must load the packages on each node. When \Robject{cluster=1}, computations are performed on a single CPU. To implement bootstrapping in parallel, the user either sets \Robject{cluster} equal to a cluster object created using the function \Robject{makeCluster} 
+in \Rpackage{snow} or specifies the integer number of nodes to use in a cluster. For the latter 
+approach, \Robject{MTP} creates a cluster object with the specified number of nodes for the user. 
+In this case, the type of interface system to use must be specified in the \Robject{type} argument. 
+MPI and PVM interfaces require the packages \Rpackage{Rmpi} and \Rpackage{rpvm}, respectively. The number or percentage of bootstrap iterations to dispatch at one time to each node is specified 
+with the \Robject{dispatch} argument (default is 5\%).
+
+The following example illustrates how to load the \Rpackage{snow} package, make a cluster consisting 
+of two nodes, and load \Rpackage{Biobase} and \Rpackage{multtest} onto each node of the 
+cluster using \Robject{clusterEvalQ}. The object \Robject{cl} can be passed to \Robject{MTP} via
+the \Robject{cluster} argument. 
+
+<<snow, eval=FALSE, echo=TRUE>>=
+library(snow)
+cl <- makeCluster(2, "MPI")
+clusterEvalQ(cl, {library(Biobase); library(multtest)})
+@
+
+\item{\em Output control.} 
+Various arguments are available to control output, i.e., specify which combination of the following quantities should be returned: 
+confidence regions (argument \Robject{get.cr}); 
+cut-offs for the test statistics (argument \Robject{get.cutoff}); 
+adjusted $p$-values (argument \Robject{get.adjp}); 
+test statistics null distribution  (argument \Robject{keep.nulldist}). 
+Note that parameter estimates and confidence regions only apply to the test of single-parameter null hypotheses (i.e., not the $F$-tests). 
+In addition, in the current implementation of \Robject{MTP}, parameter confidence regions and test statistic cut-offs are only provided when \texttt{typeone="fwer"}, so that \Robject{get.cr} and \Robject{get.cutoff} should be set to \Robject{FALSE} when using the error rates gFWER, TPPFP, or FDR.
+
+
+\end{description}
+
+Note that the \Rpackage{multtest} package also provides several simple, marginal FWER-controlling MTPs, such as the Bonferroni, Holm \cite{Holm79}, Hochberg \cite{Hochberg88}, and \v{S}id\'{a}k \cite{Sidak67} procedures, and FDR-controlling MTPs, such as the Benjamini \& Hochberg \cite{Benjamini&Hochberg95} and Benjamini \& Yekutieli \cite{Benjamini&Yekutieli01} procedures. 
+These procedures are available through the \Robject{mt.rawp2adjp} function, which takes a vector of unadjusted $p$-values as input and returns the corresponding adjusted $p$-values.\\
+
+
+\noindent
+{\bf  OUTPUT.}\\
+
+
+The S4 class/method object-oriented programming approach was adopted to summarize the results of a MTP (Section \ref{anal:mult:s:design}). 
+Specifically, the output of the \Robject{MTP} function is an instance of the {\em class} \Rclass{MTP}. 
+A brief description of the class and associated methods is given next. Please consult the documentation for details, e.g., using \texttt{class ? MTP} and \texttt{methods ? MTP}. 
+
+<<classMTP, eval=TRUE, echo=TRUE>>=
+slotNames("MTP")
+@
+
+
+\begin{description}
+
+\item{\Robject{statistic}:} The numeric $M$--vector of test statistics, specified by the values of the \Robject{MTP} arguments \Robject{test}, \Robject{robust}, \Robject{standardize}, and \Robject{psi0}. In many testing problems, $M = J = $ \Robject{nrow(X)}.
+
+\item{\Robject{estimate}:} For the test of single-parameter null hypotheses using $t$-statistics (i.e., not the $F$-tests), the numeric $M$--vector of estimated parameters.
+
+\item{\Robject{sampsize}:} The sample size, i.e., $n=$ \Robject{ncol(X)}.
+
+\item{\Robject{rawp}:} The numeric $M$--vector of unadjusted $p$-values.
+
+\item{\Robject{adjp}:} The numeric $M$--vector of adjusted $p$-values (computed only if the \Robject{get.adjp} argument is \Robject{TRUE}).
+
+\item{\Robject{conf.reg}:}  For the test of single-parameter null hypotheses using $t$-statistics (i.e., not the $F$-tests), the numeric $M \times 2 \times$ \Robject{length(alpha)} \Rclass{array} of lower and upper simultaneous confidence limits for the parameter vector, for each value of the nominal Type I error rate \Robject{alpha} (computed only if the \Robject{get.cr} argument is \Robject{TRUE}). 
+
+\item{\Robject{cutoff}:} The numeric $M \times$ \Robject{length(alpha)} \Rclass{matrix} of cut-offs for the test statistics, for each value of the nominal Type I error rate \Robject{alpha} (computed only if the \Robject{get.cutoff} argument is \Robject{TRUE}).
+
+\item{\Robject{reject}:} 
+The $M \times$ \Robject{length(alpha)} \Rclass{matrix} of rejection indicators (\Robject{TRUE} for a rejected null hypothesis), for each value of the nominal Type I error rate \Robject{alpha}.
+
+\item{\Robject{nulldist}:} The numeric $M \times B$ \Rclass{matrix} for the estimated test statistics null distribution (returned only if \texttt{keep.nulldist=TRUE}; option not currently available for permutation null distribution, i.e.,  \texttt{nulldist="perm"}).
+By default (i.e., for \Robject{nulldist="boot"}), the entries of \Robject{nulldist} are the null value shifted and scaled bootstrap test statistics, as defined by Procedure~\ref{anal:mult:proc:boot}.
+
+\item{\Robject{call}:} The call to the function \Robject{MTP}.
+
+\item{\Robject{seed}:} 
+An integer for specifying the state of the random number generator used to create the resampled datasets. 
+The seed can be reused for reproducibility in a repeat call to \Robject{MTP}. 
+This argument is currently used only for the bootstrap null distribution (i.e., for \texttt{nulldist="boot"}).
+See \texttt{? set.seed} for details.
+
+
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Numerical and graphical summaries}
+\label{anal:mult:s:summaries}
+
+The following {\em methods} are defined to operate on \Rclass{MTP} instances and summarize the results of a MTP.
+
+\begin{description}
+
+\item{\Robject{print}:} 
+The \Robject{print} method returns a description of an object of class \Rclass{MTP}, including 
+the sample size $n$,
+the number $M$ of tested hypotheses,
+the type of test performed (value of argument \Robject{test}), 
+the Type I error rate (value of argument \Robject{typeone}),
+the nominal level of the test  (value of argument \Robject{alpha}), 
+the name of the MTP  (value of argument \Robject{method}), 
+the call to the function \Robject{MTP}.
+In addition, this method produces a table with the class, mode, length, and dimension of each slot of the \Rclass{MTP} instance. 
+
+\item{\Robject{summary}:} 
+The \Robject{summary} method provides numerical summaries of the results of a MTP and returns a list with the following three components.
+\begin{itemize}
+\item
+\Robject{rejections}: 
+A \Rclass{data.frame} with the number(s) of rejected hypotheses for the nominal Type I error rate(s) specified by the \Robject{alpha} argument of the function \Robject{MTP} 
+(\Robject{NULL} values are returned if all three arguments \Robject{get.cr}, \Robject{get.cutoff}, and \Robject{get.adjp} are \Robject{FALSE}).
+\item
+\Robject{index}:
+A numeric $M$--vector of indices for ordering the hypotheses according to first \Robject{adjp}, then \Robject{rawp}, and finally the absolute value of \Robject{statistic} (not printed in the summary). 
+\item
+\Robject{summaries}:
+When applicable (i.e., when the corresponding quantities are returned by \Robject{MTP}), a table with six number summaries of the distributions of the adjusted $p$-values, unadjusted $p$-values, test statistics, and parameter estimates.
+\end{itemize}
+
+\item{\Robject{plot}:}   
+The \Robject{plot} method produces the following graphical summaries of the results of a MTP. The type of display may be specified via the \Robject{which} argument.
+\begin{enumerate}
+\item
+Scatterplot of number of rejected hypotheses vs. nominal Type I error rate.
+\item
+Plot of ordered adjusted $p$-values; can be viewed as a plot of Type I error rate vs. number of rejected hypotheses.
+\item
+Scatterplot of adjusted $p$-values vs. test statistics (also known as ``volcano plot'').
+\item
+Plot of unordered adjusted $p$-values.
+\item
+Plot of confidence regions for user-specified parameters, by default the 10 parameters corresponding to the smallest adjusted $p$-values  (argument \Robject{top}).
+\item
+Plot of test statistics and corresponding cut-offs (for each value of \Robject{alpha}) for user-specified hypotheses, by default the 10 hypotheses corresponding to the smallest adjusted $p$-values (argument \Robject{top}).
+\end{enumerate}
+The argument \Robject{logscale} (by default equal to \Robject{FALSE}) allows one to use the negative decimal logarithms of the adjusted $p$-values in the second, third, and fourth graphical displays.
+Note that some of these plots are implemented in the older function \Robject{mt.plot}.
+
+\item{\Robject{[}:} 
+Subsetting method, which operates selectively on each slot of an \Rclass{MTP} instance to retain only the data related to the specified hypotheses.
+
+\item{\Robject{as.list}:} 
+Converts an object of class \Rclass{MTP} to an object of class \Rclass{list}, with an entry for each slot. 
+
+\end{description}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Software design}
+\label{anal:mult:s:design}
+
+The following features of the programming approach employed in \Rpackage{multtest} may be of interest to users, especially those interested in extending the functionality of the package. \\
+
+\noindent
+{\bf Function closures.}  The use of {\em function closures}, in the style of the \Rpackage{genefilter} package, allows uniform data input for all MTPs and facilitates the extension of the package's functionality by adding, for example, new types of test statistics. 
+Specifically, for each value of the \Robject{MTP} argument \Robject{test}, a closure is defined which consists of a function for computing the test statistic (with only two arguments, a data vector \Robject{x} and a corresponding weight vector \Robject{w}, with default value of \Robject{NULL}) and its enclosing environment, with bindings for relevant additional arguments, such as null values \Robject{psi0}, outcomes \Robject{Y}, and covariates \Robject{Z}. 
+Thus, new test statistics can be added to \Rpackage{multtest} by simply defining a new closure and adding a corresponding value for the \Robject{test} argument to \Robject{MTP} (existing internal test statistic functions are located in the file \texttt{R/statistics.R}).\\
+
+\noindent
+{\bf Class/method object-oriented programming.}  Like many other Bioconductor packages, \Rpackage{multtest}  has adopted the {\em S4 class/method object-oriented programming approach} of Chambers \cite{Chambers98}.
+In particular, a new class, \Rclass{MTP}, is defined to represent the results of multiple testing procedures, as implemented in the main \Robject{MTP} function. As discussed above, in Section \ref{anal:mult:s:summaries}, several methods are provided to operate on instances of this class.\\
+
+\noindent
+{\bf Calls to C.} Because resampling procedures, such as the non-parametric bootstrap implemented in \Rpackage{multtest}, are computationally intensive, care must be taken to ensure that the resampling steps are not prohibitively slow. The use of closures for the test statistics, however, prevents writing the entire program in C. In the current implementation, we have chosen to define the closure and compute the observed test statistics in R, and then call C (using the R random number generator) to apply the closure to each bootstrap resampled dataset. This approach puts the for loops over bootstrap samples ($B$) and hypotheses ($M$) in the C environment, thus speeding up this computationally expensive part of the program. Further optimization for speed may be investigated for future releases. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Discussion}
+\label{anal:mult:s:disc}
+
+The \Rpackage{multtest} package implements a broad range of resampling-based multiple testing procedures. Ongoing efforts are as follows.
+\begin{enumerate}
+\item
+Extending the class of available tests, by adding test statistic closures for tests of correlations, quantiles, and parameters in generalized linear models (e.g., logistic regression).
+\item
+Extending the class of resampling-based estimators for the test statistics null distribution (e.g., parametric bootstrap, Bayesian bootstrap). A closure approach may be considered for this purpose.
+\item
+Providing parameter confidence regions and test statistic cut-offs for other Type I error rates than the FWER.
+\item
+Implementing the new augmentation multiple testing procedures proposed in Dudoit \& van der Laan \cite{Dudoit&vdLaanMTBook} for controlling tail probabilities $Pr(g(V_n,R_n) > q)$ for an arbitrary function $g(V_n,R_n)$ of the numbers of false positives $V_n$ and rejected hypotheses $R_n$.
+\item
+Providing a formula interface for a symbolic description of the tests to be performed (cf. model specification in \Robject{lm}).
+%\item
+%Providing an \Robject{update} method for objects of class \Rclass{MTP}. This would allow reusing available estimates of the null distribution to implement different MTPs for a given Type I error rate and to control different Type I error rates. 
+\item
+Extending the \Rclass{MTP} class to keep track of results for several MTPs.
+\item
+Increasing the computational efficiency of the bootstrap estimation of the test statistics null distribution.
+\end{enumerate}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{plainnat}
+
+\bibliography{multtest}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}

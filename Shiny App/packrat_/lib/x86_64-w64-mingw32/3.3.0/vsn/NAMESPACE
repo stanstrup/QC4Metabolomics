@@ -1,0 +1,28 @@
+useDynLib("vsn")
+
+import("Biobase")
+import("ggplot2")
+
+importFrom("grDevices", "colorRampPalette")
+importFrom("graphics", "matplot")
+importFrom("methods", ".valueClassTest", "as", "is", "new", "slot", "validObject", "show")
+importFrom("stats", "df", "median", "quantile", "rgamma", "rnorm", "runif", "predict", "logLik",
+           "coef", "coefficients")
+importFrom("lattice", "levelplot")
+importFrom("affy", "rma", "normalize.AffyBatch.methods", "upDate.normalize.AffyBatch.methods",
+           "indexProbes", "intensity", "intensity<-")
+
+importClassesFrom("limma", "RGList")
+importClassesFrom("affy", "AffyBatch")
+
+exportClasses("vsn", "vsnInput")
+export(
+  ## Deprecated
+  "vsn", "vsnh", "vsnPlotPar",
+
+  "vsnMatrix", "justvsn", "vsnrma",
+  "sagmbAssess", "sagmbSimulateData", "plotVsnLogLik", "scalingFactorTransformation")
+
+exportMethods("vsn2", "meanSdPlot", "predict", "logLik", "coef", "coefficients",
+              "show", "exprs", "nrow", "ncol", "dim", "coerce")
+

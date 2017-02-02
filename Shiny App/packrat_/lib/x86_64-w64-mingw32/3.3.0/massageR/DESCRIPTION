@@ -1,0 +1,24 @@
+Package: massageR
+Version: 0.6
+Date: 2016-08-10
+Title: massageR
+Author: Jan Stanstrup <stanstrup@gmail.com>. Some code was provided by
+    others on stackoverflow.com as indicated in the individual
+    functions.
+Maintainer: Jan Stanstrup <stanstrup@gmail.com>
+Depends: R (>= 2.14.0)
+Suggests: RUnit, gplots, RColorBrewer
+Imports: igraph, reshape2, purrr, dplyr, plyr
+Enhances:
+Description: R functions for data massaging.
+License: GPL (>= 2)
+URL: https://github.com/stanstrup/massageR
+RoxygenNote: 5.0.1
+GithubRepo: massageR
+GithubUsername: stanstrup
+GithubRef: master
+GithubSHA1: 036dc1dfe81710e0926d3c14fecd210bd6c7d1be
+Built: R 3.3.0; ; 2016-12-08 15:28:14 UTC; windows
+InstallAgent: packrat 0.4.8.1
+InstallSource: github
+Hash: 78660a98acf1ca5f9068d84b6568984d

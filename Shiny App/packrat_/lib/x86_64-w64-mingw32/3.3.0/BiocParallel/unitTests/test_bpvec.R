@@ -1,0 +1,43 @@
+test_bpvec_Params <- function()
+{
+    doParallel::registerDoParallel(2)
+    params <- list(serial=SerialParam(),
+                   snow=SnowParam(2),
+                   batchjobs=BatchJobsParam(2, progressbar=FALSE),
+                   dopar=DoparParam())
+    if (.Platform$OS.type != "windows")
+        params$mc <- MulticoreParam(2)
+
+    x <- rev(1:10) 
+    expected <- sqrt(x)
+    for (param in names(params)) {
+        current <- bpvec(x, sqrt, BPPARAM=params[[param]])
+        checkIdentical(current, expected)
+    }
+
+    ## clean up
+    env <- foreach:::.foreachGlobals
+    rm(list=ls(name=env), pos=env)
+    closeAllConnections()
+    TRUE
+}
+
+test_bpvec_MulticoreParam_short_jobs <- function() {
+    ## bpvec should return min(length(X), bpnworkers())
+    if (.Platform$OS.type == "windows")
+        return(TRUE)
+
+    exp <- 1:2
+    obs <- bpvec(exp, c, AGGREGATE=list, BPPARAM=MulticoreParam(workers=4L))
+    checkIdentical(2L, length(obs))
+    checkIdentical(exp, unlist(obs))
+
+    ## clean up
+    closeAllConnections()
+    TRUE
+}
+
+test_bpvec_invalid_FUN <- function() {
+    res <- bptry(bpvec(1:2, class, BPPARAM=SerialParam()))
+    checkTrue(inherits(res, "bpvec_error"))
+}

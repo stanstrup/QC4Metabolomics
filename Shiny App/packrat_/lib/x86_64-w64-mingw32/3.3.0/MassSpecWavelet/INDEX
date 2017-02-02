@@ -1,0 +1,33 @@
+MassSpecWavelet-package
+                        Peak detection of mass spectrum by Wavelet
+                        transform based methods
+cwt                     Continuous Wavelet Transform (CWT)
+exampleMS               An example mass spectrum
+extendLength            Extend the length of a signal or matrix
+extendNBase             Extend the row number of a matrix as the
+                        exponential of base N
+getLocalMaximumCWT      Identify the local maximum of each column in
+                        2-D CWT coefficients matrix
+getRidge                Identify ridges based on the local maximum
+                        matrix
+getRidgeLength          Estimate the length of the ridge
+getRidgeValue           Get the CWT coefficient values corresponding to
+                        the peak ridge
+identifyMajorPeaks      Identify peaks based on the ridges in 2-D CWT
+                        coefficient matrix
+localMaximum            Identify local maximum within a slide window.
+mzInd2vRange            Match m/z index to m/z value with a certain
+                        error range
+mzV2indRange            Match m/z value to m/z index with a certain
+                        error range
+peakDetectionCWT        The main function of peak detection by CWT
+                        based pattern matching
+plotLocalMax            Plot the local maximum matrix
+plotPeak                Plot the identified peaks over the spectrum
+plotRidgeList           Plot the ridge list
+sav.gol                 Estimate the baseline by using Savitzky-Golay
+                        Algorithm
+smoothDWT               smooth (denoise) the spectrum by DWT (Discrete
+                        Wavelet Transform)
+tuneInPeakInfo          Tune in the peak information: peak position and
+                        peak scale

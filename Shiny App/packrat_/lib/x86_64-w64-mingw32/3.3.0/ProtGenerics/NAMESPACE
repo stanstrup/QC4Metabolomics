@@ -1,0 +1,20 @@
+import(methods)
+
+export(psms,
+       peaks,
+       modifications,
+       database,
+       rtime,
+       tic,
+       spectra,
+       intensity,
+       mz, "mz<-",
+       peptides,
+       proteins,
+       accessions,
+       scans,
+       mass,
+       ions,
+       chromatograms,
+       chromatogram,
+       isCentroided)

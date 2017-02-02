@@ -1,0 +1,15 @@
+EIC_contaminants        Find EICs that behave like contaminants
+closest_match           Match list of standards to peak table
+extract_polarity        Extract polarity from xcmsRaw object.
+get_EICs                Get EICs from xcmsRaw object
+get_cont_list           Get list of known contaminants
+parse_filenames         Parse filenames from given string
+peak_factor             Calculate Tailing Factor and Asymmetry Factor
+plot_chrom              Plot chromatogram
+plot_contaminants       Bar plot of contaminants
+plotly_clean_tt         Make replacements in plotly tooltips
+tbl2ROI                 Convert a list of peaks (rt / m/z pairs) to a
+                        Region of Interest (ROI) list for use with
+                        'findPeaks'
+xcmsRaw_to_tbl          Convert raw data into a tibble of xcmsRaw
+                        objects.

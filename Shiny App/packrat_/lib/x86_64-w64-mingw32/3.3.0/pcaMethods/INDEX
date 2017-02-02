@@ -1,0 +1,108 @@
+BPCA_dostep             Do BPCA estimation step
+BPCA_initmodel          Initialize BPCA model
+DModX,pcaRes-method     DModX
+Q2                      Cross-validation for PCA
+R2VX,pcaRes-method      R2 goodness of fit
+R2cum,pcaRes-method     Cumulative R2 is the total ratio of variance
+                        that is being explained by the model
+RnipalsPca              NIPALS PCA implemented in R
+asExprSet               Convert pcaRes object to an expression set
+biplot-methods          Plot a overlaid scores and loadings plot
+bpca                    Bayesian PCA missing value estimation
+center,pcaRes-method    Get the centers of the original variables
+centered,pcaRes-method
+                        Check centering was part of the model
+checkData               Do some basic checks on a given data matrix
+completeObs,nniRes-method
+                        Get the original data with missing values
+                        replaced with predicted values.
+cvseg                   Get CV segments
+cvstat,pcaRes-method    Get cross-validation statistics (e.g. Q^2).
+deletediagonals         Delete diagonals
+derrorHierarchic        Later
+dim.pcaRes              Dimensions of a PCA model
+errorHierarchic         Later
+fitted-methods          Extract fitted values from PCA.
+forkNlpcaNet            Complete copy of nlpca net object
+getHierarchicIdx        Index in hiearchy
+helix                   A helix structured toy data set
+kEstimate               Estimate best number of Components for missing
+                        value estimation
+kEstimateFast           Estimate best number of Components for missing
+                        value estimation
+leverage,pcaRes-method
+                        Extract leverages of a PCA model
+lineSearch              Line search for conjugate gradient
+linr                    Linear kernel
+listPcaMethods          List PCA methods
+llsImpute               LLSimpute algorithm
+loadings,ANY-method     Crude way to unmask the function with the same
+                        name from 'stats'
+loadings,pcaRes-method
+                        Get loadings from a pcaRes object
+loadings.pcaRes         Get loadings from a pcaRes object
+metaboliteData          A incomplete metabolite data set from an
+                        Arabidopsis coldstress experiment
+metaboliteDataComplete
+                        A complete metabolite data set from an
+                        Arabidopsis coldstress experiment
+method,pcaRes-method    Get the used PCA method
+nObs,pcaRes-method      Get the number of observations used to build
+                        the PCA model.
+nP,pcaRes-method        Get number of PCs
+nPcs,pcaRes-method      Get number of PCs.
+nVar,pcaRes-method      Get the number of variables used to build the
+                        PCA model.
+nipalsPca               NIPALS PCA
+nlpca                   Non-linear PCA
+nmissing,pcaRes-method
+                        Missing values
+nni                     Nearest neighbour imputation
+nniRes                  Class for representing a nearest neighbour
+                        imputation result
+optiAlgCgd              Conjugate gradient optimization
+orth                    Calculate an orthonormal basis
+pca                     Perform principal component analysis
+pcaMethods              pcaMethods
+pcaMethods-deprecated   Deprecated methods for pcaMethods
+pcaNet                  Class representation of the NLPCA neural net
+pcaRes                  Class for representing a PCA result
+plot.pcaRes             Plot diagnostics (screeplot)
+plotPcs                 Plot many side by side scores XOR loadings
+                        plots
+ppca                    Probabilistic PCA
+predict-methods         Predict values from PCA.
+prep                    Pre-process a matrix for PCA
+rediduals-methods       Residuals values from a PCA model.
+repmat                  Replicate and tile an array.
+robustPca               PCA implementation based on robustSvd
+robustSvd               Alternating L1 Singular Value Decomposition
+sDev,pcaRes-method      Get the standard deviations of the scores
+                        (indicates their relevance)
+scaled,pcaRes-method    Check if scaling was part of the PCA model
+scl,pcaRes-method       Get the scales (e.g. standard deviations) of
+                        the original variables
+scores,pcaRes-method    Get scores from a pcaRes object
+scores.pcaRes           Get scores from a pcaRes object
+show-methods            Print/Show for pcaRes
+showNniRes              Print a nniRes model
+simpleEllipse           Hotelling's T^2 Ellipse
+slplot,pcaRes-method    Side by side scores and loadings plot
+sortFeatures            Sort the features of NLPCA object
+summary                 Summary of PCA model
+svdImpute               SVDimpute algorithm
+svdPca                  Perform principal component analysis using
+                        singular value decomposition
+tempFixNas              Temporary fix for missing values
+vector2matrices,matrix-method
+                        Tranform the vectors of weights to matrix
+                        structure
+vector2matrices,nlpcaNet-method
+                        Tranform the vectors of weights to matrix
+                        structure
+wasna,pcaRes-method     Get a matrix with indicating the elements that
+                        were missing in the input data. Convenient for
+                        estimating imputation performance.
+weightsAccount          Create an object that holds the weights for
+                        nlpcaNet. Holds and sets weights in using an
+                        environment object.

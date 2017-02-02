@@ -1,0 +1,28 @@
+Package: MetabolomiQCsR
+Type: Package
+Title: QC for LC-MS data
+Version: 1.1
+Date: 2016-08-12
+Author: Jan Stanstrup
+Maintainer: Jan Stanstrup <stanstrup@gmail.com>
+Description: Functions for performing QC on LC-MS.
+Depends: R (>= 3.0)
+Imports: tibble, magrittr, dplyr, purrr, xcms, massageR, tidyr, scales,
+    ggplot2, ini, stringr, RCurl, readr, utils, WGCNA, pool, RMySQL,
+    DBI
+Suggests: knitr, rmarkdown, faahKO, plotly, svglite, chemhelper,
+    RColorBrewer, heatmaply, listviewer
+License: GPL (>= 2)
+URL: None
+biocViews: MassSpectrometry, Metabolomics
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1
+Remotes: stanstrup/massageR, stanstrup/chemhelper, rstudio/pool
+GithubRepo: QC4Metabolomics
+GithubUsername: stanstrup
+GithubRef: master
+GithubSHA1: a1cdbacd703a6071d161af0b6e6b418d59aa1887
+Built: R 3.3.0; ; 2016-12-08 15:28:19 UTC; windows
+InstallAgent: packrat 0.4.8.1
+InstallSource: github
+Hash: f5a23c2052f429c5e11a03c729d1852d

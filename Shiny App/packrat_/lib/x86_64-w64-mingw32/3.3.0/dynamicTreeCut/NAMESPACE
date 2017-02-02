@@ -1,5 +1,0 @@
-exportPattern("^[^\\.]")
-
-importFrom("stats", "cutree")
-importFrom("utils", "flush.console", "read.table")
-

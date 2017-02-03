@@ -34,7 +34,7 @@ module_names <- "../Modules/conf.ini" %>%
                 names
 
 
-
-# Modules -----------------------------------------------------------------
-source("../Modules/TrackCmp/shiny_server.R")
-source("../Modules/TrackCmp/shiny_ui.R")
+# Load modules ------------------------------------------------------------
+module_names %>% 
+    {paste0("../Modules/",.,"/",c("shiny_server.R","shiny_ui.R"))} %>% 
+    {invisible(lapply(.,source))}

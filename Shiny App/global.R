@@ -36,5 +36,7 @@ module_names <- "../Modules/conf.ini" %>%
 
 # Load modules ------------------------------------------------------------
 module_names %>% 
+    rep(2) %>% 
+    sort %>% 
     {paste0("../Modules/",.,"/",c("shiny_server.R","shiny_ui.R"))} %>% 
     {invisible(lapply(.,source))}

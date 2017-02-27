@@ -20,7 +20,8 @@
     
     
     # check if we can find any config file at all
-    if(all(!file.exists(ini_file))) stop("No MetabolomiQCs.conf found.\nThis should not happen since the packages comes with a default configuration file.")
+    if(all(!file.exists(ini_file))) stop("No MetabolomiQCs.conf found.\n
+                                         This should not happen since the packages comes with a default configuration file.")
     
     
     # Get the first of the files in the above list

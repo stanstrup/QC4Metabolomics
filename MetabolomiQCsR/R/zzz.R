@@ -50,20 +50,7 @@
     MetabolomiQCsR.env$db$user                                 <<- ini$db$user %>% as.character
     MetabolomiQCsR.env$db$password                             <<- ini$db$password %>% as.character
     MetabolomiQCsR.env$db$host                                 <<- ini$db$host %>% as.character
-    
-    MetabolomiQCsR.env$folders$base                            <<- ini$folders$base %>% as.character
-    MetabolomiQCsR.env$folders$include_ext                     <<- ini$folders$include_ext %>% as.character
-    MetabolomiQCsR.env$folders$include_path                    <<- ini$folders$include_path %>% as.character
-    MetabolomiQCsR.env$folders$exclude_path                    <<- ini$folders$exclude_path %>% as.character
-    
-    MetabolomiQCsR.env$files$mask                              <<- ini$files$mask     %>% as.character
-    MetabolomiQCsR.env$files$datemask                          <<- ini$files$datemask %>% as.character
-    
-    MetabolomiQCsR.env$files$mode_from_other_field             <<- ini$files$mode_from_other_field            %>% as.logical
-    MetabolomiQCsR.env$files$mode_from_other_field_which       <<- ini$files$mode_from_other_field_which      %>% as.character
-    MetabolomiQCsR.env$files$mode_from_other_field_pos_trigger <<- ini$files$mode_from_other_field_pos_trigger %>% as.character
-    MetabolomiQCsR.env$files$mode_from_other_field_neg_trigger <<- ini$files$mode_from_other_field_neg_trigger %>% as.character
-    
+
     MetabolomiQCsR.env$xcmsRaw$profparam                       <<- ini$xcmsRaw$profparam %>% as.numeric %>% {list(step=.)}
 
     MetabolomiQCsR.env$std_match$ppm                           <<- ini$std_match$ppm %>% as.numeric

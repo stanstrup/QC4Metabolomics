@@ -9,11 +9,13 @@ library(magrittr)
 # Establish connection ----------------------------------------------------
 pool <- dbPool_MetabolomiQCs(5)
 
+sql <- NULL
 
 # Kill existing tables ----------------------------------------------------
 if(TRUE){
     dbRemoveTable(pool, "std_stat_data")
-    dbRemoveTable(pool, "new_files")
+    dbRemoveTable(pool, "file_info")
+    dbRemoveTable(pool, "file_schedule")
     dbRemoveTable(pool, "files")
     dbRemoveTable(pool, "std_compounds")
     dbRemoveTable(pool, "std_stat_types")
@@ -22,17 +24,20 @@ if(TRUE){
 
 
 # files -------------------------------------------------------------------
-sql <- "
-        CREATE TABLE new_files (
-        path          TEXT(256)     NOT NULL
-        )
-       "
+sql <- c(sql, "
+                CREATE TABLE files (
+                path          TEXT(256)     NOT NULL,
+                file_md5      CHAR(32)      PRIMARY KEY
+                )
+              "
+             )
+
 
 
 sql <- c(sql, "
-                CREATE TABLE files (
-                path TEXT(256) NOT NULL,
-                file_md5 CHAR(32) PRIMARY KEY,
+                CREATE TABLE file_info (
+                file_md5 CHAR(32) NOT NULL,
+                
                 project       VARCHAR(256)  NOT NULL,
                 instrument    TEXT(256)     NOT NULL,
                 mode          ENUM('pos', 'neg','unknown') NOT NULL,
@@ -41,10 +46,28 @@ sql <- c(sql, "
                 sample_id     TEXT(256)     NOT NULL,
                 sample_ext_nr SMALLINT      NOT NULL,
                 inst_run_nr   SMALLINT      NOT NULL,
-                time_run      DATETIME      NOT NULL
+                time_run      DATETIME      NOT NULL,
+
+                FOREIGN KEY(file_md5) REFERENCES files(file_md5)
                 )
               "
              )
+
+
+sql <- c(sql, "
+                CREATE TABLE file_schedule (
+                file_md5      CHAR(32)       NOT NULL,
+                module        VARCHAR(256)   NOT NULL,
+                priority      SMALLINT       NOT NULL,
+
+                FOREIGN KEY(file_md5) REFERENCES files(file_md5)
+                )
+              "
+             )
+
+
+
+
 
 
 # std_stat_types ----------------------------------------------------------

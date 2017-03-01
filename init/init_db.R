@@ -72,56 +72,47 @@ rm(ini, ini_file)
 
 
 
-
-
-# Establish connection ----------------------------------------------------
-
-
-
-
-
 # Write to db -------------------------------------------------------------
 pool <- dbPool_MetabolomiQCs(5)
 con <- poolCheckout(pool)
 dbBegin(con)
 
-
-
-
-# DROP
-module_table %>%
-                filter(sql_fun == "drop") %>% 
-                extract2("sql") %>% 
+# functions for repeated use
+msg_fun <- . %>% extract2("sql") %>% 
                 unlist %>% 
                 length %>% 
                 paste0(" drop queries to make.\n") %>% 
                 message()
 
 
+sql_fun <-   . %>% 
+             extract2("sql") %>% 
+             unlist %>% 
+             sapply(.,function(x){ 
+                                    if(gsub("[[:space:]]", "", x)=="") return(TRUE)
+                                    
+                                    dbSendQuery(con, x) 
+                                    dbCommit(con)
+                                 }
+                    ) %>% 
+             unname
+
+
+
+# DROP
+module_table %>% filter(sql_fun == "drop") %>% msg_fun
+                
+
+
 module_table %>% filter(sql_fun == "drop") %>% 
                  arrange(desc(init_db_priority)) %>% 
-                 extract2("sql") %>% 
-                 unlist %>% 
-                 sapply(.,function(x){ 
-                                        if(gsub("[[:space:]]", "", x)=="") return(TRUE)
-                                        
-                                        dbSendQuery(con, x) 
-                                        dbCommit(con)
-                                     }
-                        ) %>% 
-                 unname %>% 
+                 sql_fun %>% 
                  {ifelse(all(.),"All drop queries were successful.\n",  paste0("Drop queries ",paste(which(!.),collapse=", ")," failed.\n")   )} %>% 
                  message
 
 
 # Create
-module_table %>%
-                filter(sql_fun == "create") %>% 
-                extract2("sql") %>% 
-                unlist %>% 
-                length %>% 
-                paste0(" create queries to make.\n") %>% 
-                message()
+module_table %>% msg_fun
 
 
 module_table %>% filter(sql_fun == "create") %>% 

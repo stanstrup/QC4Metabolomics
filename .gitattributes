@@ -9,3 +9,6 @@ Shiny[[:space:]]App/packrat/src/*/* filter=lfs diff=lfs merge=lfs -text
 
 # mySQL Workbench model
 *.mwb filter=lfs diff=lfs merge=lfs -text
+
+# TO make github not consider it an HTML repo
+MetabolomiQCsR/inst/doc/* linguist-documentation

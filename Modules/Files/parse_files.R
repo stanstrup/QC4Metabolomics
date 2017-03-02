@@ -112,7 +112,7 @@ if(MetabolomiQCsR.env$module_Files$mode_from_other_field){
 gc_pipe <- function(x){ gc();return(x)} # there seems to be a memory leak in the way I do it. So this will clean up after each file
 
 file2time <- . %>%  
-                    as.character %>% paste0(MetabolomiQCsR.env$module_Files$base,"/",.) %>% normalizePath %>% 
+                    as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% normalizePath %>% 
                     read_xml %>% 
                     xml_child(paste0(names(xml_ns(.)[1]),":mzML")) %>% 
                     xml_child(paste0(names(xml_ns(.)[1]),":run")) %>% 

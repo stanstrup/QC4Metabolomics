@@ -1,15 +1,3 @@
-# Libraries ---------------------------------------------------------------
-library(MetabolomiQCsR)
-library(dplyr)
-library(magrittr)
-library(stringr)
-library(DBI)
-library(RMySQL)
-library(pool) # devtools::install_github("rstudio/pool")   
-library(tools)
- 
-
-
 # Vars --------------------------------------------------------------------
 log_source = "module_Files"
 
@@ -25,7 +13,7 @@ search_pat <-
     
 
 # Get all files -----------------------------------------------------------
-files <- list.files(path= MetabolomiQCsR.env$module_Files$base,
+files <- list.files(path= MetabolomiQCsR.env$general$base,
                     pattern = search_pat,
                     recursive = TRUE,
                     full.names = FALSE) # important for portability
@@ -111,7 +99,7 @@ poolClose(pool)
 
 
 files_tab <- data_frame(path = files) %>% 
-             mutate(file_md5 = path %>% as.character %>% paste0(MetabolomiQCsR.env$module_Files$base,"/",.) %>% normalizePath %>% md5sum %>% as.vector )
+             mutate(file_md5 = path %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% normalizePath %>% md5sum %>% as.vector )
 
 
 

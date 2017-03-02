@@ -1,0 +1,10 @@
+INSERT INTO `std_compounds` (`cmp_id`,`cmp_name`,`mode`,`cmp_mz`,`cmp_rt1`,`cmp_rt2`,`enabled`,`updated_at`) VALUES (1,'PE(17:0/17:0)','pos',720.554016113281,7.85,NULL,1,'2016-11-22 13:14:34');
+INSERT INTO `std_compounds` (`cmp_id`,`cmp_name`,`mode`,`cmp_mz`,`cmp_rt1`,`cmp_rt2`,`enabled`,`updated_at`) VALUES (2,'SM(d18:1/17:0)','pos',717.590515136719,7.16,NULL,1,'2016-11-22 13:14:53');
+INSERT INTO `std_compounds` (`cmp_id`,`cmp_name`,`mode`,`cmp_mz`,`cmp_rt1`,`cmp_rt2`,`enabled`,`updated_at`) VALUES (3,'Cer(d18:1/17:0)','pos',552.534973144531,7.56,NULL,1,'2016-11-22 13:17:01');
+INSERT INTO `std_compounds` (`cmp_id`,`cmp_name`,`mode`,`cmp_mz`,`cmp_rt1`,`cmp_rt2`,`enabled`,`updated_at`) VALUES (4,'PC(17:0/17:0)','pos',762.600708007812,7.73,NULL,1,'2016-11-22 13:17:26');
+INSERT INTO `std_compounds` (`cmp_id`,`cmp_name`,`mode`,`cmp_mz`,`cmp_rt1`,`cmp_rt2`,`enabled`,`updated_at`) VALUES (5,'LPC(17:0)','pos',510.355407714844,4.26,NULL,1,'2016-11-22 13:17:41');
+INSERT INTO `std_compounds` (`cmp_id`,`cmp_name`,`mode`,`cmp_mz`,`cmp_rt1`,`cmp_rt2`,`enabled`,`updated_at`) VALUES (6,'PC(14:0/d13)','pos',691.58837890625,6.32,NULL,1,'2016-11-22 13:17:57');
+INSERT INTO `std_compounds` (`cmp_id`,`cmp_name`,`mode`,`cmp_mz`,`cmp_rt1`,`cmp_rt2`,`enabled`,`updated_at`) VALUES (7,'TG(16:0/16:0/16:0)-13C3','pos',827.7808,10.1,NULL,1,'2016-11-22 13:49:21');
+INSERT INTO `std_compounds` (`cmp_id`,`cmp_name`,`mode`,`cmp_mz`,`cmp_rt1`,`cmp_rt2`,`enabled`,`updated_at`) VALUES (8,'TG(8:0/8:0/8:0)-13C3','pos',491.404602050781,5.67,NULL,1,'2016-11-22 13:18:40');
+INSERT INTO `std_compounds` (`cmp_id`,`cmp_name`,`mode`,`cmp_mz`,`cmp_rt1`,`cmp_rt2`,`enabled`,`updated_at`) VALUES (9,'PC(16:0/d31/18:1)','pos',791.791687011719,7.24,NULL,1,'2016-11-22 13:44:00');
+INSERT INTO `std_compounds` (`cmp_id`,`cmp_name`,`mode`,`cmp_mz`,`cmp_rt1`,`cmp_rt2`,`enabled`,`updated_at`) VALUES (10,'PC(16:0/d30/18:1)','pos',790.773010253906,7.24,NULL,1,'2016-11-22 13:19:39');

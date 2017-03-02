@@ -1,13 +1,3 @@
-# Libraries ---------------------------------------------------------------
-library(MetabolomiQCsR)
-library(DBI)
-library(magrittr)
-library(dplyr)
-library(tidyr)
-library(pool)
-
-
-
 # Establish connection to get new files -----------------------------------------------
 pool <- dbPool_MetabolomiQCs(30)
 

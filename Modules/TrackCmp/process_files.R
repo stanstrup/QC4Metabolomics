@@ -24,6 +24,7 @@ if(cmp_count==0){
 
 # Get data ----------------------------------------------------------------
 # check which columns we actually need
+# priority = -1 means already
 file_tbl <-  paste0("
                     SELECT file_schedule.*, file_info.time_run, file_info.time_filename, project, instrument, mode, files.path
                     FROM file_schedule 
@@ -31,8 +32,7 @@ file_tbl <-  paste0("
                     ON file_schedule.file_md5=files.file_md5
                     INNER JOIN file_info 
                     ON file_schedule.file_md5=file_info.file_md5
-                    WHERE file_schedule.module = 'module_TrackCmp'
-                    
+                    WHERE (file_schedule.module = 'module_TrackCmp' AND file_schedule.priority > 0)
                     ORDER BY file_schedule.priority ASC, file_info.time_run DESC
                     LIMIT 10
                     "
@@ -191,10 +191,49 @@ file_stds_tbl_flat %>% select(file_md5, cmp_id, found,
                         gather(stat_name, value, -file_md5, -cmp_id, -found) %>% 
                         left_join(std_stat_types, by="stat_name") %>% 
                         select(file_md5, stat_id, cmp_id, found, value) %>% 
-                        sqlAppendTable(pool, "std_stat_data", .) %>% 
-                        dbSendQuery(con, .)
+                        sqlAppendTable(pool, "std_stat_data", .) ->
+sql_query
+                        
 
-# TODO: error check --> log
-# Add TF and ASF to db
-dbCommit(con)
+sql_query@.Data <- paste0(sql_query@.Data, "\n  ","ON DUPLICATE KEY UPDATE found = values(found), value = values(value)")
+
+q_res <- sql_query %>% dbSendQuery(con, .)
+row_updates <- dbGetRowsAffected(q_res)
+res <- dbCommit(con)
 poolReturn(con)
+
+# write to log
+if(res) write_to_log(paste0("Successfully asked to update statistics for ",file_stds_tbl_flat$file_md5 %>% nlevels," files. ",row_updates, " operations actually performed."), cat = "info", source = log_source, pool = pool)
+if(!res) write_to_log(paste0("Failed to update statistics. Update was requested for ",file_stds_tbl_flat$file_md5 %>% nlevels," files."), cat = "error", source = log_source, pool = pool)
+
+
+
+
+# Update schedule
+if(res){
+    
+    sql_data <- file_stds_tbl_flat %>% distinct(file_md5, module) %>% mutate(priority = -1L)
+    
+    con <- poolCheckout(pool)
+    dbBegin(con)
+    
+    res_pri <- vector("logical", nrow(sql_data))
+    for(i in 1:nrow(sql_data)){
+        sql_query <- paste0("UPDATE file_schedule SET priority='", sql_data$priority[i],"' WHERE (file_md5='",sql_data$file_md5[i],"' AND module='",sql_data$module[i],"')")
+        dbSendQuery(con,sql_query)
+        res_pri[i] <- dbCommit(con)
+    }
+    
+    
+    poolReturn(con)
+    write_to_log(paste0("priority updated for ",sum(res_pri)," files."), cat = "info", source = log_source, pool = pool)
+}
+
+
+
+
+
+
+# close connections
+poolClose(pool)
+

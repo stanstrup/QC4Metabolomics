@@ -43,6 +43,17 @@ file_tbl <-  paste0("
             mutate_each(funs(as.factor), file_md5, project,instrument, mode)
 
 
+# Do nothing if nothing schedules
+if(nrow(file_tbl)==0){
+    # close connections
+    poolClose(pool)
+    
+    # If no files found quit the process. Else do rest of script
+    quit(save="no")
+}
+
+
+
 
 std_compounds <- "SELECT * from std_compounds WHERE enabled=1" %>% 
                  dbGetQuery(pool,.) %>% 

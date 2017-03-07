@@ -1,7 +1,7 @@
 # Establish connection to get new files -----------------------------------------------
 pool <- dbPool_MetabolomiQCs(30)
 
-log_source = "module_File_schedule"
+log_source = "File_schedule"
 
 
 # Get new files -----------------------------------------------------------

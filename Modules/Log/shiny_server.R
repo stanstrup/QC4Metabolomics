@@ -1,5 +1,9 @@
 Log <- function(input, output, session){
 
+    require(DBI)
+    require(DT)
+    require(dplyr)
+    
     
     log_data <- reactivePoll(10*1000,
                              session=session,
@@ -7,7 +11,7 @@ Log <- function(input, output, session){
                              function() "SELECT * FROM log ORDER BY time DESC LIMIT 100" %>% dbGetQuery(pool, .)
                              )
     
-    
+
     # Get log from database
       output$log_tbl <- renderDataTable(
           

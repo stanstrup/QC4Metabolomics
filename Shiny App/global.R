@@ -1,22 +1,10 @@
 # Libraries ---------------------------------------------------------------
+library(plyr)
+library(dplyr) # we do this in global to be sure we load dplyr after plyr
 library(ini)
 library(rlist)
-library(shiny)
-library(shinyjs)
-library(pool)
-library(DBI)
-library(RMySQL)
-library(MetabolomiQCsR)
-library(DT)
-library(plyr)
-library(dplyr)
 library(magrittr)
-library(tidyr)
-library(tibble)
-library(plotly)
-library(ggthemes)
-library(zoo)
-library(scales)
+library(MetabolomiQCsR)
 
 
 # Functions ---------------------------------------------------------------
@@ -28,14 +16,16 @@ pool <- dbPool_MetabolomiQCs(120)
 
 
 # Get enabled modules -----------------------------------------------------
-module_names <- "../Modules/conf.ini" %>%
+module_names <- MetabolomiQCsR.env$general$settings_file %>% 
                 read.ini %>%
-                list.filter(enabled == TRUE) %>%
-                names
+                list.match("module_.*") %>% 
+                list.filter(shiny_enabled == TRUE) %>%
+                names %>% 
+                gsub("module_","",.)
 
 
 # Load modules ------------------------------------------------------------
-module_names %>% 
+module_names %>%
     rep(2) %>% 
     sort %>% 
     {paste0("../Modules/",.,"/",c("shiny_server.R","shiny_ui.R"))} %>% 

@@ -1,4 +1,7 @@
 Debug <- function(input, output, session){
+    require(DT)
+    require(plyr)
+    require(dplyr)
 
     output$wd <- renderPrint( getwd() )
     

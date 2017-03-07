@@ -83,15 +83,15 @@ Hash: 2e047d493c617b128faf8c6e6ebf861d
 
 Package: MSnbase
 Source: github
-Version: 2.1.10
-Hash: 3f8e99b25d0562464a5e6e1ad65ea250
+Version: 2.1.14
+Hash: 4fbc0e691ed664b4f6f1968e3f39bdcf
 Requires: Biobase, BiocGenerics, BiocParallel, IRanges, MALDIquant,
     ProtGenerics, Rcpp, S4Vectors, XML, affy, digest, ggplot2, impute,
     mzID, mzR, pcaMethods, plyr, preprocessCore, reshape2, vsn
 GithubRepo: MSnbase
 GithubUsername: lgatto
 GithubRef: master
-GithubSha1: 421cadb53798471e17c63a7f86c1b8945b87a1b8
+GithubSha1: eec78bea12e5715e43ca8568a785a27f9b3a050f
 
 Package: MassSpecWavelet
 Source: Bioconductor
@@ -100,15 +100,11 @@ Hash: f70a7c2d0d65a59cbe86e36683e8a7f6
 Requires: waveslim
 
 Package: MetabolomiQCsR
-Source: github
+Source: Bioconductor
 Version: 1.1
-Hash: f5a23c2052f429c5e11a03c729d1852d
+Hash: 15799c1138364c8b5bb4ec8d988971f8
 Requires: DBI, RCurl, RMySQL, WGCNA, dplyr, ggplot2, ini, magrittr,
     massageR, pool, purrr, readr, scales, stringr, tibble, tidyr, xcms
-GithubRepo: QC4Metabolomics
-GithubUsername: stanstrup
-GithubRef: master
-GithubSha1: a1cdbacd703a6071d161af0b6e6b418d59aa1887
 
 Package: NMF
 Source: CRAN
@@ -263,8 +259,8 @@ Hash: 08eed0c80510af29bb15f840ccfe37ce
 
 Package: digest
 Source: CRAN
-Version: 0.6.11
-Hash: e959a80e637182a39f4f865ef4fc51cc
+Version: 0.6.12
+Hash: e53fb8c58673df868183697e39a6a4d6
 
 Package: doParallel
 Source: CRAN
@@ -314,12 +310,12 @@ Hash: 4f24cbf581681c263186b9425f05ba3e
 Package: ggplot2
 Source: github
 Version: 2.2.1.9000
-Hash: 5f4d11b4b399071699650cc6b350b1f9
+Hash: 374b15806086d0d35769afe728732ccb
 Requires: digest, gtable, lazyeval, plyr, reshape2, scales, tibble
 GithubRepo: ggplot2
-GithubUsername: hadley
+GithubUsername: tidyverse
 GithubRef: master
-GithubSha1: e3510b5d5c8acb8a2a541a95a47aaa38e813ca04
+GithubSha1: fa8004e6bc2ac0c3fcfd1c6dd907f9c14e4451ce
 
 Package: ggthemes
 Source: CRAN
@@ -421,8 +417,8 @@ Hash: 488b93c2a4166db0d15f1e8d882cb1d4
 
 Package: jsonlite
 Source: CRAN
-Version: 1.2
-Hash: 3a193a612cae6814719ed523f7e7cf44
+Version: 1.3
+Hash: b9cc3c97b7a6cd513e9b516fe881d6c9
 
 Package: knitr
 Source: CRAN
@@ -553,14 +549,14 @@ Hash: fb19215402e2d9f1c7f803dcaa806fc2
 Package: plotly
 Source: github
 Version: 4.5.6.9000
-Hash: 8a2df5f5f03b047014953866d9e4bc86
-Requires: RColorBrewer, base64enc, colourpicker, crosstalk, digest,
-    dplyr, ggplot2, hexbin, htmltools, htmlwidgets, httr, jsonlite,
-    lazyeval, magrittr, purrr, scales, tibble, tidyr, viridisLite
+Hash: eec19dbc76e72ec483b8f15749573345
+Requires: RColorBrewer, base64enc, crosstalk, digest, dplyr, ggplot2,
+    hexbin, htmltools, htmlwidgets, httr, jsonlite, lazyeval, magrittr,
+    purrr, scales, tibble, tidyr, viridisLite
 GithubRepo: plotly
 GithubUsername: ropensci
 GithubRef: master
-GithubSha1: 675e6613b9611fc60888dab413604f5dd3111c6b
+GithubSha1: 1c521439793944a8fd7a9503c74cc4eba3d26025
 
 Package: plyr
 Source: CRAN
@@ -571,12 +567,12 @@ Requires: Rcpp
 Package: pool
 Source: github
 Version: 0.1.0
-Hash: d3e13c658c9ad258854ba7325bce9350
+Hash: e1ab33ca1bebc8c713ab93d00d9bc70d
 Requires: DBI, R6
 GithubRepo: pool
 GithubUsername: rstudio
 GithubRef: master
-GithubSha1: 13d3e59797149df9499daaa2c02d9029541d5dc0
+GithubSha1: 5c4166cefc224128efb9d67a3c4bd20b71946097
 
 Package: preprocessCore
 Source: Bioconductor
@@ -605,6 +601,12 @@ Source: CRAN
 Version: 1.4.2
 Hash: 85d9947f8a5e187dff7f18265b96cb13
 Requires: Rcpp, plyr, stringr
+
+Package: rlist
+Source: CRAN
+Version: 0.4.6.1
+Hash: 549b1d78af0592d937069501b9b0ba0b
+Requires: XML, data.table, jsonlite, yaml
 
 Package: rngtools
 Source: CRAN
@@ -661,8 +663,8 @@ Hash: 1ad6b1cc11d982ac233bf2fa2f7c9684
 
 Package: stringr
 Source: CRAN
-Version: 1.1.0
-Hash: 4d21d0063b37a17ea18eaec6acd29bf3
+Version: 1.2.0
+Hash: 25a86d7f410513ebb7c0bc6a5e16bdc3
 Requires: magrittr, stringi
 
 Package: tibble
@@ -711,15 +713,15 @@ Hash: 774eb7be9087cdc24b53b74e5359cfac
 
 Package: xcms
 Source: github
-Version: 1.51.4
-Hash: 9d858bf076b98e3fd91b8c6b578feeca
+Version: 1.51.8
+Hash: a0884e0129839e4924222c3e417af3f8
 Requires: Biobase, BiocGenerics, BiocParallel, MSnbase,
     MassSpecWavelet, ProtGenerics, RANN, RColorBrewer, S4Vectors,
     multtest, mzR, plyr
 GithubRepo: xcms
 GithubUsername: sneumann
 GithubRef: devel
-GithubSha1: a4421c35caef0aaee129a222c128c99c25b218a5
+GithubSha1: c821b33adea47101f8e4044ddc3e66b11764665f
 
 Package: xtable
 Source: CRAN

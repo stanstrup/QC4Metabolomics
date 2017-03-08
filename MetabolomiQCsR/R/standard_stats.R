@@ -118,7 +118,7 @@ closest_match <- function(stds, peakTable, rt_tol = 0.25, mz_ppm = 30, rt_col = 
 #' @export
 #'
 #' @importFrom dplyr %>% filter arrange desc mutate slice
-#' @importFrom stats approx
+#' @importFrom stats approx smooth
 #'
 
 #'
@@ -129,6 +129,11 @@ peak_factor <- function(EIC, rt, factor="TF"){
     
     if(is.na(rt)) return(NA)
     
+    
+    # Median smoothing. Avoids single zero values breaking things. Already Smooth peaks are unaffected.
+    EIC <- EIC %>% mutate(intensity = smooth(intensity)) 
+    
+    
     # C = midpoint = highest scan
     C <- rt # EIC is in minutes so we change here
     
@@ -137,17 +142,20 @@ peak_factor <- function(EIC, rt, factor="TF"){
     C <- EIC %>% filter(scan==C_scan) %>% extract2("scan_rt")
     
     
+    # we get the max of the 3 central scans to avoid problems if the center is not he highest
+    max_int <- max(EIC$intensity[(C_scan-3):(C_scan+3)])
+    
     # Get the lower RT side of the peak
     A_side <-   EIC %>% 
                 filter(scan <= C_scan) %>% 
                 arrange(desc(scan)) %>% 
-                mutate(per_max = intensity/intensity[1])
+                mutate(per_max = intensity/max_int)
     
     # Get the upper RT side of the peak
     B_side <-   EIC %>% 
                 filter(scan >= C_scan) %>% 
                 arrange(scan) %>% 
-                mutate(per_max = intensity/intensity[1])
+                mutate(per_max = intensity/max_int)
     
     
     # which factor are we doing?

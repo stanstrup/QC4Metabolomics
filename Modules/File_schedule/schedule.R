@@ -2,8 +2,6 @@
 library(magrittr)
 library(rlist)
 library(ini)
-
-library(MetabolomiQCsR)
 library(DBI)
 library(dplyr)
 library(tidyr)

@@ -93,6 +93,14 @@ if(length(files)==0){
 
 
 
+# Take only 50 files at a time --------------------------------------------
+# take newest first
+write_to_log(paste0(length(files), " New files to parse. Will take the 50 newest only."), source = log_source, cat = "info", pool = pool)
+
+order <- files %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.info %>% extract2("ctime") %>% order(decreasing = TRUE)
+files <- files[order][1:50]
+
+
 # Get md5 of all files ----------------------------------------------------
 # Close the connection because md5 can take a long time if there are many new files.
 poolClose(pool)

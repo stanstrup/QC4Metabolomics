@@ -93,50 +93,78 @@ if(length(files)==0){
 
 
 
-# Take only 50 files at a time --------------------------------------------
-# take newest first
-write_to_log(paste0(length(files), " New files to parse. Will take the 50 newest only."), source = log_source, cat = "info", pool = pool)
 
-order <- files %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.info %>% extract2("ctime") %>% order(decreasing = TRUE)
-files <- files[order][1:50]
-
-
-# Get md5 of all files ----------------------------------------------------
+# Take only 20 files at a time, write to db and do next -------------------
+write_to_log(paste0(length(files), " New files to parse. Will take the newest 20 files at a time."), source = log_source, cat = "info", pool = pool)
 # Close the connection because md5 can take a long time if there are many new files.
 poolClose(pool)
 
 
-files_tab <- data_frame(path = files) %>% 
-             mutate(file_md5 = path %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% normalizePath %>% md5sum %>% as.vector )
+
+# Get creation time
+order <- files %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.info %>% extract2("ctime") %>% order(decreasing = TRUE)
+files <- files[order]
+
+files_l <- split(files, ceiling(seq_along(files)/20))
 
 
 
-# Write to db -------------------------------------------------------------
-# Establish connection again
-pool <- dbPool_MetabolomiQCs(30)
+for(i in seq_along(files_l)){
+    
+    # Get md5 of all files
+    files_tab <- data_frame(path = files_l[[i]]) %>% 
+                 mutate(file_md5 = path %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% normalizePath %>% md5sum %>% as.vector )
+    
+    
+    # Write to db
+    # Establish connection again
+    pool <- dbPool_MetabolomiQCs(30)
+    
+    
+    
+    # If a file with same checksum is already in the db ignore the new file
+    # this can happen if there is a copy of a file
+    md5_already_in_db <-    files_tab %>% extract2("file_md5") %>% 
+                            paste(collapse="','") %>% 
+                            paste0("'",.,"'") %>% 
+                            paste0("select path, file_md5 from files where file_md5 in (",.,")") %>% 
+                            dbGetQuery(pool,.) %>% 
+                            extract2("file_md5")
+    
+    
+    dup_md5 <- files_tab$file_md5 %in% md5_already_in_db
+    
+    if(any(dup_md5)){
+        for(d in which(dup_md5)){
+    write_to_log(paste0("A file identical to '",files_tab$path[d],"' is already in the database. Skipping."), cat = "warning", source = log_source, pool = pool) 
+        }
+    }
+    
+    files_tab %<>% filter(!(file_md5 %in% md5_already_in_db))
+    
+    # write to db
+    con <- poolCheckout(pool)
+    dbBegin(con)
+    
+    res <- files_tab %>% 
+           sqlAppendTable(con, "files", .) %>% 
+           dbSendQuery(con,.)
+    
+    res <- dbCommit(con)
+    
+    poolReturn(con)
+    
+    
+    # Put in the log if db query successful
+    if(res){
+        write_to_log(paste0("Added ",length(files_l[[i]])," files to queue successfully"), cat = "info", source = log_source, pool = pool) 
+    }else{
+        write_to_log("Files were NOT added to the queue successfully", cat = "error", source = log_source, pool = pool) 
+    }
+    
+    
+    
+    # close connections
+    poolClose(pool)
 
-
-con <- poolCheckout(pool)
-
-dbBegin(con)
-
-res <- files_tab %>% 
-       sqlAppendTable(con, "files", .) %>% 
-       dbSendQuery(con,.)
-
-res <- dbCommit(con)
-
-poolReturn(con)
-
-
-# Put in the log if db query successful
-if(res){
-    write_to_log("Added files to queue successfully", cat = "info", source = log_source, pool = pool) 
-}else{
-    write_to_log("Files were NOT added to the queue successfully", cat = "error", source = log_source, pool = pool) 
 }
-
-
-
-# close connections
-poolClose(pool)

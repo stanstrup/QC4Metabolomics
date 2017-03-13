@@ -1,3 +1,7 @@
+source(".Rprofile", local = TRUE)
+print(.libPaths())
+
+# Libraries ---------------------------------------------------------------
 library(stringr)
 library(ini)
 library(xcms)

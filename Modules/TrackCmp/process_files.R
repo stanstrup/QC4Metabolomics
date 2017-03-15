@@ -26,7 +26,7 @@ if(cmp_count==0){
 # check which columns we actually need
 # priority = -1 means already
 file_tbl <-  paste0("
-                    SELECT file_schedule.*, file_info.time_run, file_info.time_filename, project, instrument, mode, files.path
+                    SELECT file_schedule.*, file_info.time_run, project, mode, files.path
                     FROM file_schedule 
                     INNER JOIN files 
                     ON file_schedule.file_md5=files.file_md5
@@ -39,8 +39,8 @@ file_tbl <-  paste0("
                     ) %>% 
             dbGetQuery(pool,.) %>% 
             as.tbl %>% 
-            mutate_each(funs(as.POSIXct(., tz="UTC")), time_filename, time_run) %>% 
-            mutate_each(funs(as.factor), file_md5, project,instrument, mode)
+            mutate_each(funs(as.POSIXct(., tz="UTC")), time_run) %>% 
+            mutate_each(funs(as.factor), file_md5, project, mode)
 
 
 # Do nothing if nothing schedules

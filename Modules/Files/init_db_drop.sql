@@ -1,3 +1,3 @@
-DROP TABLE IF EXISTS file_info;
+DROP TABLE IF EXISTS files_ignore;
 
 DROP TABLE IF EXISTS files;

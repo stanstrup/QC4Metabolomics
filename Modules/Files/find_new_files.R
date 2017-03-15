@@ -79,6 +79,20 @@ files <- files[!(files %in% files_already_in_db)]
 
 
 
+# Remove files in the ignore list -----------------------------------------
+
+# If a file with same checksum is already in the db add new file to ignore list
+ignored_files <-    files %>%
+                    paste(collapse="','") %>% 
+                    paste0("'",.,"'") %>% 
+                    paste0("select path from files_ignore where path in (",.,")") %>% 
+                    dbGetQuery(pool,.) %>% 
+                    extract2("path")
+
+ignored_files <- (files %in% ignored_files)
+files <- files[!ignored_files]
+
+
 # Do nothing if no new files ----------------------------------------------
 if(length(files)==0){
     write_to_log("No new files to add to queue", source = log_source, cat = "info", pool = pool)
@@ -100,14 +114,13 @@ write_to_log(paste0(length(files), " New files to parse. Will take the newest 20
 poolClose(pool)
 
 
-
 # Get creation time
 order <- files %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.info %>% extract2("ctime") %>% order(decreasing = TRUE)
 files <- files[order]
 
+
+# loop through subsets of the files untill all files are in the DB
 files_l <- split(files, ceiling(seq_along(files)/20))
-
-
 
 for(i in seq_along(files_l)){
     
@@ -116,33 +129,90 @@ for(i in seq_along(files_l)){
                  mutate(file_md5 = path %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% normalizePath %>% md5sum %>% as.vector )
     
     
-    # Write to db
     # Establish connection again
     pool <- dbPool_MetabolomiQCs(30)
     
     
-    
-    # If a file with same checksum is already in the db ignore the new file
-    # this can happen if there is a copy of a file
+    # If a file is already in the db with same MD5 add to ignore list
     md5_already_in_db <-    files_tab %>% extract2("file_md5") %>% 
                             paste(collapse="','") %>% 
                             paste0("'",.,"'") %>% 
                             paste0("select path, file_md5 from files where file_md5 in (",.,")") %>% 
                             dbGetQuery(pool,.) %>% 
                             extract2("file_md5")
-    
-    
+
     dup_md5 <- files_tab$file_md5 %in% md5_already_in_db
     
     if(any(dup_md5)){
+        
         for(d in which(dup_md5)){
-    write_to_log(paste0("A file identical to '",files_tab$path[d],"' is already in the database. Skipping."), cat = "warning", source = log_source, pool = pool) 
+            
+            write_to_log(paste0("A file identical to '",files_tab$path[d],"' is already in the database. Adding to ignore list."), cat = "warning", source = log_source, pool = pool) 
+            
+            con <- poolCheckout(pool)
+            dbBegin(con)
+            
+            res <- files_tab %>% slice(d) %>% 
+                sqlAppendTable(con, "files_ignore", .) %>% 
+                dbSendQuery(con,.)
+            
+            res <- dbCommit(con)
+            
+            poolReturn(con)
+            
+            
         }
     }
     
+    
     files_tab %<>% filter(!(file_md5 %in% md5_already_in_db))
     
-    # write to db
+    
+    # If several files in our batch has has the same MD5 add the newest to the ignore list
+    
+    if(any(duplicated(files_tab$file_md5))){
+     
+        files_tab %<>% 
+        mutate(file_date = path %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.info %>% extract2("ctime")) %>% 
+        arrange(file_date) %>% 
+        select(-file_date)
+        
+        
+        # Take duplicated files and add to ignorelist
+        files_tab %>% 
+            filter(duplicated(file_md5) | duplicated(file_md5, fromLast = TRUE)) %>% 
+            arrange(file_md5) %>% 
+            extract2("path") %>% 
+            paste(collapse=", ") %>% 
+            paste0("The files ", . ," are identical (possibly in pairs). Adding newest to ignore list.") %>% 
+            write_to_log(cat = "warning", source = log_source, pool = pool) 
+            
+            
+            
+            con <- poolCheckout(pool)
+            dbBegin(con)
+            
+            res <- files_tab %>% 
+                    filter(duplicated(file_md5)) %>% 
+                    sqlAppendTable(con, "files_ignore", .) %>% 
+                    dbSendQuery(con,.)
+            
+            res <- dbCommit(con)
+            
+            poolReturn(con)
+           
+        
+        # take out files from the list before we proceed
+        files_tab %<>% filter(!duplicated(file_md5))
+        
+        
+    }
+    
+    
+    
+    
+    
+    # write to db was is left
     con <- poolCheckout(pool)
     dbBegin(con)
     

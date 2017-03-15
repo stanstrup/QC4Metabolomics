@@ -723,6 +723,12 @@ GithubUsername: sneumann
 GithubRef: devel
 GithubSha1: c821b33adea47101f8e4044ddc3e66b11764665f
 
+Package: xml2
+Source: CRAN
+Version: 1.1.1
+Hash: b913af17a4e43c2fb83f3b60b5353a27
+Requires: BH, Rcpp
+
 Package: xtable
 Source: CRAN
 Version: 1.8-2

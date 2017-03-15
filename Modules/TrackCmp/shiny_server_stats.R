@@ -208,7 +208,8 @@ std_data_selected <-  reactive({
 
 # PLOT: Retention time deviation------------------------------------------------
 output$std_stats_rtplot <- renderPlotly({
-     
+     if(!(nrow(std_data_selected())>0)) return(NULL)
+    
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("rt_dev")) %>%
             
@@ -228,7 +229,8 @@ output$std_stats_rtplot <- renderPlotly({
 
 # PLOT: mz deviation ------------------------------------------------
 output$std_stats_mzplot <- renderPlotly({
-     
+     if(!(nrow(std_data_selected())>0)) return(NULL)
+    
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("mz_dev_ppm")) %>% 
             
@@ -249,7 +251,8 @@ output$std_stats_mzplot <- renderPlotly({
 
 # PLOT: Full Width at Half Maximum (FWHM) ---------------------------------
 output$std_stats_fwhmplot <- renderPlotly({
-     
+     if(!(nrow(std_data_selected())>0)) return(NULL)
+    
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("FWHM")) %>% 
             
@@ -271,7 +274,8 @@ output$std_stats_fwhmplot <- renderPlotly({
 
 # PLOT: Tailing Factor -----------------------------------
 output$std_stats_TFplot <- renderPlotly({
-     
+     if(!(nrow(std_data_selected())>0)) return(NULL)
+    
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("TF")) %>% 
             
@@ -291,7 +295,8 @@ output$std_stats_TFplot <- renderPlotly({
 
 # PLOT: Asymmetry Factor ---------------------------------
 output$std_stats_AFplot <- renderPlotly({
-     
+     if(!(nrow(std_data_selected())>0)) return(NULL)
+    
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("ASF")) %>% 
             
@@ -311,7 +316,8 @@ output$std_stats_AFplot <- renderPlotly({
 
 # PLOT: # data points ---------------------------------
 output$std_stats_DPplot <- renderPlotly({
-     
+     if(!(nrow(std_data_selected())>0)) return(NULL)
+    
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("datapoints")) %>% 
             
@@ -331,7 +337,8 @@ output$std_stats_DPplot <- renderPlotly({
 
 # PLOT: # area ---------------------------------
 output$std_stats_areaplot <- renderPlotly({
-     
+     if(!(nrow(std_data_selected())>0)) return(NULL)
+    
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("into")) %>% 
             
@@ -352,7 +359,8 @@ output$std_stats_areaplot <- renderPlotly({
 
 # PLOT: # Area STD ---------------------------------
 output$std_stats_areastdplot <- renderPlotly({
-     
+     if(!(nrow(std_data_selected())>0)) return(NULL)
+    
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("into")) %>% 
                                 arrange(time_run) %>% 
@@ -380,7 +388,8 @@ output$std_stats_areastdplot <- renderPlotly({
 
 # PLOT: # S/N ---------------------------------
 output$std_stats_SNplot <- renderPlotly({
-     
+     if(!(nrow(std_data_selected())>0)) return(NULL)
+    
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("sn")) %>% 
             

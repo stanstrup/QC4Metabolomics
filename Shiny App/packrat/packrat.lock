@@ -310,12 +310,12 @@ Hash: 4f24cbf581681c263186b9425f05ba3e
 Package: ggplot2
 Source: github
 Version: 2.2.1.9000
-Hash: 374b15806086d0d35769afe728732ccb
+Hash: d2f04f88f88826a591e892b50236d43e
 Requires: digest, gtable, lazyeval, plyr, reshape2, scales, tibble
 GithubRepo: ggplot2
 GithubUsername: tidyverse
 GithubRef: master
-GithubSha1: fa8004e6bc2ac0c3fcfd1c6dd907f9c14e4451ce
+GithubSha1: 08e135e020428ed78158b8feccc012eae02773b0
 
 Package: ggthemes
 Source: CRAN
@@ -549,14 +549,14 @@ Hash: fb19215402e2d9f1c7f803dcaa806fc2
 Package: plotly
 Source: github
 Version: 4.5.6.9000
-Hash: eec19dbc76e72ec483b8f15749573345
+Hash: 3f431fef97fc936003eb687244fa6737
 Requires: RColorBrewer, base64enc, crosstalk, digest, dplyr, ggplot2,
     hexbin, htmltools, htmlwidgets, httr, jsonlite, lazyeval, magrittr,
     purrr, scales, tibble, tidyr, viridisLite
 GithubRepo: plotly
 GithubUsername: ropensci
 GithubRef: master
-GithubSha1: 1c521439793944a8fd7a9503c74cc4eba3d26025
+GithubSha1: 8c4ea07b46b561803443884a5d707102d1f042d9
 
 Package: plyr
 Source: CRAN

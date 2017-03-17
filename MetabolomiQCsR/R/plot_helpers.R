@@ -9,13 +9,16 @@
 
 plotly_clean_tt <- function(plotly, rep){
     
-    new_text <- plotly$data[[1]]$text
-    
-    for(i in seq_along(rep)){
-        new_text <- gsub(names(rep)[i], rep[i], new_text, fixed=TRUE)
+    for(f in seq_along(plotly$x$data)){
+        
+        new_text <- plotly$x$data[[f]]$text
+        
+        for(i in seq_along(rep)){
+            new_text <- gsub(names(rep)[i], rep[i], new_text, fixed=TRUE)
+        }
+        
+        plotly$x$data[[f]]$text <- new_text
     }
-    
-    plotly$data[[1]]$text <- new_text
     
     return(plotly)
 }

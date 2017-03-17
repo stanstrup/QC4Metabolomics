@@ -160,8 +160,13 @@ for(i in seq_along(files_l)){
             
             poolReturn(con)
             
-            
         }
+    }
+    
+    
+    if(all(dup_md5)){
+        poolClose(pool)
+        next
     }
     
     

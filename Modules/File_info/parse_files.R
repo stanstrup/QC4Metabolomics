@@ -38,7 +38,7 @@ while( N_todo(pool) != 0 ){
     file_tbl <- "SELECT * FROM files WHERE file_md5 NOT IN (SELECT file_md5 FROM file_info)" %>% 
                 dbGetQuery(pool,.) %>% as.tbl %>% 
                 mutate(file_date = path %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.info %>% extract2("ctime")) %>% 
-                arrange(file_date) %>% 
+                arrange(desc(file_date)) %>% 
                 select(-file_date) %>% 
                 slice(1:20)
     

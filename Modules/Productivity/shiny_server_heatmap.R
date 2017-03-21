@@ -259,12 +259,12 @@ std_data_selected <-  reactive({
 
 # PLOT: All heatmaps ------------------------------------------------------
 
-get_plot_output_list <- function(years, data, nss) {
+get_plot_output_list <- function(years, data, ns) {
   # Insert plot output objects the list
   plot_output_list <- lapply(years, function(i) {
                                                     
                                                     plotname <- paste("plot", i, sep="")
-                                                    plot_output_object <- plotlyOutput(plotname, width = "1400px", height="900px")
+                                                    plot_output_object <- plotlyOutput(ns(plotname), width = "1400px", height="900px")
                                                     
                                                     plot_output_object <- renderPlotly({
                                                         

@@ -1,4 +1,4 @@
-tabPanel("Standard compounds",
+tabPanel("Compound settings",
                                 
                                 fluidPage(
                                   #use shiny js to disable the ID field

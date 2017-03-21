@@ -1,4 +1,4 @@
-tabPanel("Standard stats",
+tabPanel("Compound stats",
                             fluidPage(
                                 
                                         fluidRow(

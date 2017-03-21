@@ -452,6 +452,12 @@ Source: Bioconductor
 Version: 3.30.8
 Hash: 4951a9883e207dd90344be9c8abbe0ae
 
+Package: lubridate
+Source: CRAN
+Version: 1.6.0
+Hash: b90f4cbefe0b3c545dd68b22c66a8a12
+Requires: stringr
+
 Package: magrittr
 Source: CRAN
 Version: 1.5
@@ -549,14 +555,14 @@ Hash: fb19215402e2d9f1c7f803dcaa806fc2
 Package: plotly
 Source: github
 Version: 4.5.6.9000
-Hash: 3f431fef97fc936003eb687244fa6737
+Hash: ec0f51efe872f162c86f264834ce7777
 Requires: RColorBrewer, base64enc, crosstalk, digest, dplyr, ggplot2,
     hexbin, htmltools, htmlwidgets, httr, jsonlite, lazyeval, magrittr,
     purrr, scales, tibble, tidyr, viridisLite
 GithubRepo: plotly
 GithubUsername: ropensci
 GithubRef: master
-GithubSha1: 8c4ea07b46b561803443884a5d707102d1f042d9
+GithubSha1: 03e40161dc8ba5851ac133f00bfb95ab9e9050da
 
 Package: plyr
 Source: CRAN

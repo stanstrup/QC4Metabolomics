@@ -6,6 +6,9 @@ require(dplyr)
 require(ggthemes)
 require(scales)
 require(zoo)
+require(lubridate)
+require(viridis)
+
 
 # functions ---------------------------------------------------------------
 plotmargin_fix <- function(p){
@@ -192,161 +195,105 @@ std_data_selected <-  reactive({
 
 
 
-# PLOT: heatmap -----------------------------------------------------------
-# output$heatmap <- renderPlotly({
-#     if(!(nrow(std_data_selected())>0)) return(NULL)
-# 
-#     calendar <- std_data_selected() %>% extract2("time_run") %>%
-#                             year %>%
-#                             {c(min = paste0(min(.),"-01-01"), max = paste0(max(.),"-12-31"))} %>%
-#                             as.Date %>%
-#                             {seq(from = min(.), to = max(.), by = "day")} %>%
-#                             data_frame(date = .) %>%
-#                             mutate(yday = yday(date), week = isoweek(date), wday =  wday(date, label=TRUE), year =  isoyear(date), month = month(date, label = TRUE)) %>%
-#                             mutate(wday = ordered(wday, levels=c("Mon","Tues","Wed","Thurs","Fri","Sat","Sun"))) %>%
-#                             group_by(year, week) %>%
-#                             mutate(mon_month = month[1]) %>%
-#                             ungroup
-# 
-# 
-# 
-#     plot_data <- std_data_selected() %>%
-#                     select(time_run, project) %>%
-#                     mutate(year = isoyear(time_run), yday = yday(time_run)) %>%
-#                     group_by(year, yday) %>%
-#                     summarise(`Samples #` = n(), project = paste(unique(project),collapse="/")) %>%
-#                     ungroup %>%
-#                     right_join(calendar, by = c("year", "yday")) %>%
-#                     filter(year==2016)
-# 
-# 
-# 
-#     # make nice color scale
-#     color_scale <- viridis(256, option = "plasma")
-#     colfunc <- colorRampPalette(c(last(color_scale), "white"))
-#     color_scale <- rev(c(color_scale,colfunc(20)))
-# 
-# 
-#     p <- ggplot(data = plot_data, aes(x = wday, y = week, fill = `Samples #`, text = paste0("Date: ", date))) +
-#     geom_tile() +
-#     geom_text(aes(label=project), color="green") +
-#     scale_fill_gradientn(colours = color_scale, na.value="transparent", limits = c(0,NA)) +
-#     theme_gdocs() +
-#     theme(axis.title=element_text(face="bold", size = 16), title=element_text(face="bold", size = 18)) +
-#     scale_x_discrete(drop=FALSE) +
-#     scale_y_continuous(breaks = 1:52, trans="reverse") +
-#     facet_grid(mon_month~.,drop=T,space="free",scales="free") +
-#     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-#     labs(x = "Day", y = "Week") +
-#     theme(strip.text = element_text(size=9, lineheight=3)) +
-#     theme(panel.border = element_rect(colour = "black")) +
-#     theme(strip.background = element_rect(colour=NA, fill=NA)) +
-#     theme(panel.spacing = unit(0, "lines"))
-# 
-# 
-#     pp <- plotly_build(p)
-# 
-#     t_rep <- c("`Samples #`: 0", "week: ", "Samples #")
-#     names(t_rep) <- c("`Samples #`: NA", "week: -","`Samples #`")
-#     pp <- plotly_clean_tt(pp, rep=t_rep)
-# 
-#     plotmargin_fix(pp) %>% print
-# 
-# 
-# })
-
-
-
 # PLOT: All heatmaps ------------------------------------------------------
-
-get_plot_output_list <- function(years, data, ns) {
-  # Insert plot output objects the list
-  plot_output_list <- lapply(years, function(i) {
-                                                    
-                                                    plotname <- paste("plot", i, sep="")
-                                                    plot_output_object <- plotlyOutput(ns(plotname), width = "1400px", height="900px")
-                                                    
-                                                    plot_output_object <- renderPlotly({
-                                                        
-                                                                                            if(!(nrow(data)>0)) return(NULL)
-                                                                                            
-                                                                                            calendar <- data %>% extract2("time_run") %>% 
-                                                                                                                    year %>% 
-                                                                                                                    {c(min = paste0(min(.),"-01-01"), max = paste0(max(.),"-12-31"))} %>%
-                                                                                                                    as.Date %>% 
-                                                                                                                    {seq(from = min(.), to = max(.), by = "day")} %>% 
-                                                                                                                    data_frame(date = .) %>% 
-                                                                                                                    mutate(yday = yday(date), week = isoweek(date), wday =  wday(date, label=TRUE), year =  isoyear(date), month = month(date, label = TRUE)) %>% 
-                                                                                                                    mutate(wday = ordered(wday, levels=c("Mon","Tues","Wed","Thurs","Fri","Sat","Sun"))) %>% 
-                                                                                                                    group_by(year, week) %>%
-                                                                                                                    mutate(mon_month = month[1]) %>% 
-                                                                                                                    ungroup
-                                                                                            
-                                                                                            
-                                                                                            
-                                                                                            plot_data <- data %>% 
-                                                                                                            select(time_run, project) %>% 
-                                                                                                            mutate(year = isoyear(time_run), yday = yday(time_run)) %>% 
-                                                                                                            group_by(year, yday) %>% 
-                                                                                                            summarise(`Samples #` = n(), project = paste(unique(project),collapse="/")) %>% 
-                                                                                                            ungroup %>% 
-                                                                                                            right_join(calendar, by = c("year", "yday")) %>%
-                                                                                                            filter(year==i)
-                                                                                            
-                                                                                            
-                                                                                            
-                                                                                            # make nice color scale
-                                                                                            color_scale <- viridis(256, option = "plasma")
-                                                                                            colfunc <- colorRampPalette(c(last(color_scale), "white"))
-                                                                                            color_scale <- rev(c(color_scale,colfunc(20)))
-                                                                                            
-                                                                                            
-                                                                                            p <- ggplot(data = plot_data, aes(x = wday, y = week, fill = `Samples #`, text = paste0("Date: ", date))) +
-                                                                                            geom_tile() +
-                                                                                            geom_text(aes(label=project), color="green") +
-                                                                                            scale_fill_gradientn(colours = color_scale, na.value="transparent", limits = c(0,NA)) +
-                                                                                            theme_gdocs() +
-                                                                                            theme(axis.title=element_text(face="bold", size = 16), title=element_text(face="bold", size = 18)) +
-                                                                                            scale_x_discrete(drop=FALSE) +
-                                                                                            scale_y_continuous(breaks = 1:52, trans="reverse") +
-                                                                                            facet_grid(mon_month~.,drop=T,space="free",scales="free") +
-                                                                                            theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-                                                                                            labs(x = "Day", y = "Week") +
-                                                                                            theme(strip.text = element_text(size=9, lineheight=3)) +
-                                                                                            theme(panel.border = element_rect(colour = "black")) +
-                                                                                            theme(strip.background = element_rect(colour=NA, fill=NA)) +
-                                                                                            theme(panel.spacing = unit(0, "lines"))
-                                                                                            
-                                                                                            
-                                                                                            pp <- plotly_build(p)
-                                                                                            
-                                                                                            t_rep <- c("`Samples #`: 0", "week: ", "Samples #")
-                                                                                            names(t_rep) <- c("`Samples #`: NA", "week: -","`Samples #`")
-                                                                                            pp <- plotly_clean_tt(pp, rep=t_rep)
-                                                                                            
-                                                                                            plotmargin_fix(pp) %>% print
-                                                        
-                                                        
-                                                    })
-    
-    
-                                                }
+  output$heatmaps <- renderUI({
+    years <- std_data_selected() %>% extract2("time_run") %>% year %>% unique %>% sort(decreasing = TRUE)
+     
+    plot_output_list <- lapply(years, function(i) {
+                                                  ns <- session$ns
+                                                  plotname <- ns(paste("plot", i, sep=""))
+                                                  plotlyOutput(plotname, width = "1400px", height="900px")
+                                                  
+                                                  }
                             )
 
-  do.call(tagList, plot_output_list) # needed to display properly.
-
-}
-
-
-
-
-
-  observe({
     
-    ns <- session$ns
-    output$heatmaps <- renderUI({   std_data_selected() %>% 
-                                    extract2("time_run") %>% 
-                                    year %>% unique %>% 
-                                    get_plot_output_list(years = ., data = std_data_selected(), ns=ns)
-                                })
+    headings <- lapply(years, function(i) { div(style="padding-top: 5em;") } )
+
+    out <- vector(class(plot_output_list), length(plot_output_list)+length(headings))
+    out[c(TRUE, FALSE)] <- headings
+    out[c(FALSE, TRUE)] <- plot_output_list
+
+    do.call(tagList, out)
   })
+
+
+
+  observe({             
+    data <- std_data_selected()
+    years <- data %>% extract2("time_run") %>% year %>% unique %>% sort(decreasing = TRUE)
+          
+    for (i in years) {
+                      local({ 
+                                
+                                my_i <- i
+                                plotname <- paste("plot", my_i, sep="")
+                                output[[plotname]] <- renderPlotly({
+                                                                    if(!(nrow(data)>0)) return(NULL)
+                                    
+                                                                    calendar <- data %>% extract2("time_run") %>%
+                                                                                year %>%
+                                                                                {c(min = paste0(min(.),"-01-01"), max = paste0(max(.),"-12-31"))} %>%
+                                                                                as.Date %>%
+                                                                                {seq(from = min(.), to = max(.), by = "day")} %>%
+                                                                                data_frame(date = .) %>%
+                                                                                mutate(yday = yday(date), week = isoweek(date), wday =  wday(date, label=TRUE), year =  isoyear(date), month = month(date, label = TRUE)) %>%
+                                                                                mutate(wday = ordered(wday, levels=c("Mon","Tues","Wed","Thurs","Fri","Sat","Sun"))) %>%
+                                                                                group_by(year, week) %>%
+                                                                                mutate(mon_month = month[1]) %>%
+                                                                                ungroup
+                    
+                    
+                    
+                                                                    plot_data <- data %>%
+                                                                                    select(time_run, project) %>%
+                                                                                    mutate(year = isoyear(time_run), yday = yday(time_run)) %>%
+                                                                                    group_by(year, yday) %>%
+                                                                                    summarise(`Samples #` = n(), project = paste(unique(project),collapse="/")) %>%
+                                                                                    ungroup %>%
+                                                                                    right_join(calendar, by = c("year", "yday")) %>%
+                                                                                    filter(year==my_i) %>% 
+                                                                                    mutate(`Samples #` = ifelse(is.na(`Samples #`),0,`Samples #`))
+                    
+                    
+                    
+                                                                    # make nice color scale
+                                                                    color_scale <- viridis(256, option = "plasma")
+                                                                    colfunc <- colorRampPalette(c(last(color_scale), "white"))
+                                                                    color_scale <- rev(c(color_scale,colfunc(20)))
+                    
+                    
+                                                                    p <- ggplot(data = plot_data, aes(x = wday, y = week, fill = `Samples #`, text = paste0("Date: ", date))) +
+                                                                    geom_tile() +
+                                                                    geom_text(aes(label=project), color="green") +
+                                                                    scale_fill_gradientn(colours = color_scale, na.value="transparent", limits = c(0,NA)) +
+                                                                    theme_gdocs() +
+                                                                    theme(axis.title=element_text(face="bold", size = 16), title=element_text(face="bold", size = 18)) +
+                                                                    scale_x_discrete(drop=FALSE) +
+                                                                    scale_y_continuous(breaks = 1:52, trans="reverse") +
+                                                                    facet_grid(mon_month~.,drop=T,space = "free_y", scales="free") +
+                                                                    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+                                                                    labs(x = "Day", y = "Week") +
+                                                                    theme(strip.text = element_text(size=9, lineheight=3)) +
+                                                                    theme(panel.border = element_rect(colour = "black")) +
+                                                                    theme(strip.background = element_rect(colour=NA, fill=NA)) +
+                                                                    theme(panel.spacing = unit(0, "lines")) +
+                                                                    ggtitle(my_i)
+                    
+                    
+                                                                    pp <- plotly_build(p)
+                    
+                                                                    t_rep <- c("`Samples #`: 0", "week: ", "Samples #")
+                                                                    names(t_rep) <- c("`Samples #`: NA", "week: -","`Samples #`")
+                                                                    pp <- plotly_clean_tt(pp, rep=t_rep)
+                    
+                                                                    plotmargin_fix(pp) %>% print
+                    
+                        
+                                                                   })
+                         })
+                        }
+
+  })
+  
+  

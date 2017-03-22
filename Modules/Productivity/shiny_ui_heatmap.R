@@ -22,7 +22,6 @@ tabPanel("Productivity",
                                                       tabPanel("Heatmap",
                                                                
                                                                div(style = "width: 1400px; margin:0 auto;",
-                                                                        # plotlyOutput(ns("heatmap"), width = "1400px", height="900px"),
                                                                         uiOutput(ns("heatmaps"))
                                                                   )
                                                                

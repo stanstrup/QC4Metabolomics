@@ -102,13 +102,13 @@ Requires: waveslim
 Package: MetabolomiQCsR
 Source: github
 Version: 1.1
-Hash: c74d9d262877e7570a4baacbad170df8
+Hash: 7430de5e67a3c31ba4f4cf5b41f163ce
 Requires: DBI, RCurl, RMySQL, WGCNA, dplyr, ggplot2, ini, magrittr,
     massageR, pool, purrr, readr, scales, stringr, tibble, tidyr, xcms
 GithubRepo: QC4Metabolomics
 GithubUsername: stanstrup
 GithubRef: master
-GithubSha1: 129931cf56d0d0a7f88e05c94b8e6eb6bd6a5dc4
+GithubSha1: 35d03319fc42be87a0998e271d980b4a1abc8582
 GithubSubdir: MetabolomiQCsR
 
 Package: NMF
@@ -146,8 +146,8 @@ Requires: bitops
 
 Package: RMySQL
 Source: CRAN
-Version: 0.10.9
-Hash: b8bcdfdc9acae319991297c75ffad5d8
+Version: 0.10.10
+Hash: b58272c148c4a0c3977dd08f8e935d01
 Requires: DBI
 
 Package: RSQLite
@@ -315,12 +315,12 @@ Hash: 4f24cbf581681c263186b9425f05ba3e
 Package: ggplot2
 Source: github
 Version: 2.2.1.9000
-Hash: d2f04f88f88826a591e892b50236d43e
+Hash: dec60ded69a788180f397eda73b61f32
 Requires: digest, gtable, lazyeval, plyr, reshape2, scales, tibble
 GithubRepo: ggplot2
 GithubUsername: tidyverse
 GithubRef: master
-GithubSha1: 08e135e020428ed78158b8feccc012eae02773b0
+GithubSha1: f4398b6d07c85c2d5cd0afb52f50948cba5b8674
 
 Package: ggthemes
 Source: CRAN
@@ -598,9 +598,9 @@ Requires: BH, Rcpp, dplyr, lazyeval, magrittr
 
 Package: readr
 Source: CRAN
-Version: 1.0.0
-Hash: cceb3f436f3bbbb579fce5d89348f7bc
-Requires: BH, R6, Rcpp, curl, hms, tibble
+Version: 1.1.0
+Hash: 3506086f41d307f5a78ee64e010536fa
+Requires: BH, R6, Rcpp, hms, tibble
 
 Package: registry
 Source: CRAN

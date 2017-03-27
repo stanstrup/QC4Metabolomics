@@ -81,6 +81,43 @@ file_stds_tbl <-  file_tbl %>%
 
 
 
+
+# Set priority to -1 if no compounds defined for mode -------------------------
+
+to_ignore <- map_lgl(file_stds_tbl$stds, is.null)
+
+
+# Update schedule
+    sql_data <- file_stds_tbl %>% filter(to_ignore) %>% distinct(file_md5, module) %>% mutate(priority = -1L)
+    
+    con <- poolCheckout(pool)
+    dbBegin(con)
+    
+    res_pri <- vector("logical", nrow(sql_data))
+    for(i in 1:nrow(sql_data)){
+        sql_query <- paste0("UPDATE file_schedule SET priority='", sql_data$priority[i],"' WHERE (file_md5='",sql_data$file_md5[i],"' AND module='",sql_data$module[i],"')")
+        dbSendQuery(con,sql_query)
+        res_pri[i] <- dbCommit(con)
+    }
+    
+    poolReturn(con)
+    write_to_log(paste0("priority updated for ",sum(res_pri)," files."), cat = "info", source = log_source, pool = pool)
+
+
+# remove from current queue
+file_stds_tbl %<>% filter(!to_ignore)
+
+
+# Do nothing if nothing left
+if(nrow(file_stds_tbl)==0){
+    # close connections
+    poolClose(pool)
+    
+    # If no files found quit the process. Else do rest of script
+    quit(save="no")
+}
+
+
 # Find peaks --------------------------------------------------------------
 findPeaks_l <- lift_dl(findPeaks) # trick to make findPeaks accept a list of arguments.
 

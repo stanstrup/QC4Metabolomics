@@ -130,11 +130,7 @@ peak_factor <- function(EIC, rt, factor="TF"){
     if(is.na(rt)) return(NA)
     
     
-    # Median smoothing. Avoids single zero values breaking things. Already Smooth peaks are unaffected.
-    EIC <- EIC %>% mutate(intensity = smooth(intensity)) 
-    
-    
-    # C = midpoint = highest scan
+        # C = midpoint = highest scan
     C <- rt # EIC is in minutes so we change here
     
     C_scan <- EIC$scan[    which.min(abs(EIC$scan_rt-C))   ]
@@ -142,8 +138,14 @@ peak_factor <- function(EIC, rt, factor="TF"){
     C <- EIC %>% filter(scan==C_scan) %>% extract2("scan_rt")
     
     
-    # we get the max of the 3 central scans to avoid problems if the center is not he highest
-    max_int <- max(EIC$intensity[(C_scan-3):(C_scan+3)])
+    # we get the max of the 5 central scans to avoid problems if the center is not he highest
+    max_int <- max(EIC$intensity[(C_scan-2):(C_scan+2)])
+    
+    
+    # Median smoothing. Avoids single zero values breaking things. Already Smooth peaks are unaffected.
+    if(median(EIC$intensity[(C_scan-1):(C_scan+1)])!=0){ # only smooth if the median of the 3 central scans is not 0 (a 1 scan spike would cause this).
+        EIC <- EIC %>% mutate(intensity = smooth(intensity)) 
+    }
     
     # Get the lower RT side of the peak
     A_side <-   EIC %>% 

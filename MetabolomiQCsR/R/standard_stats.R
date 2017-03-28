@@ -142,8 +142,8 @@ peak_factor <- function(EIC, rt, factor="TF"){
     max_int <- max(EIC$intensity[(C_scan-2):(C_scan+2)])
     
     
-    # Median smoothing. Avoids single zero values breaking things. Already Smooth peaks are unaffected.
-    if(median(EIC$intensity[(C_scan-1):(C_scan+1)])!=0){ # only smooth if the median of the 3 central scans is not 0 (a 1 scan spike would cause this).
+    # Median smoothing. Avoids single zero values breaking things. Already smooth peaks are unaffected.
+    if(  all( c(EIC$intensity[C_scan-1], EIC$intensity[C_scan+1]) == 0 )  ){ # If the values on each side of the mid of the peak are both 0 don't do smoothing (a 1 scan spike would cause this).
         EIC <- EIC %>% mutate(intensity = smooth(intensity)) 
     }
     

@@ -148,7 +148,7 @@ peak_factor <- function(EIC, rt, factor="TF"){
           
     # Median smoothing. Avoids single zero values breaking things. Already smooth peaks are unaffected.
     if(  !all( c(EIC$intensity[C_scan-1], EIC$intensity[C_scan+1]) == 0 )  ){ # If the values on each side of the mid of the peak are both 0 don't do smoothing (a 1 scan spike would cause this).
-        EIC <- EIC %>% mutate(intensity = smooth(intensity)) 
+        EIC <- EIC %>% mutate(intensity = smooth(intensity, kind="3")) 
     }
     
     # Get the lower RT side of the peak

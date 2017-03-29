@@ -81,16 +81,16 @@ closest_match <- function(stds, peakTable, rt_tol = 0.25, mz_ppm = 30, rt_col = 
                (abs(stds_mz-peakTable_mz)/stds_mz)*1E6 <  mz_ppm
         
         # no match is found
-        if(sum(idx)==0){ next } # we filled the vector with NA so we don't need to do anyting
+        if(sum(idx, na.rm = TRUE)==0){ next } # we filled the vector with NA so we don't need to do anyting
         
         # 1 match is found
-        if(sum(idx)==1){
+        if(sum(idx, na.rm = TRUE)==1){
             indices[i] <- which(idx) 
             next
             }
         
         # More than one match is found. We take the highest intensity peak then
-        if(sum(idx)>1){
+        if(sum(idx, na.rm = TRUE)>1){
             idx2       <- peakTable %>% slice(which(idx)) %>% extract2(int_col) %>% which.max
             indices[i] <- which(idx)[idx2]
             next

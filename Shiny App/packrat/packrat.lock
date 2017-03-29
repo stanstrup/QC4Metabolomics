@@ -101,14 +101,14 @@ Requires: waveslim
 
 Package: MetabolomiQCsR
 Source: github
-Version: 1.1
-Hash: 30ae76c80cceb0914d81080dcc69bb44
+Version: 1.2
+Hash: 02a165889ecdf8de239be53847d16426
 Requires: DBI, RCurl, RMySQL, WGCNA, dplyr, ggplot2, ini, magrittr,
     massageR, pool, purrr, readr, scales, stringr, tibble, tidyr, xcms
 GithubRepo: QC4Metabolomics
 GithubUsername: stanstrup
 GithubRef: master
-GithubSha1: d2158be720fc0c0e9c67a48840cc753336e3e333
+GithubSha1: cccd42281425ced5317575bd62fb006ea3d84609
 GithubSubdir: MetabolomiQCsR
 
 Package: NMF

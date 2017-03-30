@@ -121,7 +121,6 @@ closest_match <- function(stds, peakTable, rt_tol = 0.25, mz_ppm = 30, rt_col = 
 #' @importFrom stats approx smooth
 #'
 
-#'
 
 peak_factor <- function(EIC, rt, factor="TF"){
 
@@ -130,7 +129,7 @@ peak_factor <- function(EIC, rt, factor="TF"){
     if(is.na(rt)) return(NA)
     
     
-        # C = midpoint = highest scan
+    # C = midpoint = highest scan
     C <- rt # EIC is in minutes so we change here
     
     C_scan <- EIC$scan[    which.min(abs(EIC$scan_rt-C))   ]
@@ -150,6 +149,12 @@ peak_factor <- function(EIC, rt, factor="TF"){
     if(  !all( c(EIC$intensity[C_scan-1], EIC$intensity[C_scan+1]) == 0 )  ){ # If the values on each side of the mid of the peak are both 0 don't do smoothing (a 1 scan spike would cause this).
         EIC <- EIC %>% mutate(intensity = smooth(intensity, kind="3")) 
     }
+    
+    
+    # If middle scan is zero after smoothing give up
+    # We check agina after smoothing
+    if( EIC$intensity[C_scan] == 0 ) return(NA)
+    
     
     # Get the lower RT side of the peak
     A_side <-   EIC %>% 

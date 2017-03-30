@@ -43,7 +43,13 @@ module_table %<>% rowwise %>%
                   mutate(file_exists = file.exists(script_path)) %>% 
                   filter(file_exists) %>%
                   rowwise %>% 
-                  mutate(sql = readLines(script_path) %>% paste(collapse="\n ") %>% strsplit(";") %>% .[[1]] %>% list) %>% 
+                  mutate(sql =   readLines(script_path) %>% 
+                                 paste(collapse="\n ") %>% 
+                                 gsub("\\;","--SEMICOLON--",., fixed=TRUE) %>%
+                                 strsplit(";") %>% .[[1]] %>% 
+                                 gsub("--SEMICOLON--","\\;",., fixed=TRUE) %>% 
+                                 list
+                         ) %>% 
                   ungroup
 
 

@@ -87,7 +87,7 @@ if(any(!file_tbl$file_exists)){
     
     
     # Remove from the tables of things to do
-    file_tbl %<>% filter(file_exists)
+    file_tbl %<>% filter(file_exists) %>% select(-file_exists)
 }
 
 

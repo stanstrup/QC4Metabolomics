@@ -10,6 +10,7 @@ cmp_count <- paste0("SELECT COUNT(*) from std_compounds") %>% dbGetQuery(pool,.)
 
 if(cmp_count==0){
     write_to_log("No compounds defined for TrackCmp to work on", cat = "info", source = log_source, pool = pool)
+    message("No compounds defined. Quitting.")
     
     # close connections
     poolClose(pool)
@@ -42,7 +43,56 @@ file_tbl <-  paste0("
             mutate_each(funs(as.factor), file_md5, project, mode)
 
 
-# Do nothing if nothing schedules
+
+# Check if files still exist. ---------------------------------------------
+# Otherwise remove completely from DB
+file_tbl %<>% mutate(file_exists = path %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.exists)
+
+
+
+if(any(!file_tbl$file_exists)){
+ 
+    # get all tables that references files
+    # also add a list of all files to remove
+    tab_with_files <-   dbListTables(pool) %>% 
+                        data_frame(table = .) %>% 
+                        mutate(fields = map(table, ~ dbListFields(pool,.x))) %>% 
+                        mutate(has_file_md5 = map_lgl(fields, ~ "file_md5" %in% .x)) %>% 
+                        filter(has_file_md5) %>%
+                        rowwise %>% 
+                        mutate(file_md5 = list(as.character(file_tbl$file_md5[!file_tbl$file_exists]))) %>% 
+                        ungroup
+                        
+    # make sql queries ready
+    tab_with_files %<>% 
+        mutate(sql = map2_chr(file_md5,table, ~ .x %>% paste(collapse="','") %>% paste0("'",.,"'") %>% paste0("DELETE FROM ",.y," WHERE file_md5 in (",.,")") ))
+    
+    # put the files table last to satisfy contraints
+    tab_with_files %<>% 
+        mutate(is_files_tab = table == "files") %>% 
+        arrange(is_files_tab) %>% 
+        select(-is_files_tab)
+    
+    
+    # Do db query
+    con <- poolCheckout(pool)
+    dbBegin(con)
+    
+    res <- sapply(tab_with_files$sql, function(x){ dbSendQuery(con,x); dbCommit(con)})
+    res <- unname(res)
+    poolReturn(con)
+    
+    # write to log
+    if(all(res)) write_to_log(paste0("Removed ",sum(!file_tbl$file_exists)," files that could not be found from the database"), cat = "warning", source = log_source, pool = pool)
+    
+    
+    # Remove from the tables of things to do
+    file_tbl %<>% filter(file_exists)
+}
+
+
+
+# Do nothing if nothing left is scheduled ---------------------------------
 if(nrow(file_tbl)==0){
     # close connections
     poolClose(pool)
@@ -54,6 +104,8 @@ if(nrow(file_tbl)==0){
 
 
 
+
+# Get list of compounds ---------------------------------------------------
 std_compounds <- "SELECT * from std_compounds WHERE enabled=1" %>% 
                  dbGetQuery(pool,.) %>% 
                  as.tbl %>% 

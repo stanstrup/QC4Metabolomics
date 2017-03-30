@@ -45,51 +45,9 @@ file_tbl <-  paste0("
 
 
 # Check if files still exist. ---------------------------------------------
-# Otherwise remove completely from DB
-file_tbl %<>% mutate(file_exists = path %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.exists)
+dead_files <- rem_dead_files(file_md5 = file_tbl$file_md5, path = file_tbl$path, pool = pool, log_source = log_source)
 
-
-
-if(any(!file_tbl$file_exists)){
- 
-    # get all tables that references files
-    # also add a list of all files to remove
-    tab_with_files <-   dbListTables(pool) %>% 
-                        data_frame(table = .) %>% 
-                        mutate(fields = map(table, ~ dbListFields(pool,.x))) %>% 
-                        mutate(has_file_md5 = map_lgl(fields, ~ "file_md5" %in% .x)) %>% 
-                        filter(has_file_md5) %>%
-                        rowwise %>% 
-                        mutate(file_md5 = list(as.character(file_tbl$file_md5[!file_tbl$file_exists]))) %>% 
-                        ungroup
-                        
-    # make sql queries ready
-    tab_with_files %<>% 
-        mutate(sql = map2_chr(file_md5,table, ~ .x %>% paste(collapse="','") %>% paste0("'",.,"'") %>% paste0("DELETE FROM ",.y," WHERE file_md5 in (",.,")") ))
-    
-    # put the files table last to satisfy contraints
-    tab_with_files %<>% 
-        mutate(is_files_tab = table == "files") %>% 
-        arrange(is_files_tab) %>% 
-        select(-is_files_tab)
-    
-    
-    # Do db query
-    con <- poolCheckout(pool)
-    dbBegin(con)
-    
-    res <- sapply(tab_with_files$sql, function(x){ dbSendQuery(con,x); dbCommit(con)})
-    res <- unname(res)
-    poolReturn(con)
-    
-    # write to log
-    if(all(res)) write_to_log(paste0("Removed ",sum(!file_tbl$file_exists)," files that could not be found from the database"), cat = "warning", source = log_source, pool = pool)
-    
-    
-    # Remove from the tables of things to do
-    file_tbl %<>% filter(file_exists) %>% select(-file_exists)
-}
-
+file_tbl %<>% filter(dead_files)
 
 
 # Do nothing if nothing left is scheduled ---------------------------------
@@ -124,7 +82,7 @@ file_tbl_l <- split(file_tbl, ceiling(1:nrow(file_tbl)/20))
 
 
 for(ii in seq_along(file_tbl_l)){
-    
+    print("Starting next batch of files")
     
     
     # Joined data appropiately ------------------------------------------------
@@ -306,8 +264,8 @@ for(ii in seq_along(file_tbl_l)){
     poolReturn(con)
     
     # write to log
-    if(res) write_to_log(paste0("Successfully asked to update statistics for ",file_stds_tbl_flat$file_md5 %>% nlevels," files. ",row_updates, " operations actually performed."), cat = "info", source = log_source, pool = pool)
-    if(!res) write_to_log(paste0("Failed to update statistics. Update was requested for ",file_stds_tbl_flat$file_md5 %>% nlevels," files."), cat = "error", source = log_source, pool = pool)
+    if(res) write_to_log(paste0("Successfully asked to update statistics for ",file_stds_tbl_flat$file_md5 %>% unique %>% length," files. ",row_updates, " operations actually performed."), cat = "info", source = log_source, pool = pool)
+    if(!res) write_to_log(paste0("Failed to update statistics. Update was requested for ",file_stds_tbl_flat$file_md5 %>% unique %>% length," files."), cat = "error", source = log_source, pool = pool)
     
     
     
@@ -331,8 +289,11 @@ for(ii in seq_along(file_tbl_l)){
         poolReturn(con)
         write_to_log(paste0("priority updated for ",sum(res_pri)," files."), cat = "info", source = log_source, pool = pool)
     }
-    
 
+    
+    # attempt to avoid memory leaks
+    rm(file_stds_tbl, file_stds_tbl_flat)   
+    gc()
 }
 
 

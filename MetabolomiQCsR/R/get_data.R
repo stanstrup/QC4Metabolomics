@@ -41,7 +41,7 @@ get_cont_list <- function(polarity = c("positive", "negative", "unknown"), type 
     polarity_un <- unique(polarity)
     
     if(type=="URL"){
-        cont_list <- MetabolomiQCsR.env$target_cont$cont_list$loc %>% 
+        cont_list <- MetabolomiQCsR.env$Contaminants$cont_list$loc %>% 
                      {data_frame(polarity = names(.),loc = as.character(.))} %>% 
                      filter(polarity %in% polarity_un) %>% 
                      mutate(cont_list = map_chr(loc, getURL)) %>% 

@@ -40,12 +40,6 @@
 	MetabolomiQCsR.env$general$settings_file                   <<- normalizePath(ini_file)
     MetabolomiQCsR.env$general$base                            <<- ini$general$base %>% as.character
     
-    MetabolomiQCsR.env$target_cont$EIC_ppm                     <<- ini$target_cont$EIC_ppm                 %>% as.numeric
-    MetabolomiQCsR.env$target_cont$cont_list$cont_list_type    <<- ini$target_cont$cont_list_type          %>% as.character
-    MetabolomiQCsR.env$target_cont$cont_list$loc$positive      <<- ini$target_cont$cont_list_loc_positive  %>% as.character
-    MetabolomiQCsR.env$target_cont$cont_list$loc$unknown       <<- ini$target_cont$cont_list_loc_unknown   %>% as.character
-    MetabolomiQCsR.env$target_cont$cont_list$loc$negative      <<- ini$target_cont$cont_list_loc_negative  %>% as.character
-    
     MetabolomiQCsR.env$TIC$TIC_exclude                         <<- ini$visualization$TIC_exclude %>% str_split(",") %>% unlist %>% as.numeric
     MetabolomiQCsR.env$TIC$TIC_exclude_ppm                     <<- ini$visualization$TIC_exclude_ppm %>% as.numeric
     

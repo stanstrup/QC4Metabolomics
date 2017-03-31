@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS cont_data;
+
+DROP TABLE IF EXISTS cont_cmp;

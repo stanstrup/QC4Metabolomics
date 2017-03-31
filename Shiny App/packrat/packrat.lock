@@ -84,14 +84,14 @@ Hash: 2e047d493c617b128faf8c6e6ebf861d
 Package: MSnbase
 Source: github
 Version: 2.1.14
-Hash: 731bbb0a02e5b80ef7063a69567d55ab
+Hash: 95f4e787a1fa698d8353190a1cd5312e
 Requires: Biobase, BiocGenerics, BiocParallel, IRanges, MALDIquant,
     ProtGenerics, Rcpp, S4Vectors, XML, affy, digest, ggplot2, impute,
     mzID, mzR, pcaMethods, plyr, preprocessCore, reshape2, vsn
 GithubRepo: MSnbase
 GithubUsername: lgatto
 GithubRef: master
-GithubSha1: cb2fb86624de590417b8c091540cac060d76b191
+GithubSha1: abb1a0fb53c484f4fce0bdf55d05279feb9262d4
 
 Package: MassSpecWavelet
 Source: Bioconductor
@@ -102,13 +102,13 @@ Requires: waveslim
 Package: MetabolomiQCsR
 Source: github
 Version: 1.2
-Hash: 02a165889ecdf8de239be53847d16426
+Hash: 6181991e193955feb72f2c7d9cfa2ddc
 Requires: DBI, RCurl, RMySQL, WGCNA, dplyr, ggplot2, ini, magrittr,
     massageR, pool, purrr, readr, scales, stringr, tibble, tidyr, xcms
 GithubRepo: QC4Metabolomics
 GithubUsername: stanstrup
 GithubRef: master
-GithubSha1: cccd42281425ced5317575bd62fb006ea3d84609
+GithubSha1: 3a72f38dab8f35707ac81bfce8877c7e7b7b7680
 GithubSubdir: MetabolomiQCsR
 
 Package: NMF
@@ -146,8 +146,8 @@ Requires: bitops
 
 Package: RMySQL
 Source: CRAN
-Version: 0.10.10
-Hash: b58272c148c4a0c3977dd08f8e935d01
+Version: 0.10.11
+Hash: afae955327ece875cfbd0a9c04d0dc38
 Requires: DBI
 
 Package: RSQLite
@@ -176,8 +176,8 @@ Requires: AnnotationDbi, GO.db, Hmisc, doParallel, dynamicTreeCut,
 
 Package: XML
 Source: CRAN
-Version: 3.98-1.5
-Hash: 818adc834fc0a16dd4340a59d63b673a
+Version: 3.98-1.6
+Hash: 7a44444c1f68230e5a1de9ac9eddb709
 
 Package: acepack
 Source: CRAN
@@ -506,6 +506,16 @@ Version: 0.1.1
 Hash: e85626581f80b1fe6c92a96ec348efc5
 Requires: htmltools, shiny
 
+Package: multidplyr
+Source: github
+Version: 0.0.0.9000
+Hash: 03c338cdf81fbf997392dda87bd9efa9
+Requires: dplyr, lazyeval, magrittr
+GithubRepo: multidplyr
+GithubUsername: hadley
+GithubRef: master
+GithubSha1: 0085ded4048d7fbe5079616c40640dbf5982faf2
+
 Package: multtest
 Source: Bioconductor
 Version: 2.30.0
@@ -724,15 +734,15 @@ Hash: 774eb7be9087cdc24b53b74e5359cfac
 
 Package: xcms
 Source: github
-Version: 1.51.9
-Hash: 66aa070a6bcd8d0dd135e52c38ab418c
+Version: 1.51.10
+Hash: 0cb1639050172e5fb2261b70163015ea
 Requires: Biobase, BiocGenerics, BiocParallel, MSnbase,
     MassSpecWavelet, ProtGenerics, RANN, RColorBrewer, S4Vectors,
     multtest, mzR, plyr
 GithubRepo: xcms
 GithubUsername: sneumann
 GithubRef: devel
-GithubSha1: dfe23f315235d0ac965b712de2cd995f54204ec0
+GithubSha1: 828883b412f7973f10eacbd58eac2744500ecb13
 
 Package: xml2
 Source: CRAN

@@ -2,7 +2,7 @@
 log_source <- "TrackCmp"
 
 pool <- dbPool_MetabolomiQCs(30)
-
+std_stat_types <- dbReadTable(pool, "std_stat_types")
 
 
 # Do nothing if no compounds defined --------------------------------------
@@ -78,7 +78,7 @@ std_compounds <- "SELECT * from std_compounds WHERE enabled=1" %>%
 
 # loop through subsets of the files untill all files are in the DB --------
 file_tbl_l <- split(file_tbl, ceiling(1:nrow(file_tbl)/20))
-
+# file_tbl_l <- file_tbl_l[1:20] # to avoid doing to many. # memory leak
 
 
 for(ii in seq_along(file_tbl_l)){
@@ -171,7 +171,7 @@ for(ii in seq_along(file_tbl_l)){
     
     
     # Find best matches -------------------------------------------------------
-    file_stds_tbl %<>% mutate(peaks = map(peaks, ~ mutate(.x, row = {if(nrow(.x)==0){integer(0)}else{1:nrow(.x)}}         ))) # we add a row index we can match by later
+    file_stds_tbl %<>% mutate(peaks = map(peaks, ~ mutate(.x, row = {if(nrow(.x)==0){integer(0)}else{1:nrow(.x)}}  ))) # we add a row index we can match by later
                  
     # apex mz
     # The mass given by XCMS cannot be trusted with supplied ROIs
@@ -202,7 +202,9 @@ for(ii in seq_along(file_tbl_l)){
                              unnest(peaks, .drop = FALSE) %>% 
                              bind_cols(data_frame(EIC=unlist(file_stds_tbl$EIC,recursive = FALSE)))
     
-    
+    # try to avoid memory leak
+    rm(file_stds_tbl)
+    gc()
     
     
     # Additional peak stats ---------------------------------------------------
@@ -236,7 +238,6 @@ for(ii in seq_along(file_tbl_l)){
     
     
     # write to db -------------------------------------------------------------
-    std_stat_types <- dbReadTable(pool, "std_stat_types")
     con <- poolCheckout(pool)
     dbBegin(con)
     
@@ -290,9 +291,8 @@ for(ii in seq_along(file_tbl_l)){
         write_to_log(paste0("priority updated for ",sum(res_pri)," files."), cat = "info", source = log_source, pool = pool)
     }
 
-    
-    # attempt to avoid memory leaks
-    rm(file_stds_tbl, file_stds_tbl_flat)   
+    # try to avoid memory leak
+    rm(file_stds_tbl_flat)
     gc()
 }
 

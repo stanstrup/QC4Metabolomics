@@ -11,7 +11,7 @@ write_to_log(msg, cat, source, pool = NULL)
 
 \item{cat}{The category ("info", "warning" or "error"). A character vector.}
 
-\item{Pool}{(see pool package) to use for writing. If null a new connection will be made reading the connection details from the conf file.}
+\item{pool}{(see pool package) to use for writing. If null a new connection will be made reading the connection details from the conf file.}
 }
 \value{
 Nothing. Written to db.

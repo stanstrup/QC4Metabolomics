@@ -138,7 +138,7 @@ peak_factor <- function(EIC, rt, factor="TF"){
     
     
     # we get the max of the 5 central scans to avoid problems if the center is not he highest
-    max_int <- max(EIC$intensity[(C_scan-2):(C_scan+2)])
+    max_int <- max(EIC$intensity[(C_scan-2):(C_scan+2)], na.rm = TRUE)
     
     
     # if all 3 middle peaks are zero give up
@@ -177,6 +177,8 @@ peak_factor <- function(EIC, rt, factor="TF"){
     # Get A
     A_scans <- A_side %>% with(match(-1,sign(per_max-cut_off)))
     
+    if(is.na(A_scans)) return(NA)
+        
     A       <- A_side %>% 
                slice((A_scans-1):A_scans) %>% 
                with(approx(per_max,scan_rt,xout=cut_off)$y)
@@ -184,6 +186,8 @@ peak_factor <- function(EIC, rt, factor="TF"){
     
     # Get B
     B_scans <- B_side %>% with(match(-1,sign(per_max-cut_off)))
+    
+    if(is.na(B_scans)) return(NA)
     
     B       <- B_side %>% 
                slice((B_scans-1):B_scans) %>% 

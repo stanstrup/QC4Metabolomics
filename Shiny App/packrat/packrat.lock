@@ -43,8 +43,8 @@ Requires: futile.logger, snow
 
 Package: DBI
 Source: CRAN
-Version: 0.6
-Hash: c1a897fa11e50c1f70258830fc50b1f3
+Version: 0.6-1
+Hash: 4aef5bda70897c1663d5b8bae2f4419a
 
 Package: DT
 Source: CRAN
@@ -102,13 +102,13 @@ Requires: waveslim
 Package: MetabolomiQCsR
 Source: github
 Version: 1.2
-Hash: 6181991e193955feb72f2c7d9cfa2ddc
+Hash: 1e92d8f6432548924d4aa188e74bbc29
 Requires: DBI, RCurl, RMySQL, WGCNA, dplyr, ggplot2, ini, magrittr,
     massageR, pool, purrr, readr, scales, stringr, tibble, tidyr, xcms
 GithubRepo: QC4Metabolomics
 GithubUsername: stanstrup
 GithubRef: master
-GithubSha1: 3a72f38dab8f35707ac81bfce8877c7e7b7b7680
+GithubSha1: fad5cd15544d5517e3e86e4bd09dfd65c1c98114
 GithubSubdir: MetabolomiQCsR
 
 Package: NMF
@@ -588,12 +588,12 @@ Requires: Rcpp
 Package: pool
 Source: github
 Version: 0.1.0
-Hash: 2d0b6097442966c4e6c7a2ec54590432
+Hash: 933ba738ebc5b561dcdd8eac134fdfbc
 Requires: DBI, R6
 GithubRepo: pool
 GithubUsername: rstudio
 GithubRef: master
-GithubSha1: 52199b03287a4ae308bb3a16867cd4e5a8b2851f
+GithubSha1: 54bd25636930f3823fe51feb755f41e643049fa1
 
 Package: preprocessCore
 Source: Bioconductor
@@ -690,9 +690,9 @@ Requires: magrittr, stringi
 
 Package: tibble
 Source: CRAN
-Version: 1.2
-Hash: 0ad215aed62ba7a18bc4c5b89835c934
-Requires: Rcpp, assertthat, lazyeval
+Version: 1.3.0
+Hash: 8de64ed3345488e66b676875ed1ebdce
+Requires: Rcpp, lazyeval
 
 Package: tidyr
 Source: CRAN
@@ -735,14 +735,14 @@ Hash: 774eb7be9087cdc24b53b74e5359cfac
 Package: xcms
 Source: github
 Version: 1.51.10
-Hash: 0cb1639050172e5fb2261b70163015ea
+Hash: 70b6606e8ce35d695db812fbbdf11eae
 Requires: Biobase, BiocGenerics, BiocParallel, MSnbase,
     MassSpecWavelet, ProtGenerics, RANN, RColorBrewer, S4Vectors,
     multtest, mzR, plyr
 GithubRepo: xcms
 GithubUsername: sneumann
 GithubRef: devel
-GithubSha1: 828883b412f7973f10eacbd58eac2744500ecb13
+GithubSha1: aa9f1d3e5241cc22c7ade7165c168bdfb6399e8d
 
 Package: xml2
 Source: CRAN

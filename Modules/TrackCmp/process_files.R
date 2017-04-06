@@ -77,8 +77,8 @@ std_compounds <- "SELECT * from std_compounds WHERE enabled=1" %>%
 
 
 # loop through subsets of the files untill all files are in the DB --------
-file_tbl_l <- split(file_tbl, ceiling(1:nrow(file_tbl)/20))
-file_tbl_l <- file_tbl_l[1:20] # to avoid doing to many. # memory leak
+file_tbl_l <- split(file_tbl, ceiling(1:nrow(file_tbl)/10))
+file_tbl_l <- file_tbl_l[1:10] # to avoid doing to many. # memory leak
 
 
 for(ii in seq_along(file_tbl_l)){

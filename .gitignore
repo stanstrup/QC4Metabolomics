@@ -10,3 +10,6 @@ MetabolomiQCsR.Rcheck
 db_model.mwb.bak
 *temp*
 .~lock.overview.pptx#
+runstuff_Contaminants.bat
+runstuff_Files_etc.bat
+runstuff_TrackCmp.bat

@@ -102,13 +102,14 @@ Requires: waveslim
 Package: MetabolomiQCsR
 Source: github
 Version: 1.2
-Hash: 1e92d8f6432548924d4aa188e74bbc29
-Requires: DBI, RCurl, RMySQL, WGCNA, dplyr, ggplot2, ini, magrittr,
-    massageR, pool, purrr, readr, scales, stringr, tibble, tidyr, xcms
+Hash: 8c94e058b289c6f93a80cfa36ff19c34
+Requires: DBI, RCurl, RMySQL, WGCNA, dplyr, ggplot2, ini, lubridate,
+    magrittr, massageR, pool, purrr, readr, scales, stringr, tibble,
+    tidyr, xcms
 GithubRepo: QC4Metabolomics
 GithubUsername: stanstrup
 GithubRef: master
-GithubSha1: fad5cd15544d5517e3e86e4bd09dfd65c1c98114
+GithubSha1: c287537dda201f5ccaa16e4815b97f87d58937bb
 GithubSubdir: MetabolomiQCsR
 
 Package: NMF
@@ -570,14 +571,14 @@ Hash: fb19215402e2d9f1c7f803dcaa806fc2
 Package: plotly
 Source: github
 Version: 4.5.6.9000
-Hash: bda8bdf71ff8029c846fe09c9d9c8a99
+Hash: 1d4b8d9d989b56ded6b8c6079dfb50c4
 Requires: RColorBrewer, base64enc, crosstalk, digest, dplyr, ggplot2,
     hexbin, htmltools, htmlwidgets, httr, jsonlite, lazyeval, magrittr,
     purrr, scales, tibble, tidyr, viridisLite
 GithubRepo: plotly
 GithubUsername: ropensci
 GithubRef: master
-GithubSha1: 8c5aff3b6401e2161607cae36525faaa24c6e809
+GithubSha1: 64d4bd38442b1ad50ff7c29002250162984f6d8b
 
 Package: plyr
 Source: CRAN
@@ -708,8 +709,8 @@ Requires: ggplot2, gridExtra
 
 Package: viridisLite
 Source: CRAN
-Version: 0.1.3
-Hash: d16a33135b1f4c8818b8cd569da3913f
+Version: 0.2.0
+Hash: 10f0c25af3dc84eaae10f5854f47efdb
 
 Package: vsn
 Source: Bioconductor

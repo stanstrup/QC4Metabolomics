@@ -28,17 +28,9 @@ std_stats_plotmargin_fix <- function(p){
 
 # Build data range selector -----------------------------------------------
 # Get time range available in the db
-files_date_range <-    reactive({
-                                    "
-                                     SELECT 
-                                     MIN(time_run) AS min,
-                                     MAX(time_run) AS max
-                                     FROM file_info
-                                    " %>% 
-                                    dbGetQuery(pool,.) %>% 
-                                    {setNames(as.POSIXct(as.character(.),format= "%Y-%m-%d %H:%M:%S"), names(.))}
-                                    
-                               })
+files_date_range <-    reactive({   default_time_range(min_weeks=2, min_samples = 200, pool = pool)  })
+
+
 
 # build the ui
 output$file_date_range_ui <- renderUI({

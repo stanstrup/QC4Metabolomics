@@ -153,3 +153,61 @@ rem_dead_files <- function(file_md5, path, pool = NULL, log_source){
     
     return(file_tbl$file_exists)
 }
+
+
+
+
+
+
+#' Remove files that no longer exist from the database
+#'
+#'Return is a giving the dates corresponding to the last 
+#'min_samples number of samples, but at least ALL samples from the last min_weeks weeks.
+#'
+#' @param min_weeks A vector saying the minimum number of weeks to return samples from.
+#' @param min_samples A vector saying how many samples to minimum return. Always returns all samples from min_weeks period.
+#' @param pool (see pool package) to use for writing. If null a new connection will be made reading the connection details from the conf file.
+#' 
+#' @return Named vector (min, max) with POSIXct times.
+#' @export
+#'
+#' @keywords internal
+#' 
+#' @importFrom magrittr %>%
+#' @importFrom DBI dbGetQuery
+#' @importFrom lubridate weeks
+#' 
+ 
+
+
+default_time_range <- function(min_weeks=2, min_samples = 200, pool = NULL){
+
+    # if the user didn't give is a pool we close it here.
+    if(is.null(pool)) dbPool_MetabolomiQCs(5)
+    
+    max <- "SELECT MAX(time_run) FROM file_info" %>% 
+            dbGetQuery(pool,.) %>% 
+            as.character %>% 
+            as.POSIXct(format= "%Y-%m-%d %H:%M:%S")
+    
+    N <- {max-weeks(2)} %>% strftime("%Y-%m-%d %H:%M:%S") %>% 
+          paste0("SELECT COUNT(time_run) FROM file_info WHERE time_run > '",.,"'") %>% 
+          dbGetQuery(pool,.) %>% as.numeric
+    
+    
+    if(N>200){
+        
+        min <- {max-weeks(min_weeks)}
+        
+    }else{
+        
+        min <- paste0("SELECT time_run FROM file_info order by time_run DESC LIMIT ",min_samples,",1") %>% 
+            dbGetQuery(pool,.) %>% 
+            as.character %>% 
+            as.POSIXct(format= "%Y-%m-%d %H:%M:%S")
+        
+    }
+    
+    return(c(min=min, max=max))
+                                    
+}

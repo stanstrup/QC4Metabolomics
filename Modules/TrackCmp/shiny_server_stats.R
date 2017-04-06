@@ -41,7 +41,7 @@ output$file_date_range_ui <- renderUI({
                                                        label = "Date range", 
                                                        start = files_date_range()["min"] %>% as.Date %>% as.character, 
                                                        end   = files_date_range()["max"] %>% as.Date %>% as.character, 
-                                                       min   = files_date_range()["min"] %>% as.Date %>% as.character,
+                                                       min   = "1970-01-01",
                                                        max   = files_date_range()["max"] %>% as.Date %>% as.character, 
                                                        weekstart = 1
                                                        )

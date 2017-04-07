@@ -253,7 +253,8 @@ std_data_selected <-  reactive({
                                                                                     ungroup %>%
                                                                                     right_join(calendar, by = c("year", "yday")) %>%
                                                                                     filter(year==my_i) %>% 
-                                                                                    mutate(`Samples #` = ifelse(is.na(`Samples #`),0,`Samples #`))
+                                                                                    mutate(`Samples #` = ifelse(is.na(`Samples #`),0,`Samples #`)) %>% 
+                                                                                    mutate(project = ifelse(is.na(project),"",project))
                     
                     
                     

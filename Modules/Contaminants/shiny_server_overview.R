@@ -326,6 +326,7 @@ std_data_selected <-  reactive({
                  mutate(x_text = paste0(name, " (",ion_id,")"))
                  
     
+    metric_name <- input$int_type %>% as.character %>% switch(EIC_max = "max", EIC_median = "median", EIC_mean = "mean")
     
     p <- ggplot(data=fill_data, aes(x=time_run, y = reorder(x_text, c_ord), fill=log10(value))) + 
          geom_tile() +
@@ -337,7 +338,7 @@ std_data_selected <-  reactive({
          theme(panel.background=element_rect(fill="lightgrey", colour="lightgrey")) +
          labs(x = "Run time", y = "Contaminant") +
          ggtitle("Level of known contaminants over time") +
-         guides(fill=guide_legend(title="Log10 of max intensity\nin chromatogram", keywidth = 1.5, keyheight = 1.5, title.theme = element_text(size = 12,face = "bold", angle=0 ))) +
+         guides(fill=guide_legend(title=paste0("Log10 of ",metric_name," intensity\nin chromatogram"), keywidth = 1.5, keyheight = 1.5, title.theme = element_text(size = 12,face = "bold", angle=0 ))) +
          theme(plot.title = element_text(hjust = 0.5, size=22, face="bold")) +
          theme(axis.text = element_text(size=12)) +
          theme(axis.title = element_text(size=16, face="bold")) +

@@ -22,6 +22,7 @@ FOREIGN KEY(ion_id)   REFERENCES cont_cmp(ion_id),
 PRIMARY KEY(file_md5, ion_id, stat)
 );
 
+CREATE INDEX `idx_cont_data_value`  ON `cont_data` (value) COMMENT '' ALGORITHM DEFAULT LOCK DEFAULT;
 
 INSERT INTO `cont_cmp`
   (`name`, `ion_id`, `mode`, `mz`, `anno`, `notes`)

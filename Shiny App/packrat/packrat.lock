@@ -423,8 +423,8 @@ Hash: 488b93c2a4166db0d15f1e8d882cb1d4
 
 Package: jsonlite
 Source: CRAN
-Version: 1.3
-Hash: b9cc3c97b7a6cd513e9b516fe881d6c9
+Version: 1.4
+Hash: 24cc0ffeb1771d710173d9803a131870
 
 Package: knitr
 Source: CRAN
@@ -649,14 +649,14 @@ Requires: RColorBrewer, Rcpp, dichromat, labeling, munsell, plyr
 
 Package: shiny
 Source: github
-Version: 1.0.0.9000
-Hash: f72c09670a92436cb3e926fa4e60b97b
+Version: 1.0.1.9000
+Hash: 226a0155b9a47307d17fea7d1c36f712
 Requires: R6, digest, htmltools, httpuv, jsonlite, mime, sourcetools,
     xtable
 GithubRepo: shiny
 GithubUsername: rstudio
 GithubRef: master
-GithubSha1: 73446af330015a360c63a277c272f6e53d50bfac
+GithubSha1: 1633e7faa66c28c534c54af250b7cd01472050c9
 
 Package: shinyjs
 Source: github
@@ -675,8 +675,8 @@ Hash: bf705214a3d32b037dd24940931c289e
 
 Package: sourcetools
 Source: CRAN
-Version: 0.1.5
-Hash: 04ddeb1c288302222562326a471e2945
+Version: 0.1.6
+Hash: 226d56d7469587da40b0f96180e711b4
 
 Package: stringi
 Source: CRAN

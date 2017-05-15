@@ -21,4 +21,3 @@ a \code{\link{ggplot}} object.
 \description{
 Bar plot of contaminants
 }
-

@@ -20,4 +20,3 @@ Database change and a logical vector saying which files existed.
 Remove files that no longer exist from the database
 }
 \keyword{internal}
-

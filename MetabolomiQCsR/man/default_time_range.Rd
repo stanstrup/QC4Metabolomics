@@ -21,4 +21,3 @@ Return is a giving the dates corresponding to the last
 min_samples number of samples, but at least ALL samples from the last min_weeks weeks.
 }
 \keyword{internal}
-

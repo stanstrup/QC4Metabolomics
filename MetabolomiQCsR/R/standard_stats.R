@@ -9,7 +9,8 @@
 #' @export
 #' 
 #' @importFrom dplyr %>% rowwise transmute ungroup mutate
-#' @importFrom purrr by_row map
+#' @importFrom purrr map
+#' @importFrom purrrlyr by_row
 #' @importFrom massageR attr_rem
 #' @importFrom magrittr extract2
 #' 

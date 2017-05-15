@@ -35,4 +35,3 @@ Takes an \code{\link{xcmsRaw}} object and extracts EICs.
 Can do multiple ranges and exclude certain masses unlike \code{\link{getEIC}}.
 Can be used to extract the TIC too.
 }
-

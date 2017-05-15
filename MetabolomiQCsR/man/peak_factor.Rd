@@ -23,4 +23,3 @@ Calculate Tailing Factor and Asymmetry Factor
 \references{
 http://www.chromforum.org/viewtopic.php?t=20079
 }
-

@@ -16,4 +16,3 @@ A \code{\link{dbPool}} object to connect to the MetabolomiQC database using sett
 Write message to QC4Metabolomics db
 }
 \keyword{internal}
-

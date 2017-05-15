@@ -33,4 +33,3 @@ tbl A \code{\link{tibble}} containing the columns:
 Calculate EIC from a raw matrix of all observations (scan/mz/intensity combinations).
 }
 \keyword{internal}
-

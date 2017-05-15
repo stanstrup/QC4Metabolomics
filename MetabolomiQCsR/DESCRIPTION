@@ -1,8 +1,8 @@
 Package: MetabolomiQCsR
 Type: Package
 Title: QC for LC-MS data
-Version: 1.2
-Date: 2016-08-12
+Version: 1.2.1
+Date: 2017-05-15
 Author: Jan Stanstrup
 Maintainer: Jan Stanstrup <stanstrup@gmail.com>
 Description: Functions for performing QC on LC-MS.
@@ -13,5 +13,5 @@ License: GPL (>= 2)
 URL: None
 biocViews: MassSpectrometry, Metabolomics
 VignetteBuilder: knitr
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 Remotes: stanstrup/massageR, stanstrup/chemhelper, rstudio/pool

@@ -32,4 +32,3 @@ Get list of known contaminants
 \references{
 https://github.com/stanstrup/common_mz
 }
-

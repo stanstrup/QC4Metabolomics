@@ -30,4 +30,3 @@ Calculate EICs from a raw matrix of all observations (scan/mz/intensity combinat
 Can calculate for several ranges at a time
 }
 \keyword{internal}
-

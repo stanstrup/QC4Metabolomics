@@ -19,4 +19,3 @@ a \code{\link{ggplot}} object.
 \description{
 Plot chromatogram
 }
-

@@ -23,4 +23,3 @@ A \code{\link{tibble}} containing the columns:
 \description{
 Convert raw data into a tibble of xcmsRaw objects.
 }
-

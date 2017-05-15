@@ -34,4 +34,3 @@ This function looks in raw LC-MS data for "features"/EICs that behave like conta
 Behaving like contaminants in this case means that a certain m/z values is 
 present in more than \code{min_time} above intensity \code{min_int}.
 }
-

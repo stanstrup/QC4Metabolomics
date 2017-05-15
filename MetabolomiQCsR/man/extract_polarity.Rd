@@ -16,4 +16,3 @@ A character string giving the polarity. Can be "positive", "negative", or "unkno
 Extracts polarity from an xcmsRaw object.
 The polarity found in the majority of scans is returned.
 }
-

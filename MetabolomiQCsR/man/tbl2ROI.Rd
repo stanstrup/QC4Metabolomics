@@ -21,4 +21,3 @@ List containing the ROIs. Each list contains mz, mzmin, mzmax, scmin, scmax, len
 \description{
 Convert a list of peaks (rt / m/z pairs) to a Region of Interest (ROI) list for use with \code{\link{findPeaks}}
 }
-

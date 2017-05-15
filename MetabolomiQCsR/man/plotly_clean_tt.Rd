@@ -17,4 +17,3 @@ A \code{\link[plotly]{plotly}} object.
 \description{
 Make replacements in plotly tooltips
 }
-

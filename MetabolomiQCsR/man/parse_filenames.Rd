@@ -39,4 +39,3 @@ parse_filenames(testfilenames,defaultmask)
 \author{
 Stinus Lindgreen, \email{sldg@steno.dk}; Jan Stanstrup, \email{jpzs@steno.dk}
 }
-

@@ -30,4 +30,3 @@ A vector having the length equivalent to the number of rows in stds giving the i
 This function will match a table of standard compounds and a peak table by m/z and retention time.
 If there is more than one possible hit the highest intensity peak will be chosen.
 }
-

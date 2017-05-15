@@ -20,4 +20,3 @@ Nothing. Written to db.
 Write message to QC4Metabolomics db
 }
 \keyword{internal}
-

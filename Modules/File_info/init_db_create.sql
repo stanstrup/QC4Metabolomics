@@ -4,5 +4,6 @@ project       VARCHAR(256)  NOT NULL,
 mode          ENUM('pos', 'neg','unknown') NOT NULL,
 sample_id     TEXT(256)     NOT NULL,
 time_run      DATETIME      NOT NULL,
-FOREIGN KEY(file_md5) REFERENCES files(file_md5)
+FOREIGN KEY(file_md5) REFERENCES files(file_md5),
+PRIMARY KEY(file_md5)
 )

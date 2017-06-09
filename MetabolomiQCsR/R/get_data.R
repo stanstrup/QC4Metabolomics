@@ -31,6 +31,7 @@ globalVariables("MetabolomiQCsR.env")
 #' @importFrom magrittr extract2
 #' @importFrom RCurl getURL
 #' @importFrom utils globalVariables suppressForeignCheck
+#' @importFrom ini read.ini
 #' 
 
 get_cont_list <- function(polarity = c("positive", "negative", "unknown"), type = "URL") {
@@ -38,10 +39,19 @@ get_cont_list <- function(polarity = c("positive", "negative", "unknown"), type 
     # make build check happy
     . <- loc <- NULL
 
+    # get settings
+    ini <- read.ini(MetabolomiQCsR.env$general$settings_file)
+    
+    loc <- list()
+    loc$positive      <- ini$module_Contaminants$cont_list_loc_positive  %>% as.character
+    loc$unknown       <- ini$module_Contaminants$cont_list_loc_unknown   %>% as.character
+    loc$negative      <- ini$module_Contaminants$cont_list_loc_negative  %>% as.character
+    
+    
     polarity_un <- unique(polarity)
     
     if(type=="URL"){
-        cont_list <- MetabolomiQCsR.env$Contaminants$cont_list$loc %>% 
+        cont_list <- loc %>% 
                      {data_frame(polarity = names(.),loc = as.character(.))} %>% 
                      filter(polarity %in% polarity_un) %>% 
                      mutate(cont_list = map_chr(loc, getURL)) %>% 

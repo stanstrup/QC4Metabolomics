@@ -44,6 +44,13 @@ files <- c("Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_034_2_1_1.mzML"
 stds <- read_tsv("stds.tsv")
 stds
 
+## ----read raw files, cache=TRUE------------------------------------------
+raw <- xcmsRaw_to_tbl(files, profparam = settings$xcmsRaw$profparam)
+
+rm(files)
+
+raw
+
 ## ----md5-----------------------------------------------------------------
 raw %<>% mutate(md5 = path %>% as.character %>% md5sum %>% as.vector)
 
@@ -140,8 +147,8 @@ data_flat %<>% rowwise %>%
 
 ## ----factors-------------------------------------------------------------
 
-data_flat %<>% mutate(TF =  map2_dbl(EIC,rt.peaks, ~ peak_factor(.x,.y,factor="TF"))) %>% 
-               mutate(ASF = map2_dbl(EIC,rt.peaks, ~ peak_factor(.x,.y,factor="ASF")))
+data_flat %<>% mutate(TF =  map2_dbl(EIC,rt.peaks/60, ~ peak_factor(.x,.y,factor="TF"))) %>% 
+               mutate(ASF = map2_dbl(EIC,rt.peaks/60, ~ peak_factor(.x,.y,factor="ASF")))
 
 
 ## ----output--------------------------------------------------------------

@@ -252,8 +252,8 @@ data_flat %<>% rowwise %>%
 
 ```{r factors}
 
-data_flat %<>% mutate(TF =  map2_dbl(EIC,rt.peaks, ~ peak_factor(.x,.y,factor="TF"))) %>% 
-               mutate(ASF = map2_dbl(EIC,rt.peaks, ~ peak_factor(.x,.y,factor="ASF")))
+data_flat %<>% mutate(TF =  map2_dbl(EIC,rt.peaks/60, ~ peak_factor(.x,.y,factor="TF"))) %>% 
+               mutate(ASF = map2_dbl(EIC,rt.peaks/60, ~ peak_factor(.x,.y,factor="ASF")))
 
 ```
 

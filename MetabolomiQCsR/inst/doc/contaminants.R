@@ -40,7 +40,10 @@ data_cont <-    data_raw %>%
                 mutate(cont_list = get_cont_list(polarity))
 
 ## ----clean contaminant list----------------------------------------------
-EIC_ppm <- MetabolomiQCsR.env$target_cont$EIC_ppm # 30
+library(ini)
+
+ini <- read.ini(MetabolomiQCsR.env$general$settings_file)
+EIC_ppm <- ini$module_TrackCmp$ROI__ppm %>% as.numeric # 30
 
 data_cont %<>%  unnest(cont_list, .drop = FALSE) %>%  # one line per contaminant
                 setNames(make.names(names(.))) %>% 

@@ -1,4 +1,4 @@
-
+library(stringr)
 ini <- MetabolomiQCsR.env$general$settings_file %>% read.ini
 
 

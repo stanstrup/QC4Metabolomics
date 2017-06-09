@@ -155,7 +155,7 @@ getEIC_C_wrap <- function(xraw_values, range_tbl) {
 get_EICs <- function(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30, range_tbl_cols = c("mz_lower","mz_upper"), BPI = FALSE, min_int = 0){
     
     # make build check happy
-    . <- mz <- exclude <- mz_lower <- mz_upper <- EIC <- NULL
+    . <- mz <- exclude <- mz_lower <- mz_upper <- EIC <- intensity <- NULL
     
     
     # get the right columns from range_tbl_cols

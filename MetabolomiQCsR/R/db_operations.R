@@ -106,6 +106,10 @@ write_to_log <- function(msg, cat, source, pool = NULL){
 
 rem_dead_files <- function(file_md5, path, pool = NULL, log_source){
     
+    # make check happy
+    has_file_md5 <- fields <- is_files_tab <- . <- NULL
+
+    
     # if the user didn't give is a pool we close it here.
     if(is.null(pool)) dbPool_MetabolomiQCs(5)
     
@@ -182,6 +186,10 @@ rem_dead_files <- function(file_md5, path, pool = NULL, log_source){
 
 default_time_range <- function(min_weeks=2, min_samples = 200, pool = NULL){
 
+    # make check happy
+    . <- NULL
+
+    
     # if the user didn't give is a pool we close it here.
     if(is.null(pool)) dbPool_MetabolomiQCs(5)
     

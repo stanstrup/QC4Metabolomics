@@ -1,13 +1,13 @@
 Package: MetabolomiQCsR
 Type: Package
 Title: QC for LC-MS data
-Version: 1.2.1
-Date: 2017-05-15
+Version: 1.3
+Date: 2017-06-09
 Author: Jan Stanstrup
 Maintainer: Jan Stanstrup <stanstrup@gmail.com>
 Description: Functions for performing QC on LC-MS.
 Depends: R (>= 3.0)
-Imports: tibble, magrittr, dplyr, purrr, xcms, massageR, tidyr, scales, ggplot2, ini, stringr, RCurl, readr, utils, WGCNA, pool, RMySQL, DBI, lubridate
+Imports: tibble, magrittr, dplyr, purrr, xcms, massageR, tidyr, scales, ggplot2, ini, stringr, RCurl, readr, utils, WGCNA, pool, RMySQL, DBI, lubridate, httr, purrrlyr
 Suggests: knitr, rmarkdown, faahKO, plotly, svglite, chemhelper, RColorBrewer, heatmaply, listviewer
 License: GPL (>= 2)
 URL: None

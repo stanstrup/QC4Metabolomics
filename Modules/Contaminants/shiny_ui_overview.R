@@ -1,5 +1,6 @@
 
 # logifySlider javascript function
+# modified from http://stackoverflow.com/questions/30502870/shiny-slider-on-logarithmic-scale
 JS.logify <-
 "
 // function to logify a sliderInput
@@ -60,8 +61,44 @@ tabPanel("Contaminations",
                                                                 
                                                                
                                                                
+                                                              ),
+                                                      
+                                                      
+                                                      
+                                                      tabPanel("Time view",
+                                                               br(),
+                                                               fluidRow(
+                                                                         column(2,
+                                                                                    selectInput(ns("time_int"), "Selected intensity over chromatograms", choices = c(Max = "EIC_max", Median = "EIC_median", Mean = "EIC_mean"), selected=c(Median = "EIC_max"), multiple = FALSE)
+                                                                                ),
+                                                                         column(2,
+                                                                                   uiOutput(ns("cont_select_ui")) 
+                                                                                )
+                                                                        ),
+                                                               div(style = "width: 1000px; margin:0 auto;",
+                                                                        plotlyOutput(ns("time_plot"), height = "700px")
+                                                                  )
+                                                               
+                                                              ),
+                                                      
+                                                      
+                                                      tabPanel("File screening",
+                                                               br(),
+                                                               fluidRow(
+                                                                         column(2,
+                                                                                    selectInput(ns("file_int"), "Selected intensity over chromatograms", choices = c(Max = "EIC_max", Median = "EIC_median", Mean = "EIC_mean"), selected=c(Median = "EIC_max"), multiple = FALSE)
+                                                                                ),
+                                                                         column(2,
+                                                                                    uiOutput(ns("file_select_ui"))
+                                                                                )
+                                                                        ),
+                                                               div(style = "width: 1400px; margin:0 auto;",
+                                                                        plotlyOutput(ns("file_screen_plot"), height = "1400px")
+                                                                  )
+                                                               
                                                               ) 
-                                        )
+                                                      
+                                                  )
                                         
                                         
                                         

@@ -46,6 +46,7 @@ plot_chrom <- function(tbl, RT_col = "RT", Intensity_col = "Intensity"){
 #' @param title Plot title
 #' @param x_var Column name that holds the compound/contaminant names
 #' @param y_var Column name that holds the compound/contaminant values
+#' @param y_lab Y-axis label
 #'
 #' @return a \code{\link{ggplot}} object.
 #' @export
@@ -58,7 +59,7 @@ plot_chrom <- function(tbl, RT_col = "RT", Intensity_col = "Intensity"){
 #' @importFrom dplyr slice %>%
 #'
 
-plot_contaminants <- function(data, title, x_var = "comp_name", y_var = "EIC_median"){
+plot_contaminants <- function(data, title, x_var = "comp_name", y_var = "EIC_median", y_lab = "Median EIC"){
     
                         sort_ord <- data %>% extract2(y_var) %>% order(decreasing = TRUE)
                         data[, x_var] <- factor(data %>% extract2(x_var) %>% as.character , 
@@ -74,7 +75,7 @@ plot_contaminants <- function(data, title, x_var = "comp_name", y_var = "EIC_med
                         theme(axis.ticks=element_blank()) +
                         ggtitle(as.character(title)) +
                         theme(plot.title = element_text(margin=margin(b = 50),face="bold",size=28)) +
-                        labs(x="Contaminants", y="Median EIC") +
+                        labs(x="Contaminants", y=y_lab) +
                         scale_y_continuous(labels=scientific)
                         
 }

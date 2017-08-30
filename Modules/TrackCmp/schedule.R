@@ -12,6 +12,7 @@ library(magrittr)
 library(purrr)
 library(tidyr)
 library(dplyr)
+library(purrrlyr)
 
 setwd("../")
 library(MetabolomiQCsR)

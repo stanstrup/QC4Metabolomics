@@ -6,6 +6,7 @@ require(dplyr)
 require(ggthemes)
 require(scales)
 require(zoo)
+require(lubridate)
 
 # functions ---------------------------------------------------------------
 std_stats_plot_common <- function(p){ p+
@@ -192,6 +193,7 @@ std_data_selected <-  reactive({
                                      dbGetQuery(pool,.) %>% 
                                      as.tbl %>% 
                                     mutate_each(funs(as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S")), updated_at, time_run) %>% 
+                                    mutate(time_run = with_tz(time_run, Sys.timezone(location = TRUE))) %>% # time zone fix
                                     mutate(filename = sub('\\..*$', '', basename(path)))
                                 })
 
@@ -204,7 +206,6 @@ output$std_stats_rtplot <- renderPlotly({
     
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("rt_dev")) %>%
-            
                                 ggplot(aes(x=time_run, y=value, group=cmp_name, color=cmp_name)) %>% 
                                 {std_stats_plot_common(.) + 
                                 labs(y = "Retention time deviation (min)", x = "Run time") +

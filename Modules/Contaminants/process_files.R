@@ -117,7 +117,7 @@ for(ii in seq_along(file_tbl_std_l)){
                     gather(stat, value, -file_md5, -ion_id) %>% 
                     filter(value > 0)
     
- 
+    if(nrow(EIC_summary)==0) next
     
     con <- poolCheckout(pool)
     dbBegin(con)

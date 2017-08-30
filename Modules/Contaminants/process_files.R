@@ -117,7 +117,12 @@ for(ii in seq_along(file_tbl_std_l)){
                     gather(stat, value, -file_md5, -ion_id) %>% 
                     filter(value > 0)
     
-    if(nrow(EIC_summary)==0) write_to_log(paste0("No contaminant was found in: ", paste(unique(data_all$path), collapse=", ")), cat = "warning", source = log_source, pool = pool)
+    
+    files_with_no_cont <- unique(data_all[(! data_all$file_md5 %in% EIC_summary$file_md5), "path"]) %>% as.character
+    
+    if(length(files_with_no_cont)!=0) write_to_log(paste0("No contaminant was found in: ", paste(files_with_no_cont, collapse=", ")), cat = "warning", source = log_source, pool = pool)
+    
+    
     
     if(nrow(EIC_summary)!=0) {
         con <- poolCheckout(pool)
@@ -141,9 +146,23 @@ for(ii in seq_along(file_tbl_std_l)){
     
     
     # Update schedule
-    if(res){
+    if(res | length(files_with_no_cont)!=0){
         
-        sql_data <- data_all %>% distinct(file_md5) %>% mutate(module = "module_Contaminants", priority = -1L)
+        sql_data_non_missing <- data_all %>% 
+            filter(!(path %in% files_with_no_cont)) %>% 
+            distinct(file_md5) %>% 
+            mutate(module = "module_Contaminants", priority = -1L)
+        
+        sql_data_missing <- data_all %>%
+            filter(path %in% files_with_no_cont) %>% 
+            distinct(file_md5) %>% 
+            mutate(module = "module_Contaminants", priority = -1L)
+        
+        
+        if(res & length(files_with_no_cont)!=0) sql_data  <- bind_rows(sql_data_non_missing, sql_data_missing)
+        if(!res & length(files_with_no_cont)!=0) sql_data <- sql_data_missing
+        if(res & length(files_with_no_cont)==0) sql_data  <- sql_data_non_missing
+        
         
         con <- poolCheckout(pool)
         dbBegin(con)

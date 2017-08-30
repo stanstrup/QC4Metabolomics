@@ -123,6 +123,7 @@ for(ii in seq_along(file_tbl_std_l)){
     if(length(files_with_no_cont)!=0) write_to_log(paste0("No contaminant was found in: ", paste(files_with_no_cont, collapse=", ")), cat = "warning", source = log_source, pool = pool)
     
     
+    res <- FALSE
     
     if(nrow(EIC_summary)!=0) {
         con <- poolCheckout(pool)

@@ -4,7 +4,8 @@
 \alias{plot_contaminants}
 \title{Bar plot of contaminants}
 \usage{
-plot_contaminants(data, title, x_var = "comp_name", y_var = "EIC_median")
+plot_contaminants(data, title, x_var = "comp_name", y_var = "EIC_median",
+  y_lab = "Median EIC")
 }
 \arguments{
 \item{data}{tbl with the contamination amounts}
@@ -14,6 +15,8 @@ plot_contaminants(data, title, x_var = "comp_name", y_var = "EIC_median")
 \item{x_var}{Column name that holds the compound/contaminant names}
 
 \item{y_var}{Column name that holds the compound/contaminant values}
+
+\item{y_lab}{Y-axis label}
 }
 \value{
 a \code{\link{ggplot}} object.

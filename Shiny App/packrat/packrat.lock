@@ -43,8 +43,8 @@ Requires: futile.logger, snow
 
 Package: DBI
 Source: CRAN
-Version: 0.6-1
-Hash: 4aef5bda70897c1663d5b8bae2f4419a
+Version: 0.7
+Hash: 1ab72df487f06ad5f0de05446cdd4bd6
 
 Package: DT
 Source: CRAN
@@ -146,10 +146,14 @@ Hash: 79c7d5a8684e44e0e3426d3093aa7d90
 Requires: bitops
 
 Package: RMySQL
-Source: CRAN
-Version: 0.10.11
-Hash: afae955327ece875cfbd0a9c04d0dc38
+Source: github
+Version: 0.10.13
+Hash: 0c18465aef6b4b73e4ee87057559ad13
 Requires: DBI
+GithubRepo: RMySQL
+GithubUsername: rstats-db
+GithubRef: master
+GithubSha1: 7c3ba1dc8bd59ba972350401f4c421b12da03253
 
 Package: RSQLite
 Source: CRAN

@@ -84,7 +84,7 @@ file_tbl_std <-   file_tbl %>%
 
 # loop through subsets of the files untill all files are in the DB --------
 file_tbl_std_l <- split(file_tbl_std, ceiling(1:nrow(file_tbl)/10))
-file_tbl_std_l <- file_tbl_std_l[1:10] # to avoid doing to many. # memory leak
+file_tbl_std_l <- file_tbl_std_l[1:min(length(file_tbl_std_l),10)] # to avoid doing to many. # memory leak
 
 
 for(ii in seq_along(file_tbl_std_l)){

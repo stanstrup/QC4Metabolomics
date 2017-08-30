@@ -117,32 +117,33 @@ for(ii in seq_along(file_tbl_std_l)){
                     gather(stat, value, -file_md5, -ion_id) %>% 
                     filter(value > 0)
     
-    if(nrow(EIC_summary)==0) next
+    if(nrow(EIC_summary)==0) write_to_log(paste0("No contaminant was found in: ", paste(unique(data_all$path), collapse=", ")), cat = "warning", source = log_source, pool = pool)
     
-    con <- poolCheckout(pool)
-    dbBegin(con)
-    
-    sql_query <- EIC_summary %>%
-                 sqlAppendTable(pool, "cont_data", .)
-    
-    sql_query@.Data <- paste0(sql_query@.Data, "\n  ","ON DUPLICATE KEY UPDATE value = values(value)")
-    
-    q_res <- sql_query %>% dbSendQuery(con, .)
-    row_updates <- dbGetRowsAffected(q_res)
-    res <- dbCommit(con)
-    poolReturn(con)
-    
-    # write to log
-    if(res) write_to_log(paste0("Successfully asked to update statistics for ",EIC_summary$file_md5 %>% unique %>% length," files. ",row_updates, " operations actually performed."), cat = "info", source = log_source, pool = pool)
-    if(!res) write_to_log(paste0("Failed to update statistics. Update was requested for ",file_stds_tbl_flat$file_md5 %>% unique %>% nlevels," files."), cat = "error", source = log_source, pool = pool)
-    
-    
+    if(nrow(EIC_summary)!=0) {
+        con <- poolCheckout(pool)
+        dbBegin(con)
+        
+        sql_query <- EIC_summary %>%
+                     sqlAppendTable(pool, "cont_data", .)
+        
+        sql_query@.Data <- paste0(sql_query@.Data, "\n  ","ON DUPLICATE KEY UPDATE value = values(value)")
+        
+        q_res <- sql_query %>% dbSendQuery(con, .)
+        row_updates <- dbGetRowsAffected(q_res)
+        res <- dbCommit(con)
+        poolReturn(con)
+        
+        # write to log
+        if(res) write_to_log(paste0("Successfully asked to update statistics for ",EIC_summary$file_md5 %>% unique %>% length," files. ",row_updates, " operations actually performed."), cat = "info", source = log_source, pool = pool)
+        if(!res) write_to_log(paste0("Failed to update statistics. Update was requested for ",file_stds_tbl_flat$file_md5 %>% unique %>% nlevels," files."), cat = "error", source = log_source, pool = pool)
+        
+    }
     
     
     # Update schedule
     if(res){
         
-        sql_data <- EIC_summary %>% distinct(file_md5) %>% mutate(module = "module_Contaminants", priority = -1L)
+        sql_data <- data_all %>% distinct(file_md5) %>% mutate(module = "module_Contaminants", priority = -1L)
         
         con <- poolCheckout(pool)
         dbBegin(con)

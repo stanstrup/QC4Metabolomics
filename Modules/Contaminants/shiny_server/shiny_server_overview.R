@@ -153,10 +153,19 @@ heatmap_data_selected <-  reactive({
     
     metric_name <- input$int_type %>% as.character %>% switch(EIC_max = "max", EIC_median = "median", EIC_mean = "mean")
     
+    
+    
+    range_weeks <- difftime(max(fill_data$time_run),min(fill_data$time_run), units = "weeks") %>% as.numeric
+    
+    if(range_weeks>=20) date_breaks <- "1 month"
+    if(range_weeks<20) date_breaks <- "1 week"
+    if(range_weeks<2) date_breaks <- "1 day"
+    
+    
     p <- ggplot(data=fill_data, aes(x=time_run, y = reorder(x_text, c_ord), fill=log10(value))) + 
          geom_tile() +
          scale_fill_gradientn(colours = color_scale, na.value = "white") +
-         scale_x_datetime(labels = date_format("%Y-%m"), breaks=date_breaks("1 month")) +
+         scale_x_datetime(labels = date_format("%Y-%m-%d", tz = tz(fill_data$time_run)), date_breaks=date_breaks) +
          theme_classic() +
          theme(axis.text.x = element_text(angle=30, hjust = 1)) +
          facet_grid(mode ~ ., scales="free", space="free", labeller = labeller(mode=setNames(paste0("\n", str_to_title(unique(fill_data$mode)), "\n"), unique(fill_data$mode)))) +

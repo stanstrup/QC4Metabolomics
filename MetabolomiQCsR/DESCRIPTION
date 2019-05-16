@@ -14,4 +14,4 @@ URL: None
 biocViews: MassSpectrometry, Metabolomics
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
-Remotes: stanstrup/massageR, stanstrup/chemhelper, rstudio/pool
+Remotes: R_packages/massageR, R_packages/chemhelper, rstudio/pool

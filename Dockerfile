@@ -26,7 +26,6 @@ RUN sudo R CMD javareconf
 
 ##### Setup shared host folders ###############################################
 RUN mkdir /config
-RUN mkdir /dbdata
 RUN mkdir /data
 ###############################################################################
 
@@ -34,7 +33,8 @@ RUN mkdir /data
 ##### Install R packages ######################################################
 # Copy packrat files
 # We copy only the core app without modules so that we can faster rebuild if changes are made in modules
-COPY ./Shiny_App /srv/shiny-server/QC4Metabolomics/Shiny_App/
+COPY ./Shiny_App/packrat /srv/shiny-server/QC4Metabolomics/Shiny_App/packrat/
+COPY ./Shiny_App/.Rprofile /srv/shiny-server/QC4Metabolomics/Shiny_App/.Rprofile
 
 #Initialise packrat
 # Dir need to exist for manual install there

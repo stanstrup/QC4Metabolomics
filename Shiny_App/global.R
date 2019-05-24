@@ -7,6 +7,10 @@ library(magrittr)
 library(MetabolomiQCsR)
 
 
+# Establish connection
+pool <- dbPool_MetabolomiQCs(120)
+
+
 # Functions ---------------------------------------------------------------
 stat_name2id <- . %>% paste0("SELECT * FROM std_stat_types WHERE stat_name = '",.,"'") %>% dbGetQuery(pool,.) %>% extract2("stat_id")
 

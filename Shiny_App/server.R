@@ -1,7 +1,4 @@
 shinyServer(function(input, output, session) {
-    
-    # Establish connection
-	pool <- dbPool_MetabolomiQCs(120)
 
     # Modules
     lapply(seq_along(module_names), 

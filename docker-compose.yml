@@ -35,6 +35,3 @@ services:
     command:
       'mysqld --innodb-flush-method=fsync'
       
-volumes:
-  db_data:
-  

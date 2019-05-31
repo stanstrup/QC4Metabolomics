@@ -154,19 +154,19 @@ Hash: 60a5c75e57aae4a0ce76cb7422939aaf
 Package: MetabolomiQCsR
 Source: github
 Version: 1.3.1
-Hash: 5c4012eef1cf939c3304d87c036324c7
+Hash: 9912007bad226629d9c98d8a57da2615
 Requires: massageR, DBI, RCurl, RMySQL, WGCNA, dplyr, ggplot2, httr,
     ini, lubridate, magrittr, pool, purrr, purrrlyr, readr, scales,
     stringr, tibble, tidyr, xcms
 GithubRepo: QC4Metabolomics
 GithubUsername: stanstrup
 GithubRef: master
-GithubSha1: 92991d76fd07db0322426a4358e942aad7756db6
+GithubSha1: 41655bf957222e97b6206ed97a187412eb49e314
 RemoteHost: api.github.com
 RemoteRepo: QC4Metabolomics
 RemoteUsername: stanstrup
 RemoteRef: master
-RemoteSha: 92991d76fd07db0322426a4358e942aad7756db6
+RemoteSha: 41655bf957222e97b6206ed97a187412eb49e314
 GithubSubdir: MetabolomiQCsR
 
 Package: NMF

@@ -51,7 +51,7 @@ write_to_log <- function(msg, cat, source, pool = NULL){
     log_tbl <- data.frame(msg    = msg, 
                           cat    = cat,
                           source = source,
-                          time   = format(Sys.time(), "%Y-%m-%d %X")
+                          time   = format(Sys.time(), "%Y-%m-%d %H:%M:%S")
                           )
   
   

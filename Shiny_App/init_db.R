@@ -58,8 +58,8 @@ rm(ini)
 
 
 # Write to db -------------------------------------------------------------
-pool <- dbPool_MetabolomiQCs(5)
-con <- poolCheckout(pool)
+initpool <- dbPool_MetabolomiQCs(5)
+con <- poolCheckout(initpool)
 dbBegin(con)
 
 # functions for repeated use
@@ -144,5 +144,5 @@ module_table %>% filter(sql_fun == "create") %>%
 
 # Close connection
 poolReturn(con)
-poolClose(pool)
-rm(pool, con)
+poolClose(initpool)
+rm(initpool, con)

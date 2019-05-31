@@ -1,14 +1,12 @@
-FROM rocker/shiny:3.6.0
+FROM rocker/shiny:3.6.0 AS base
 
 
 ##### System libs setup #######################################################
 # Install needed linux tools
-RUN apt-get update && apt-get install  -y \
-	libcurl4-openssl-dev \
-	libv8-3.14-dev \
+RUN apt-get update && \
+    apt-get install  -y \
+	# needed for certain R packages
 	libnetcdf-dev \
-	libhdf5-dev \
-	\
 	libxml2-dev \
 	libmariadb-client-lgpl-dev \
 	libssl-dev \
@@ -18,7 +16,9 @@ RUN apt-get update && apt-get install  -y \
 	liblzma-dev \
 	libbz2-dev \
 	\
-	librsvg2-dev
+	librsvg2-dev \
+	\
+    && rm -rf /var/lib/apt
 
 RUN sudo R CMD javareconf
 ###############################################################################
@@ -49,6 +49,9 @@ RUN R -e "BiocManager::install('grimbough/Rhdf5lib', lib='/srv/shiny-server/QC4M
 # If packrat updates during restore it might fail everything so we make sure to have the latest version.
 RUN R -e "BiocManager::install('packrat', lib='/srv/shiny-server/QC4Metabolomics/Shiny_App/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
 
+# Make colors available in a console connection. Installed here since it cannot install on windows
+RUN R -e "BiocManager::install('jalvesaq/colorout', lib='/srv/shiny-server/QC4Metabolomics/Shiny_App/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
+
 # Make packrat install all remaining packages
 WORKDIR /srv/shiny-server/QC4Metabolomics/Shiny_App 
 RUN R -e "packrat::restore()"
@@ -61,22 +64,39 @@ COPY . /srv/shiny-server/QC4Metabolomics/
 ###############################################################################
 
 
-##### Shiny config ############################################################
-COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
-EXPOSE 3838
-###############################################################################
-
-
 ##### File permissions ########################################################
 # make all app files readable (solves issue when dev in Windows, but building in Ubuntu)
-RUN chmod -R 755 /srv/shiny-server/
+# Evidently not needed and takes a lot of space
+# RUN chmod -R 755 /srv/shiny-server/
 ###############################################################################
 
 
-##### Start shiny server  #####################################################
+
+
+FROM base AS process
+##### Scheduled jobs ######################################################
+RUN apt-get update && \
+	apt-get install  -y \
+	\
+	cron \
+    && rm -rf /var/lib/apt
+
+
+RUN R -e "BiocManager::install('bnosac/cronR')"
+RUN R -e "library(cronR);cmd <- cron_rscript('/srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.R', rscript_log = '/var/log/QC_cron.log');cron_add(cmd, frequency = '*/1 * * * *', id = 'QC_processing', description = 'Process files every 1 minute')"
+###############################################################################
+
+
+
+
+FROM base AS shiny
+##### Misc  ###################################################################
 # Dunno what this is for...
 RUN mkdir -p /var/lib/shiny-server/bookmarks/shiny
+###############################################################################
 
-# Start Shiny server
-CMD ["/usr/bin/shiny-server.sh"] 
+
+##### Shiny config ############################################################
+COPY ./setup/shiny-server.conf /etc/shiny-server/shiny-server.conf
+EXPOSE 3838
 ###############################################################################

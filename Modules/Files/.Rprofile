@@ -3,3 +3,6 @@ setwd("../../Shiny App/")
 source("packrat/init.R")
 setwd("../Modules/Files/")
 #### -- End Packrat Autoloader -- ####
+
+# Make colors available
+if (require('colorout')) library('colorout')

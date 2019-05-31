@@ -1,22 +1,6 @@
 version: '3.7'
-services:
-  qc_server:
-    build: .
-    ports:
-      - "80:3838"
-    volumes:
-        - type: bind
-          source: C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\config
-          target: /config
-        - type: bind
-          source: C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\data
-          target: /data   
-    depends_on:
-        - mariadb
-    restart: always
-    environment:
-      TZ: Europe/Copenhagen
 
+services:
   mariadb:
     image: "mariadb"
     volumes:
@@ -32,6 +16,46 @@ services:
       MYSQL_USER: qc_db_user
       MYSQL_PASSWORD: qc_db_pw
       TZ: Europe/Copenhagen
-    command:
-      'mysqld --innodb-flush-method=fsync'
-      
+    command: 'mysqld --innodb-flush-method=fsync'
+    
+    
+  qc_process:
+    build:
+      context: .
+      dockerfile: ./setup/Dockerfile
+      target: process
+    volumes:
+        - type: bind
+          source: C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\config
+          target: /config
+        - type: bind
+          source: C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\data
+          target: /data   
+    depends_on:
+        - mariadb
+    restart: always
+    environment:
+      TZ: Europe/Copenhagen
+    command: 'cron -f'
+    
+    
+  qc_shiny:
+    build:
+      context: .
+      dockerfile: ./setup/Dockerfile
+      target: shiny
+    ports:
+      - "80:3838"
+    volumes:
+        - type: bind
+          source: C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\config
+          target: /config
+        - type: bind
+          source: C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\data
+          target: /data   
+    depends_on:
+        - mariadb
+    restart: always
+    environment:
+      TZ: Europe/Copenhagen
+    command: '/usr/bin/shiny-server.sh'

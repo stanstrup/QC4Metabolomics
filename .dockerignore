@@ -1,0 +1,7 @@
+Shiny_App/packrat/lib
+Shiny_App/packrat/lib-ext
+Shiny_App/packrat/lib-R
+.Rproj.user
+.git
+setup/Dockerfile
+docker-compose.yml

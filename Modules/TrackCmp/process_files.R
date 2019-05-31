@@ -78,7 +78,7 @@ std_compounds <- "SELECT * from std_compounds WHERE enabled=1" %>%
 
 # loop through subsets of the files untill all files are in the DB --------
 file_tbl_l <- split(file_tbl, ceiling(1:nrow(file_tbl)/10))
-file_tbl_l <- file_tbl_l[1:10] # to avoid doing to many. # memory leak
+file_tbl_l <- file_tbl_l[1:pmin(10,length(file_tbl_l))] # to avoid doing to many. # memory leak
 
 
 for(ii in seq_along(file_tbl_l)){
@@ -136,34 +136,34 @@ for(ii in seq_along(file_tbl_l)){
     
     
     
-    file_stds_tbl %<>%
-                      invoke_rows(.d= ., .f=function(path, stds, ...){
-                                                                        raw <- path %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% normalizePath %>% 
-                                                                               xcmsRaw(profparam = MetabolomiQCsR.env$TrackCmp$xcmsRaw$profparam)
-                                                                        
-                                                                        ROI <- tbl2ROI(tbl    = stds, 
-                                                                                       raw    = raw, 
-                                                                                       ppm    = MetabolomiQCsR.env$TrackCmp$ROI$ppm,
-                                                                                       rt_tol = MetabolomiQCsR.env$TrackCmp$std_match$rt_tol
-                                                                                       )
-                                                                        
-                                                                        peaks <- findPeaks_l(MetabolomiQCsR.env$TrackCmp$findPeaks, object = raw, ROI.list = ROI, mzdiff=0) %>% 
-                                                                                 as.data.frame %>% as.tbl
-                                                                        
-                                                                        EIC <- get_EICs(raw, data_frame(mz_lower = stds$mz - MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * stds$mz * 1E-6, 
-                                                                                                        mz_upper = stds$mz + MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * stds$mz * 1E-6)
-                                                                                        ) 
-                                                                        
-                                                                        # function to convert scan to rt
-                                                                        scan2rt_fun <- approxfun(seq_along(raw@scantime),raw@scantime)
-                                                                        
-                                                                        data_frame(ROI = list(ROI), peaks = list(peaks), EIC = list(EIC), scan2rt_fun = list(scan2rt_fun)) %>% 
-                                                                        return()
-                                                                    
-                                                                    },
-                                  .collate = "cols"
-                                 ) %>% 
-                      rename(peaks = peaks1, EIC = EIC1, scan2rt_fun = scan2rt_fun1, ROI = ROI1)
+    file_stds_tbl %<>% mutate(out = 
+							  map2(path, stds, ~ {
+																				raw <- ..1 %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% normalizePath %>% 
+																					   xcmsRaw(profparam = MetabolomiQCsR.env$TrackCmp$xcmsRaw$profparam)
+																				
+																				ROI <- tbl2ROI(tbl    = ..2, 
+																							   raw    = raw, 
+																							   ppm    = MetabolomiQCsR.env$TrackCmp$ROI$ppm,
+																							   rt_tol = MetabolomiQCsR.env$TrackCmp$std_match$rt_tol
+																							   )
+																				
+																				peaks <- findPeaks_l(MetabolomiQCsR.env$TrackCmp$findPeaks, object = raw, ROI.list = ROI, mzdiff=0) %>% 
+																						 as.data.frame %>% as.tbl
+																				
+																				EIC <- get_EICs(raw, data_frame(mz_lower = ..2$mz - MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * ..2$mz * 1E-6, 
+																												mz_upper = ..2$mz + MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * ..2$mz * 1E-6)
+																								) 
+																				
+																				# function to convert scan to rt
+																				scan2rt_fun <- approxfun(seq_along(raw@scantime),raw@scantime)
+																				
+																				data_frame(ROI = list(ROI), peaks = list(peaks), EIC = list(EIC), scan2rt_fun = list(scan2rt_fun)) %>% 
+																				return()
+																			
+												  }
+										 ) 
+							  )%>% 
+                      unnest(out)
     
     
     

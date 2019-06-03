@@ -1,5 +1,3 @@
-source(".Rprofile", local = TRUE)
-print(.libPaths())
 # Libraries ---------------------------------------------------------------
 library(stringr)
 library(ini)
@@ -10,9 +8,8 @@ library(RMySQL)
 library(pool) # devtools::install_github("rstudio/pool")   
 library(tools)
  
-setwd("../")
 library(MetabolomiQCsR)
-setwd("File_info")
+setwd("Modules/File_info")
 
 source("get_settings.R", local = TRUE)
 source("parse_files.R", local = TRUE)

@@ -10,6 +10,10 @@ MetabolomiQCsR.Rcheck
 db_model.mwb.bak
 *temp*
 .~lock.overview.pptx#
+packrat/lib*/
 runstuff_Contaminants.bat
 runstuff_Files_etc.bat
 runstuff_TrackCmp.bat
+trp.sql
+MetabolomiQCsR/vignettes/standard_stats_cache
+MetabolomiQCsR/inst/doc/standard_stats_cache

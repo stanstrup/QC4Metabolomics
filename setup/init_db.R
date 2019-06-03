@@ -36,7 +36,7 @@ module_table %<>% cbind(tibble(sql_fun = list(factor(c("drop","create","check"),
 
 # Find files and check if they exist
 module_table %<>% rowwise %>% 
-                  mutate(script_path = paste0("../Modules/",module,"/",switch(as.character(sql_fun), drop = "init_db_drop.sql", create = "init_db_create.sql", check =  "init_db_check.sql"))) %>% 
+                  mutate(script_path = paste0("Modules/",module,"/",switch(as.character(sql_fun), drop = "init_db_drop.sql", create = "init_db_create.sql", check =  "init_db_check.sql"))) %>% 
                   ungroup %>% 
                   mutate(file_exists = file.exists(script_path)) %>% 
                   filter(file_exists) %>%

@@ -33,34 +33,35 @@ RUN mkdir /data
 ##### Install R packages ######################################################
 # Copy packrat files
 # We copy only the core app without modules so that we can faster rebuild if changes are made in modules
-COPY ./Shiny_App/packrat /srv/shiny-server/QC4Metabolomics/Shiny_App/packrat/
-COPY ./Shiny_App/.Rprofile /srv/shiny-server/QC4Metabolomics/Shiny_App/.Rprofile
+COPY ./packrat /srv/shiny-server/QC4Metabolomics/packrat/
+COPY ./.Rprofile /srv/shiny-server/QC4Metabolomics/.Rprofile
 
 #Initialise packrat
 # Dir need to exist for manual install there
-RUN mkdir -p "/srv/shiny-server/QC4Metabolomics/Shiny_App/packrat/lib/x86_64-pc-linux-gnu/3.6.0"
+RUN mkdir -p "/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0"
 
 # To install packages that doesn't work from packrat. "Remotes" only temporary till Rhdf5lib is fixed on BioC
 RUN R -e "install.packages('BiocManager');BiocManager::install('remotes')"
 
 # Doesn't compile from source. Maybe the space bug in the end?
-RUN R -e "BiocManager::install('grimbough/Rhdf5lib', lib='/srv/shiny-server/QC4Metabolomics/Shiny_App/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
+RUN R -e "BiocManager::install('grimbough/Rhdf5lib', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
 
 # If packrat updates during restore it might fail everything so we make sure to have the latest version.
-RUN R -e "BiocManager::install('packrat', lib='/srv/shiny-server/QC4Metabolomics/Shiny_App/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
+RUN R -e "BiocManager::install('packrat', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
 
 # Make colors available in a console connection. Installed here since it cannot install on windows
-RUN R -e "BiocManager::install('jalvesaq/colorout', lib='/srv/shiny-server/QC4Metabolomics/Shiny_App/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
+RUN R -e "BiocManager::install('jalvesaq/colorout', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
 
 # Make packrat install all remaining packages
-WORKDIR /srv/shiny-server/QC4Metabolomics/Shiny_App 
+WORKDIR /srv/shiny-server/QC4Metabolomics/ 
 RUN R -e "packrat::restore()"
 WORKDIR /
 ###############################################################################
 
 
 ##### Copy complete Shiny App #################################################
-COPY . /srv/shiny-server/QC4Metabolomics/
+COPY ./Modules /srv/shiny-server/QC4Metabolomics/Modules/
+COPY ./setup /srv/shiny-server/QC4Metabolomics/setup/
 ###############################################################################
 
 
@@ -91,6 +92,8 @@ RUN R -e "library(cronR);cmd <- cron_rscript('/srv/shiny-server/QC4Metabolomics/
 
 FROM base AS shiny
 ##### Misc  ###################################################################
+COPY ./Shiny_App /srv/shiny-server/QC4Metabolomics/Shiny_App/
+
 # Dunno what this is for...
 RUN mkdir -p /var/lib/shiny-server/bookmarks/shiny
 ###############################################################################

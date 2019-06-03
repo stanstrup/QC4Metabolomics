@@ -13,7 +13,7 @@
     
     # search locations
     ini_file <- c("/config/MetabolomiQCs.conf", # docker
-				  "./MetabolomiQCs.conf", # if file in working dir use that
+				          "./MetabolomiQCs.conf", # if file in working dir use that
                   "../MetabolomiQCs.conf", # one folder back
                   "~/MetabolomiQCs.conf", # if file in home folder
                   system.file("extdata", "MetabolomiQCs.conf", package = "MetabolomiQCsR") # If no file found use the one from the package

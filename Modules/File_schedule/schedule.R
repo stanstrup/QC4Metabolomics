@@ -7,9 +7,8 @@ library(dplyr)
 library(tidyr)
 library(pool)
 
-setwd("../")
 library(MetabolomiQCsR)
-setwd("File_schedule")
+setwd("Modules/File_schedule")
 
 
 source("get_settings.R", local = TRUE)

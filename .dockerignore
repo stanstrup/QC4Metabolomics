@@ -1,6 +1,6 @@
-Shiny_App/packrat/lib
-Shiny_App/packrat/lib-ext
-Shiny_App/packrat/lib-R
+packrat/lib
+packrat/lib-ext
+packrat/lib-R
 .Rproj.user
 .git
 setup/Dockerfile

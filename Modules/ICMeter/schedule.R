@@ -9,11 +9,8 @@ library(pool)
 library(httr)
 library(lubridate)
 
-
-
-setwd("../")
 library(MetabolomiQCsR)
-setwd("ICMeter")
+setwd("Modules/ICMeter")
 
 
 source("get_settings.R", local = TRUE)

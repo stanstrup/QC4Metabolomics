@@ -1,6 +1,3 @@
-source(".Rprofile", local = TRUE)
-print(.libPaths())
-
 # Libraries ---------------------------------------------------------------
 # library(stringr)
 library(ini)
@@ -13,9 +10,8 @@ library(purrr)
 library(tidyr)
 library(dplyr)
 
-setwd("../")
 library(MetabolomiQCsR)
-setwd("Contaminants")
+setwd("Modules/Contaminants")
 
 source("get_settings.R", local = TRUE)
 source("process_files.R", local = TRUE)

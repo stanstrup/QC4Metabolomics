@@ -6,9 +6,11 @@ set "infolder=C:\Users\tmh331\Desktop\temp with spaces\in"
 set "outfolder=C:\Users\tmh331\Desktop\temp with spaces\out"
 set "delim=_"
 set "expect_delims=2"
+set "symlinkback=TRUE"
 
 
 REM SCRIPT STARTS HERE
+setlocal
 set /a "token_start=%expect_delims%+1"
 set /a "token_end=%expect_delims%+2"
 	
@@ -39,6 +41,11 @@ for /d /r "%infolder%" %%i in (*) do  @if exist %%i\_extern.inf (
 				if not exist "%outfolder%\%%a.raw\Data\%%~nxi\" (
 					echo Moving "%%~fi" to "%outfolder%\%%a.raw\Data\%%~nxi"
 					move  "%%~fi" "%outfolder%\%%a.raw\Data\%%~nxi"
+					
+					REM make symlink in original location
+					if %symlinkback% == TRUE (
+						mklink /D "%%~fi" "%outfolder%\%%a.raw\Data\%%~nxi"
+					)
 				)
 				
 			)	 

@@ -24,9 +24,18 @@ What the scripts are meant to do:
 * Monitor when a run is done.
 * Will check if the filename (really a folder name) has the expected number of delimiters.
 * If the filename is in the right format the file will be move to the given location.
-  This script was written for the metabolomics group at NEXS and there are therefore specific parsing of the filename to decide the destination folder. See below in the example.
+  **This script was written for the metabolomics group at NEXS and there are therefore specific parsing of the filename to decide the destination folder.** 
+  * The first string before the first delimiter is used as the project name and a project folder is create such that the file 
+    `%infolder%\test-pro_pos_test-sample-metstd.raw` will be moved to 
+    `%outfolder%\test-pro.raw\Data\test-pro_pos_test-sample-metstd.raw`
 * *Optionally* symlinks can be made from the original location to the destination folder. This way you can still access the file as if it was still in the original place even if it is actually access in the destination location. So you can  open the file normally in the instrument software that expect the file to exist at the original location.
 * *Optionally* the above mentioned symlinks can be cleared my running a script.
+
+
+
+
+
+
 
 #### Usage
 * Copy the content of `file_mover` to the instrument computer where the files are located.

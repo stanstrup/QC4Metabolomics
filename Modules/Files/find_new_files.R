@@ -61,7 +61,14 @@ paste0("Found ",length(files)," files") %>%
 rm(search_pat, exclude_path, include_path)
 
 # If no files found quit the process. Else do rest of script
-if(length(files)==0) quit(save="no")
+if(length(files)==0){
+    
+    # close connections
+    poolClose(pool)
+    
+    # quit
+    quit(save="no")
+}
 
 
 

@@ -1,3 +1,5 @@
+message("====================================================\nRunning scheduled tasks at: ", Sys.time(), "\n====================================================")
+
 setwd("/srv/shiny-server/QC4Metabolomics/")
 source(".Rprofile")
 

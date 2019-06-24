@@ -75,7 +75,7 @@ COPY ./setup /srv/shiny-server/QC4Metabolomics/setup/
 
 
 FROM base AS process
-##### Scheduled jobs ######################################################
+##### Scheduled jobs ##########################################################
 RUN apt-get update && \
 	apt-get install  -y \
 	\
@@ -84,7 +84,7 @@ RUN apt-get update && \
 
 
 RUN R -e "BiocManager::install('bnosac/cronR')"
-RUN R -e "library(cronR);cmd <- cron_rscript('/srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.R', rscript_log = '/var/log/QC_cron.log');cron_add(cmd, frequency = '*/1 * * * *', id = 'QC_processing', description = 'Process files every 1 minute')"
+RUN R -e "library(cronR);cmd <- cron_rscript('/srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.sh', cmd = '/bin/bash', rscript_log = '/var/log/QC_cron.log');cron_add(cmd, frequency = '*/1 * * * *', id = 'QC_processing', description = 'Process files every 1 minute')"
 ###############################################################################
 
 

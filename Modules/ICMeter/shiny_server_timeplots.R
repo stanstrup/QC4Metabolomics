@@ -120,7 +120,7 @@ data_selected <-      reactive({
                     
                                                                     plot_data <- data %>%
                                                                                  filter(device==my_i) %>% 
-                                                                                 mutate_at(vars(time), funs(as.POSIXct(strptime(.,"%Y-%m-%d %H:%M:%S", tz="UTC"))))
+                                                                                 mutate_at(vars(time), ~as.POSIXct(strptime(.,"%Y-%m-%d %H:%M:%S", tz="UTC")))
                                                                     
                                                                     if(nrow(plot_data)==0) return(NULL)
                                                                     

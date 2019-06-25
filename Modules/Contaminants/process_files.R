@@ -36,8 +36,8 @@ file_tbl <-  paste0("
                     ) %>% 
             dbGetQuery(pool,.) %>% 
             as.tbl %>% 
-            mutate_each(funs(as.POSIXct(., tz="UTC")), time_run) %>% 
-            mutate_each(funs(as.factor), file_md5, project, mode)
+            mutate_each(~as.POSIXct(., tz="UTC"), time_run) %>% 
+            mutate_each(as.factor, file_md5, project, mode)
 
 
 

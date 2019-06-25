@@ -192,7 +192,7 @@ std_data_selected <-  reactive({
                                             ") %>% 
                                      dbGetQuery(pool,.) %>% 
                                      as.tbl %>% 
-                                    mutate_each(funs(as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S")), updated_at, time_run) %>% 
+                                    mutate_each(~as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S"), updated_at, time_run) %>% 
                                     mutate(time_run = with_tz(time_run, Sys.timezone(location = TRUE))) %>% # time zone fix
                                     mutate(filename = sub('\\..*$', '', basename(path)))
                                 })

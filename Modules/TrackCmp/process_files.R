@@ -39,8 +39,8 @@ file_tbl <-  paste0("
                     ) %>% 
             dbGetQuery(pool,.) %>% 
             as.tbl %>% 
-            mutate_each(funs(as.POSIXct(., tz="UTC")), time_run) %>% 
-            mutate_each(funs(as.factor), file_md5, project, mode)
+            mutate_each(~as.POSIXct(., tz="UTC"), time_run) %>% 
+            mutate_each(as.factor, file_md5, project, mode)
 
 
 
@@ -67,10 +67,10 @@ if(nrow(file_tbl)==0){
 std_compounds <- "SELECT * from std_compounds WHERE enabled=1" %>% 
                  dbGetQuery(pool,.) %>% 
                  as.tbl %>% 
-                 mutate_each(funs(as.POSIXct(., tz="UTC")), updated_at) %>% 
-                 mutate_each(funs(as.logical), enabled) %>% 
-                 mutate_each(funs(as.factor), mode, cmp_name) %>% 
-                 mutate_each(funs(.*60), cmp_rt1, cmp_rt2) %>% 
+                 mutate_each(~as.POSIXct(., tz="UTC"), updated_at) %>% 
+                 mutate_each(as.logical, enabled) %>% 
+                 mutate_each(as.factor, mode, cmp_name) %>% 
+                 mutate_each(~(.*60), cmp_rt1, cmp_rt2) %>% 
                  rename(rt=cmp_rt1, mz = cmp_mz) # here we only support one rt atm
 
 
@@ -210,7 +210,7 @@ for(ii in seq_along(file_tbl_l)){
     # Additional peak stats ---------------------------------------------------
     # rt and mz deviations
     file_stds_tbl_flat %<>% mutate(mz_dev_ppm = ((mz.peaks - mz.stds)/mz.stds)*1E6 ) %>% 
-                            mutate_each(funs(./60),rt.stds, rt.peaks, rtmin, rtmax) %>% 
+                            mutate_each(~(./60),rt.stds, rt.peaks, rtmin, rtmax) %>% 
                             mutate(rt_dev = rt.peaks - rt.stds)
     
     
@@ -232,7 +232,7 @@ for(ii in seq_along(file_tbl_l)){
     
     
     # Fill zeros when not found -----------------------------------------------
-    file_stds_tbl_flat %<>% mutate_each(funs(if_else(is.na(.),0,.)), into, intb, maxo,  FWHM, FWHM_dp)
+    file_stds_tbl_flat %<>% mutate_each(~if_else(is.na(.),0,.), into, intb, maxo,  FWHM, FWHM_dp)
     
     
     

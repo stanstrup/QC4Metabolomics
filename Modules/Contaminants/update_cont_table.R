@@ -37,7 +37,7 @@ conts %>%   mutate(anno = paste0(`Formula for M or subunit or sequence`," (",`Io
                  anno = anno,
                  notes = `Possible origin and other comments`
                  ) %>% 
-            mutate_all(funs(gsub(";","\\\\;",.))) %>%
+            mutate_all(~gsub(";","\\\\;",.)) %>%
             sqlAppendTable(pool,"cont_cmp",.) ->
 sql_query
 

@@ -38,7 +38,7 @@ return(token)
 #' @export
 #'
 #'@importFrom httr GET content
-#'@importFrom dplyr mutate_at vars funs as.tbl
+#'@importFrom dplyr mutate_at vars as.tbl
 #' 
 
 ic_boxes <- function(token){
@@ -50,7 +50,7 @@ ic_boxes <- function(token){
     boxes <- content(boxes)
     boxes <- do.call(rbind.data.frame, c(boxes, stringsAsFactors = FALSE)) %>% as.tbl
     
-    boxes %<>% mutate_at(vars(fromDate,lastMeasurementDate), funs(as.POSIXct(strptime(.,"%Y-%m-%dT%H:%M:%SZ", tz="UTC"))))
+    boxes %<>% mutate_at(vars(fromDate,lastMeasurementDate), ~as.POSIXct(strptime(.,"%Y-%m-%dT%H:%M:%SZ", tz="UTC")))
     
     return (boxes)
 }
@@ -69,7 +69,7 @@ ic_boxes <- function(token){
 #' @export
 #'
 #'@importFrom httr GET content
-#'@importFrom dplyr mutate_at vars funs as.tbl mutate
+#'@importFrom dplyr mutate_at vars as.tbl mutate
 #' 
 
 ic_measurements <- function(token,  boxQR, fromDate, toDate){
@@ -103,8 +103,8 @@ ic_measurements <- function(token,  boxQR, fromDate, toDate){
     colnames(data) <- names
     
     data %<>% 
-                mutate_at(vars(-Time), funs(as.numeric)) %>%
-                mutate_at(vars(Time), funs(as.POSIXct(strptime(.,"%Y-%m-%dT%H:%M:%SZ", tz="UTC"))))
+                mutate_at(vars(-Time), as.numeric) %>%
+                mutate_at(vars(Time), ~as.POSIXct(strptime(.,"%Y-%m-%dT%H:%M:%SZ", tz="UTC")))
     
     data %<>% mutate(boxQR = boxQR)
     

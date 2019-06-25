@@ -96,7 +96,7 @@ observeEvent(   input$std_cmp_submit,
                     if (!is.na(input$std_cmp_id)) {
                         # update
                         sql <-  data %>% 
-                                mutate_each(funs(as.character)) %>% 
+                                mutate_each(as.character) %>% 
                                 gather %>% 
                                 mutate(value = paste0("'",value,"'")) %>% 
                                 unite(out,key,value, sep="=") %>% 

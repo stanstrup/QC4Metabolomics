@@ -1,0 +1,34 @@
+FROM chambm/pwiz-skyline-i-agree-to-the-vendor-licenses AS converter
+
+
+##### System libs setup #######################################################
+# Install needed linux tools
+RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial-cran35/" | sudo tee -a /etc/apt/sources.list && \
+    gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 && \
+	gpg -a --export E084DAB9 | sudo apt-key add - \
+	&& \
+	apt-get update && \
+    apt-get install  -y \
+	\
+	r-base \
+	cron \
+	\
+	&& rm -rf /var/lib/apt
+	
+###############################################################################
+
+
+
+RUN mkdir /converter_scripts
+COPY ./setup/converter_std.R /converter_scripts/converter_std.R
+COPY ./setup/converter_std.sh /converter_scripts/converter_std.sh
+COPY ./setup/converter_cron.sh /converter_scripts/converter_cron.sh
+
+
+##### R packages ##########################################################
+
+RUN echo 'options(repos=structure(c(CRAN="http://cran.r-project.org")))' > .Rprofile
+RUN R -e "install.packages('BiocManager');BiocManager::install('remotes')"
+RUN R -e "BiocManager::install('bnosac/cronR')"
+RUN R -e "library(cronR);cmd <- cron_rscript('/converter_scripts/converter_std.sh', cmd = '/bin/bash', rscript_log = '/var/log/converter_std.log');cron_add(cmd, frequency = '*/1 * * * *', id = 'Auto converter', description = 'Convert all new files every 1 minute')"
+

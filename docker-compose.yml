@@ -59,3 +59,21 @@ services:
     environment:
       TZ: Europe/Copenhagen
     command: '/usr/bin/shiny-server.sh'
+
+
+  ms_converter:
+    build:
+      context: .
+      dockerfile: ./setup/Dockerfile_converter
+      target: converter
+    volumes:
+        - type: bind
+          source: C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\data
+          target: /data   
+    restart: always
+    environment:
+      TZ: Europe/Copenhagen
+      # remember to escape quotes
+      msconvert_args: --filter \"scanEvent 1\" --mzML --zlib --64
+      msconvert_outdir_prefix: /../mzML
+    command: '/converter_scripts/converter_cron.sh'

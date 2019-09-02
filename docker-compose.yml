@@ -1,8 +1,17 @@
 version: '3.7'
 
+networks:
+  frontend:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
 services:
   mariadb:
     image: "mariadb"
+    networks:
+            frontend:
+                ipv4_address: 172.20.0.1
     volumes:
       - type: bind
         source: C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\db
@@ -20,6 +29,9 @@ services:
     
     
   qc_process:
+    networks:
+            frontend:
+                ipv4_address: 172.20.0.2
     build:
       context: .
       dockerfile: ./setup/Dockerfile
@@ -40,6 +52,9 @@ services:
     
     
   qc_shiny:
+    networks:
+            frontend:
+                ipv4_address: 172.20.0.3
     build:
       context: .
       dockerfile: ./setup/Dockerfile
@@ -62,6 +77,9 @@ services:
 
 
   ms_converter:
+    networks:
+            frontend:
+                ipv4_address: 172.20.0.4
     build:
       context: .
       dockerfile: ./setup/Dockerfile_converter

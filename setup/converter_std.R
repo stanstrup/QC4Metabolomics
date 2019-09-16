@@ -1,6 +1,8 @@
+basedir <- "/data"
+
 message("Starting conversion at: ", Sys.time())
 
-files <- list.files("/data", recursive = TRUE, include.dirs = TRUE, pattern = ".raw", full.names = TRUE)
+files <- list.files(basedir, recursive = TRUE, include.dirs = TRUE, pattern = ".raw", full.names = TRUE)
 
 outdir <- paste0(dirname(files), Sys.getenv("msconvert_outdir_prefix"))
 
@@ -19,7 +21,7 @@ if(length(files)!=0){
   
   sapply(unique(outdir), function(x) dir.create(x, recursive = TRUE, showWarnings = FALSE))
   
-  cmd <- paste0('wine msconvert "',files,'" ', Sys.getenv("msconvert_args"), ' --outdir "',outdir,'"')
+  cmd <- paste0('wine msconvert "',files,'" ', Sys.getenv("msconvert_args"), ' --outdir "',outdir,'" && echo "',files,'" >> "',basedir,'"/mzML_filelist.txt')
   
   sapply(cmd, system)
   

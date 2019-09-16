@@ -11,6 +11,8 @@ files_b <- basename(files)
 files_out <- paste0(outdir,"/",gsub(".raw$","",files_b),".mzML")
 file_exist <-  file.exists(files_out)
 files <- files[!file_exist]
+outdir <- outdir[!file_exist]
+
 
 # if there are new files do the conversion
 if(length(files)!=0){

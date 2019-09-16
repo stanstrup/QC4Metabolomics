@@ -13,11 +13,20 @@ search_pat <-
     
 
 # Get all files -----------------------------------------------------------
+if(MetabolomiQCsR.env$module_Files$files_from_txt){
+    
+    if(!file.exists(MetabolomiQCsR.env$module_Files$files_txt_path)){quit(save="no")}
+    
+    files <- MetabolomiQCsR.env$module_Files$files_txt_path %>% 
+                readLines() %>% 
+                grep(x=., pattern = search_pat, value = TRUE)
+    
+}else{
 files <- list.files(path= MetabolomiQCsR.env$general$base,
                     pattern = search_pat,
                     recursive = TRUE,
                     full.names = FALSE) # important for portability
-
+}
 
 
 # Apply include and exclude filters ---------------------------------------

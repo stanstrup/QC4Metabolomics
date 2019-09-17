@@ -82,9 +82,11 @@ RUN apt-get update && \
 	cron \
     && rm -rf /var/lib/apt
 
-
 RUN R -e "BiocManager::install('bnosac/cronR')"
 RUN R -e "library(cronR);cmd <- cron_rscript('/srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.sh', cmd = '/bin/bash', rscript_log = '/var/log/QC_cron.log');cron_add(cmd, frequency = '*/5 * * * *', id = 'QC_processing', description = 'Process files every 5 minute')"
+
+RUN mkdir /setup
+COPY ./setup/cron_with_env.sh /setup/cron_with_env.sh
 ###############################################################################
 
 

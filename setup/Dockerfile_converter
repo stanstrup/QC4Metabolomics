@@ -20,9 +20,10 @@ RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial-cran35/" | sudo te
 
 
 RUN mkdir /converter_scripts
+RUN mkdir /setup
 COPY ./setup/converter_std.R /converter_scripts/converter_std.R
 COPY ./setup/converter_std.sh /converter_scripts/converter_std.sh
-COPY ./setup/converter_cron.sh /converter_scripts/converter_cron.sh
+COPY ./setup/cron_with_env.sh /setup/cron_with_env.sh
 
 
 ##### R packages ##########################################################

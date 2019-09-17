@@ -48,7 +48,7 @@ services:
     restart: always
     environment:
       TZ: Europe/Copenhagen
-    command: 'cron -f'
+    command: '/setup/cron_with_env.sh'
     
     
   qc_shiny:
@@ -95,4 +95,4 @@ services:
       # remember to escape quotes
       msconvert_args: --filter \"scanEvent 1\" --mzML --zlib --64
       msconvert_outdir_prefix: /../mzML
-    command: '/converter_scripts/converter_cron.sh'
+    command: '/setup/cron_with_env.sh'

@@ -105,7 +105,7 @@ while( N_todo(pool) != 0 ){
       
       
         
-        file_tbl %<>% filter(!FLAG) %>% select(-FLAG)
+    file_tbl %<>% filter(!FLAG) %>% select(-FLAG)
         
     }else{
       file_tbl %<>% select(-FLAG)  
@@ -115,13 +115,9 @@ while( N_todo(pool) != 0 ){
     
     # Do nothing if no new files
     if(nrow(file_tbl)==0){
-        write_to_log("No valid files to add to queue", cat = "info", source = log_source, pool = pool)
+        write_to_log("No valid files left in batch to add to queue", cat = "info", source = log_source, pool = pool)
         
-        # close connections
-        poolClose(pool)
-        
-        # If no files found quit the process. Else do rest of script
-        quit(save="no")
+      next
     }
     
     

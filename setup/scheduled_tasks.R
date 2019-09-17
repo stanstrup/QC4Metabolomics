@@ -9,6 +9,7 @@ library(dplyr) # we do this in global to be sure we load dplyr after plyr
 library(ini)
 library(rlist)
 library(MetabolomiQCsR)
+library(stringr)
 
 
 # Init enabled modules if not already done---------------------------------

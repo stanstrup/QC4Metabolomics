@@ -19,7 +19,8 @@ if(MetabolomiQCsR.env$module_Files$files_from_txt){
     
     files <- MetabolomiQCsR.env$module_Files$files_txt_path %>% 
                 readLines() %>% 
-                grep(x=., pattern = search_pat, value = TRUE)
+                grep(x=., pattern = search_pat, value = TRUE) %>% 
+                gsub(paste0("^",MetabolomiQCsR.env$general$base), "", .)
     
 }else{
 files <- list.files(path= MetabolomiQCsR.env$general$base,

@@ -83,20 +83,21 @@ while( N_todo(pool) != 0 ){
       dbBegin(con)
       
       # add
-      res <- file_tbl %>% 
+      res <- file_tbl %>%
         filter(FLAG) %>% 
+        select(path, file_md5) %>% 
         sqlAppendTable(con, "files_ignore", .) %>% 
         dbSendQuery(con,.)
       
       res <- dbCommit(con)
       
       # remove
-      md5del <- filter(file_tbl, FLAG) %>% pull(file_md5)
+      md5del <- filter(file_tbl, FLAG) %>% select(path, file_md5) %>% pull(file_md5)
       
-      for(i in 1:seq_along(md5del)){
-        sql_query <- paste0("DELETE FROM files WHERE (file_md5='",file_md5[i],"')")
+      for(i in seq_along(md5del)){
+        sql_query <- paste0("DELETE FROM files WHERE (file_md5='",md5del[i],"')")
         dbSendQuery(con,sql_query)
-        res_pri[i] <- dbCommit(con)
+        dbCommit(con)
       }
       
       poolReturn(con)

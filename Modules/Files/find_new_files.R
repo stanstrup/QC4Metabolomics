@@ -126,7 +126,7 @@ if(length(files)==0){
 
 
 # Take only 20 files at a time, write to db and do next -------------------
-write_to_log(paste0(length(files), " New files to parse. Will take the newest 20 files at a time."), source = log_source, cat = "info", pool = pool)
+write_to_log(paste0(length(files), " new files to parse. Will take the newest 20 files at a time."), source = log_source, cat = "info", pool = pool)
 # Close the connection because md5 can take a long time if there are many new files.
 poolClose(pool)
 

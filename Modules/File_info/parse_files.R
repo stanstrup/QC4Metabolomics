@@ -78,6 +78,31 @@ while( N_todo(pool) != 0 ){
             paste0(sum(file_tbl$FLAG), " files had invalid filenames. First was: ",.,". They will be ignored. ") %>% 
             write_to_log(cat = "warning", source = log_source, pool = pool)
         
+      # Move to ignore list
+      con <- poolCheckout(pool)
+      dbBegin(con)
+      
+      # add
+      res <- file_tbl %>% 
+        filter(FLAG) %>% 
+        sqlAppendTable(con, "files_ignore", .) %>% 
+        dbSendQuery(con,.)
+      
+      res <- dbCommit(con)
+      
+      # remove
+      md5del <- filter(file_tbl, FLAG) %>% pull(file_md5)
+      
+      for(i in 1:seq_along(md5del)){
+        sql_query <- paste0("DELETE FROM files WHERE (file_md5='",file_md5[i],"')")
+        dbSendQuery(con,sql_query)
+        res_pri[i] <- dbCommit(con)
+      }
+      
+      poolReturn(con)
+      
+      
+      
         
         file_tbl %<>% filter(!FLAG) %>% select(-FLAG)
         

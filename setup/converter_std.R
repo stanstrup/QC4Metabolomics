@@ -25,7 +25,7 @@ if(length(files)!=0){
   
   sapply(unique(outdir), function(x) dir.create(x, recursive = TRUE, showWarnings = FALSE))
   
-  cmd <- paste0('wine msconvert "',files,'" ', Sys.getenv("msconvert_args"), ' --outdir "',outdir,'" && echo "',files_out,'" >> "',basedir,'"/mzML_filelist.txt')
+  cmd <- paste0('wine msconvert "',files,'" ', gsub("\\\\","",Sys.getenv("msconvert_args")), ' --outdir "',outdir,'" && echo "',files_out,'" >> "',basedir,'"/mzML_filelist.txt')
   
   sapply(cmd, system)
   

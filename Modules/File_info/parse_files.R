@@ -62,8 +62,8 @@ while( N_todo(pool) != 0 ){
     
     
     # lets check if the coersion caused invalid names in required fields
-    if(MetabolomiQCsR.env$module_File_info$mode_from_other_field)  bad <- file_tbl %>% select(project, sample_id) %>% {rowSums(is.na(.)) > 0}
-    if(!MetabolomiQCsR.env$module_File_info$mode_from_other_field) bad <- file_tbl %>% select(project, mode, sample_id) %>% {rowSums(is.na(.)) > 0}
+    if(MetabolomiQCsR.env$module_File_info$mode_from_other_field)  bad <- file_tbl %>% select(project, sample_id, instrument) %>% {rowSums(is.na(.)) > 0}
+    if(!MetabolomiQCsR.env$module_File_info$mode_from_other_field) bad <- file_tbl %>% select(project, mode, sample_id, instrument) %>% {rowSums(is.na(.)) > 0}
     
     file_tbl %<>% mutate(FLAG = ifelse(bad,TRUE,FALSE))
     

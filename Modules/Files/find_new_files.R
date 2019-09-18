@@ -83,13 +83,26 @@ if(length(files)==0){
 
 
 # Figure if there are any new files to add to the db ----------------------
+# we split the query in thousands to avoid errors.
 
 # figure if files are already in the files table
-files_already_in_db <-  paste(files,collapse="','") %>% 
-                        paste0("'",.,"'") %>% 
-                        paste0("select path from files where path in (",.,")") %>% 
-                        dbGetQuery(pool,.) %>% 
-                        extract2("path")
+q_fun <- . %>% 
+            pull(files) %>% 
+            paste(collapse="','") %>% 
+            paste0("'",.,"'") %>% 
+            paste0("select path from files where path in (",.,")") %>% 
+            dbGetQuery(pool,.) %>%
+            extract2("path")
+
+
+
+files_already_in_db <- files %>% 
+                        tibble(files = .) %>%
+                        mutate(n = (1:nrow(.) %/% 1000)) %>% 
+                        nest(-n) %>% 
+                        mutate(out = map(data, q_fun)) %>% 
+                        select(out) %>% unnest %>% pull(out)
+
 
 # Only paths not already in files
 files <- files[!(files %in% files_already_in_db)]
@@ -99,12 +112,25 @@ files <- files[!(files %in% files_already_in_db)]
 # Remove files in the ignore list -----------------------------------------
 
 # If a file with same checksum is already in the db add new file to ignore list
-ignored_files <-    files %>%
-                    paste(collapse="','") %>% 
-                    paste0("'",.,"'") %>% 
-                    paste0("select path from files_ignore where path in (",.,")") %>% 
-                    dbGetQuery(pool,.) %>% 
-                    extract2("path")
+# we split the query in thousands to avoid errors.
+q_fun <- . %>% 
+            pull(files) %>% 
+            paste(collapse="','") %>% 
+            paste0("'",.,"'") %>% 
+            paste0("select path from files_ignore where path in (",.,")") %>% 
+            dbGetQuery(pool,.) %>% 
+            extract2("path")
+
+
+ignored_files <- files %>% 
+                    tibble(files = .) %>%
+                    mutate(n = (1:nrow(.) %/% 1000)) %>% 
+                    nest(-n) %>% 
+                    mutate(out = map(data, q_fun)) %>% 
+                    select(out) %>% unnest %>% pull(out)
+            
+
+
 
 ignored_files <- (files %in% ignored_files)
 files <- files[!ignored_files]

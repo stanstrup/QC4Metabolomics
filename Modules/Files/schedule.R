@@ -7,6 +7,8 @@ library(DBI)
 library(RMySQL)
 library(pool) # devtools::install_github("rstudio/pool")   
 library(tools)
+library(purrr)
+library(tidyr)
  
 library(MetabolomiQCsR)
 setwd("Modules/Files")

@@ -169,7 +169,7 @@ while( N_todo(pool) != 0 ){
     dbBegin(con)
     
     res <- file_tbl %>% 
-           select(file_md5, project, mode, sample_id, time_run) %>% 
+           select(file_md5, project, mode, sample_id, instrument, time_run) %>% 
            sqlAppendTable(con, "file_info", .) %>% 
            dbSendQuery(con,.)
     

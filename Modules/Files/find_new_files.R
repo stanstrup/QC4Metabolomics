@@ -97,6 +97,7 @@ q_fun <- . %>%
 
 
 files_already_in_db <- files %>% 
+                        gsub("'","''",.) %>% 
                         tibble(files = .) %>%
                         mutate(n = (1:nrow(.) %/% 1000)) %>% 
                         nest(-n) %>% 
@@ -123,6 +124,7 @@ q_fun <- . %>%
 
 
 ignored_files <- files %>% 
+                    gsub("'","''",.) %>% 
                     tibble(files = .) %>%
                     mutate(n = (1:nrow(.) %/% 1000)) %>% 
                     nest(-n) %>% 

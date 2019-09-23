@@ -55,13 +55,22 @@ output$file_date_range_ui <- renderUI({
 
 # Build project selector --------------------------------------------------
 # Get avaiable projects
-project_available <-    reactive({    "
-                                                 SELECT DISTINCT project
-                                                 FROM file_info
-                                                " %>% 
-                                                dbGetQuery(pool,.) %>% 
-                                                as.matrix %>% as.character
-                                           })
+project_available <- reactive({ 
+    
+    global_instruments_input() %>%
+        paste(collapse="','") %>% 
+        paste0("'",.,"'") %>% 
+        paste0("
+                SELECT DISTINCT project
+                FROM file_info
+                WHERE instrument IN (
+               ",
+               .,
+               ")"
+        ) %>% 
+        dbGetQuery(pool,.) %>% 
+        as.matrix %>% as.character
+})
 
 
 # build the ui

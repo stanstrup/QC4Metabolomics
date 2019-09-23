@@ -1,4 +1,4 @@
-TrackCmp <- function(input, output, session){
+TrackCmp <- function(input, output, session, global_instruments_input){
 
     require(DBI)
     require(magrittr)

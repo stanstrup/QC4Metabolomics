@@ -5,6 +5,7 @@ library(ini)
 library(rlist)
 library(magrittr)
 library(MetabolomiQCsR)
+library(DBI)
 
 
 # Establish connection

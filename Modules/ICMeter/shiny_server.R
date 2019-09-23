@@ -1,4 +1,4 @@
-ICMeter <- function(input, output, session){
+ICMeter <- function(input, output, session, global_instruments_input){
 
     require(DBI)
     require(pool)

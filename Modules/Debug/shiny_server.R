@@ -1,4 +1,4 @@
-Debug <- function(input, output, session){
+Debug <- function(input, output, session, global_instruments_input){
     require(DT)
     require(plyr)
     require(dplyr)

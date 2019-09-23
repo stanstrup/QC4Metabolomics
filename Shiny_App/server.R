@@ -23,9 +23,12 @@ shinyServer(function(input, output, session) {
 	})
 
 
+		global_instruments_input_react <- reactive(input$global_instruments_input)
+
+		
     # Modules
     lapply(seq_along(module_names), 
-           function(i){ callModule(get(module_names[i]), paste0("name",i))
+           function(i){ callModule(get(module_names[i]), paste0("name",i), global_instruments_input = global_instruments_input_react)
                       }
            )
 

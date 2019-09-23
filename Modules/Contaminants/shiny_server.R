@@ -1,4 +1,4 @@
-Contaminants <- function(input, output, session){
+Contaminants <- function(input, output, session, global_instruments_input){
 
     require(DBI)
     require(pool)

@@ -1,4 +1,4 @@
-Log <- function(input, output, session){
+Log <- function(input, output, session, global_instruments_input){
 
     require(DBI)
     require(DT)

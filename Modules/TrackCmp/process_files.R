@@ -232,7 +232,7 @@ for(ii in seq_along(file_tbl_l)){
     
     
     # Fill zeros when not found -----------------------------------------------
-    file_stds_tbl_flat %<>% mutate_each(~if_else(is.na(.),0,.), into, intb, maxo,  FWHM, FWHM_dp)
+    file_stds_tbl_flat %<>% mutate_each(~if_else(is.na(.),0,as.numeric(.)), into, intb, maxo,  FWHM, FWHM_dp)
     
     
     

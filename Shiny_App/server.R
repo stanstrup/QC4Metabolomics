@@ -13,12 +13,12 @@ shinyServer(function(input, output, session) {
 	# build the ui
 	output$global_instruments_select_ui <- renderUI({
 													 
-													 selectInput("global_instruments_input", 
+	  tags$div(id = "inline", selectInput("global_instruments_input", 
 																   label = "Instruments", 
 																   choices  = global_instruments_available(),
 																   selected = global_instruments_available(),
 																   multiple = TRUE
-																 )
+																 ))
 
 	})
 

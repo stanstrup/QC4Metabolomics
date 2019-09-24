@@ -11,14 +11,15 @@ VALUES ('mz'),('mzmin'),('mzmax'),
        ('mz_dev_ppm'),('rt_dev'),('FWHM'),('datapoints'),('TF'),('ASF');
 
 CREATE TABLE std_compounds (
-cmp_id   int                NOT NULL AUTO_INCREMENT PRIMARY KEY,
-cmp_name TEXT               NOT NULL,
-mode     ENUM('pos', 'neg') NOT NULL,
-cmp_mz   DOUBLE             NOT NULL,
-cmp_rt1  DOUBLE             NOT NULL,
-cmp_rt2  DOUBLE,
-enabled  BOOL               NOT NULL,
-updated_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+cmp_id     int                NOT NULL AUTO_INCREMENT PRIMARY KEY,
+cmp_name   TEXT               NOT NULL,
+instrument TEXT               NOT NULL,
+mode       ENUM('pos', 'neg') NOT NULL,
+cmp_mz     DOUBLE             NOT NULL,
+cmp_rt1    DOUBLE             NOT NULL,
+cmp_rt2    DOUBLE,
+enabled    BOOL               NOT NULL,
+updated_at TIMESTAMP          DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 KEY (updated_at)
 );
 

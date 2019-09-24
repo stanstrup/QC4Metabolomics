@@ -27,7 +27,7 @@ if(cmp_count==0){
 # check which columns we actually need
 # priority = -1 means already
 file_tbl <-  paste0("
-                    SELECT file_schedule.*, file_info.time_run, project, mode, files.path
+                    SELECT file_schedule.*, file_info.time_run, project, instrument, mode, files.path
                     FROM file_schedule 
                     INNER JOIN files 
                     ON file_schedule.file_md5=files.file_md5
@@ -40,7 +40,7 @@ file_tbl <-  paste0("
             dbGetQuery(pool,.) %>% 
             as.tbl %>% 
             mutate_each(~as.POSIXct(., tz="UTC"), time_run) %>% 
-            mutate_each(as.factor, file_md5, project, mode)
+            mutate_each(as.factor, file_md5, project, instrument, mode)
 
 
 
@@ -69,7 +69,7 @@ std_compounds <- "SELECT * from std_compounds WHERE enabled=1" %>%
                  as.tbl %>% 
                  mutate_each(~as.POSIXct(., tz="UTC"), updated_at) %>% 
                  mutate_each(as.logical, enabled) %>% 
-                 mutate_each(as.factor, mode, cmp_name) %>% 
+                 mutate_each(as.factor, mode, cmp_name, instrument) %>% 
                  mutate_each(~(.*60), cmp_rt1, cmp_rt2) %>% 
                  rename(rt=cmp_rt1, mz = cmp_mz) # here we only support one rt atm
 
@@ -86,22 +86,13 @@ for(ii in seq_along(file_tbl_l)){
     
     
     # Joined data appropiately ------------------------------------------------
-    std_compounds_split <- split(std_compounds, std_compounds$mode)
-    
-    
-    file_stds_tbl <-  file_tbl_l[[ii]] %>% 
-                      rowwise %>% 
-                      mutate(stds =  switch(as.character(mode),
-                                            pos = list(std_compounds_split$pos),
-                                            neg = list(std_compounds_split$neg)
-                                            )
-                            ) %>% 
-                      ungroup
+  file_stds_tbl <- left_join(file_tbl_l[[ii]], std_compounds, by = c("instrument", "mode")) %>% 
+                   nest(-file_md5, -module, -priority, -time_run, -project, -instrument, -mode, -path, .key = "stds") %>% 
+                   mutate(stds = pmap(list(stds, instrument, mode), ~mutate(..1, instrument=..2, mode = ..3)))
     
     
     
-    
-    # Set priority to -1 if no compounds defined for mode -------------------------
+    # Set priority to -1 if no compounds defined for instrument/mode -------------------------
     
     to_ignore <- map_lgl(file_stds_tbl$stds, is.null)
     

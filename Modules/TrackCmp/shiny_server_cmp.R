@@ -13,7 +13,11 @@ std_cmp_tbl_read <- reactivePoll(10*1000, # every 10 s
                                             b <- "SELECT MAX(updated_at) FROM std_compounds" %>% {suppressWarnings(dbGetQuery(pool,.))}
                                             return(list(a,b))
                                            },
-                                 function() "SELECT * FROM std_compounds ORDER BY cmp_id" %>% {suppressWarnings(dbGetQuery(pool,.))}
+                                 function(){
+                                            "SELECT * FROM std_compounds ORDER BY cmp_id" %>% 
+                                            {suppressWarnings(dbGetQuery(pool,.))} %>% 
+                                            select(cmp_id, cmp_name, instrument, mode, cmp_mz, cmp_rt1, cmp_rt2, enabled, updated_at)
+                                           }
                                 )
 
 
@@ -21,6 +25,7 @@ std_cmp_tbl_read <- reactivePoll(10*1000, # every 10 s
 UpdateInputs <- function(data, session) {
   updateNumericInput(session,   "std_cmp_id",          value    = data %>% extract2("cmp_id")       )
   updateTextInput(session,   "std_cmp_name",           value    = data %>% extract2("cmp_name")     )
+  updateTextInput(session,   "std_cmp_instrument",     value    = data %>% extract2("instrument")     )
   updateSelectInput(session, "std_cmp_mode",           selected = data %>% extract2("mode")         )
   updateNumericInput(session,   "std_cmp_mz",          value    = data %>% extract2("cmp_mz")       )
   updateNumericInput(session,   "std_cmp_rt1",         value    = data %>% extract2("cmp_rt1")       )
@@ -30,7 +35,7 @@ UpdateInputs <- function(data, session) {
 }
 
 
-std_cmp_default_data <- data.frame(cmp_id=NA, cmp_name="",mode=NA,cmp_mz=NA,cmp_rt1=NA, cmp_rt2=NA  )
+std_cmp_default_data <- data.frame(cmp_id=NA, cmp_name="",instrument = "", mode=NA,cmp_mz=NA,cmp_rt1=NA, cmp_rt2=NA  )
 
 
 
@@ -82,12 +87,13 @@ observeEvent(input$std_cmp_delete,
 # Click "Submit" button -> save data
 observeEvent(   input$std_cmp_submit,
                 {
-                    data <- data.frame(cmp_name= input$std_cmp_name   %>% as.character,
-                                       mode    = input$std_cmp_mode   %>% as.character,
-                                       cmp_mz  = input$std_cmp_mz     %>% as.numeric,
-                                       cmp_rt1 = input$std_cmp_rt1    %>% as.numeric,
-                                       cmp_rt2 = input$std_cmp_rt2    %>% as.numeric,
-                                       enabled = input$std_cmp_enable %>% as.numeric
+                    data <- data.frame(cmp_name =      input$std_cmp_name         %>% as.character,
+                                       instrument =    input$std_cmp_instrument   %>% as.character,
+                                       mode    =       input$std_cmp_mode         %>% as.character,
+                                       cmp_mz  =       input$std_cmp_mz           %>% as.numeric,
+                                       cmp_rt1 =       input$std_cmp_rt1          %>% as.numeric,
+                                       cmp_rt2 =       input$std_cmp_rt2          %>% as.numeric,
+                                       enabled =       input$std_cmp_enable       %>% as.numeric
                                       )
                     
                     con <- poolCheckout(pool)
@@ -126,7 +132,7 @@ output$std_cmp_tbl <- renderDataTable({
 
                                         std_cmp_tbl_read() %>% 
                                         mutate(enabled = as.logical(enabled)) %>% 
-                                        datatable(colnames=c("Compound ID", "Compound Name", "Mode", "m/z", "RT 1", "RT 2", "Enabled?", "Changed"),
+                                        datatable(colnames=c("Compound ID", "Compound Name", "Instrument", "Mode", "m/z", "RT 1", "RT 2", "Enabled?", "Changed"),
                                                   rownames = FALSE, 
                                                   selection = "single",
                                                   options=list(columnDefs = list(list(visible=FALSE, targets=c(7))))

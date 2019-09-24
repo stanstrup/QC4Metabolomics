@@ -28,12 +28,18 @@ tabPanel("Compound settings",
                                   
                                     div(
                                         div( style="display: inline-block;vertical-align: top;",
-                                             selectInput( ns("std_cmp_mode"),     "Mode", c("","pos","neg"), "")
+                                             textInput( ns("std_cmp_instrument"),     "Instrument", "")
                                            ),
                                         div( style="display: inline-block;vertical-align: top;",
-                                             numericInput(ns("std_cmp_mz"),       "m/z", NULL, step=0.0001)
+                                             selectInput( ns("std_cmp_mode"),     "Mode", c("","pos","neg"), "")
                                            )
-                                    ),
+                                       ),
+                                  
+                                  div(
+                                      div( style="display: inline-block;vertical-align: top;",
+                                           numericInput(ns("std_cmp_mz"),       "m/z", NULL, step=0.0001)
+                                         )
+                                     ),
                                   
                                   
                                       div(

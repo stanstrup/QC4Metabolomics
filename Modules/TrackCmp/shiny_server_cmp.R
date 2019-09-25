@@ -71,8 +71,10 @@ observeEvent(input$std_cmp_delete,
              {
                 con <- poolCheckout(pool)
                 dbBegin(con)
-                sql <- paste0("DELETE FROM std_compounds WHERE cmp_id=",input$std_cmp_id)
-                res <- dbSendQuery(con,sql)
+                sql1 <- paste0("DELETE FROM std_stat_data WHERE cmp_id=",input$std_cmp_id)
+                sql2 <- paste0("DELETE FROM std_compounds WHERE cmp_id=",input$std_cmp_id)
+                res <- dbSendQuery(con,sql1)
+                res <- dbSendQuery(con,sql2)
                 res <- dbCommit(con)
                 poolReturn(con)
                 

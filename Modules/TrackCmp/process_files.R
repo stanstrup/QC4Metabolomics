@@ -94,7 +94,7 @@ for(ii in seq_along(file_tbl_l)){
     
     # Set priority to -1 if no compounds defined for instrument/mode -------------------------
     
-    to_ignore <- map_lgl(file_stds_tbl$stds, is.null)
+    to_ignore <- map_lgl(file_stds_tbl$stds, ~all(is.na(..1$mz)))
     
     
     # Update schedule

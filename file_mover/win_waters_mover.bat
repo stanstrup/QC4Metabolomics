@@ -2,11 +2,12 @@
 
 REM ****** SETTINGS ******
 REM No trailing spaces!
-set "infolder=C:\Users\tmh331\Desktop\temp with spaces\in"
-set "outfolder=C:\Users\tmh331\Desktop\temp with spaces\out"
+set "infolder=C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\data\test-pro"
+set "outfolder=C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\data\new_loc"
 set "delim=_"
 set "expect_delims=2"
 set "symlinkback=TRUE"
+
 
 
 REM SCRIPT STARTS HERE
@@ -35,21 +36,24 @@ for /d /r "%infolder%" %%i in (*) do  @if exist %%i\_extern.inf (
 					echo Filename check: OK
 
 					REM Create project folder if doesn't exist
-					if not exist "%outfolder%\%%a.raw\Data" (
-						echo creating folder "%outfolder%\%%a.raw\Data"
-						mkdir "%outfolder%\%%a.raw\Data"
+					if not exist "%outfolder%\%%a\%%a.pro\Data" (
+						echo creating folder "%outfolder%\%%a\%%a.pro\Data"
+						mkdir "%outfolder%\%%a\%%a.pro\Data"
 					)
 					
 					REM move raw folder if doesn't exist
-					if exist "%outfolder%\%%a.raw\Data\%%~nxi" echo raw folder already exists! Folder ignored.
+					if exist "%outfolder%\%%a\%%a.pro\Data\%%~nxi" echo raw folder already exists! Folder ignored.
 					
-					if not exist "%outfolder%\%%a.raw\Data\%%~nxi\" (
-						echo Moving "%%~fi" to "%outfolder%\%%a.raw\Data\%%~nxi"
-						move  "%%~fi" "%outfolder%\%%a.raw\Data\%%~nxi"
+					if not exist "%outfolder%\%%a\%%a.pro\Data\%%~nxi\" (
+						echo Moving "%%~fi" to "%outfolder%\%%a\%%a.pro\Data\%%~nxi"
+						robocopy "%%~fi" "%outfolder%\%%a\%%a.pro\Data\%%~nxi" /E /MOVE
 						
 						REM make symlink in original location
 						if %symlinkback% == TRUE (
-							mklink /D "%%~fi" "%outfolder%\%%a.raw\Data\%%~nxi"
+							mklink /D "%%~fi" "%outfolder%\%%a\%%a.pro\Data\%%~nxi"
+							
+						REM write to text file the path of the new file
+						echo "%%a\%%a.pro\Data\%%~nxi" >> %outfolder%\raw_filelist.txt
 						)
 					)
 

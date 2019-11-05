@@ -52,7 +52,7 @@ What the scripts are meant to do:
   * Right click on Start → Run and launch "secpol.msc".
   * Open "Security Settings" → "Local Policies" → "User Rights Assignment" and select "Create symbolic links".
   * Click "Add User or Group..." → enter the username the system normally uses → click "Check Names" → Click "OK" → Click "OK"
-  * Reboot *or* log out and log in again.
+  * Reboot *or* log out and log in again (or run "gpupdate/force" on the command-line as administrator).
 
 * Edit `monitor_folder.bat` to point to the same input folder as in `win_waters_mover.bat.`
 

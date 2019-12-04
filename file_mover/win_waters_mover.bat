@@ -45,6 +45,7 @@ for /d /r "%infolder%" %%i in (*) do  @if exist %%i\_extern.inf (
 					if exist "%outfolder%\%%a\%%a.pro\Data\%%~nxi" echo raw folder already exists! Folder ignored.
 					
 					if not exist "%outfolder%\%%a\%%a.pro\Data\%%~nxi\" (
+						PING localhost -n 30 >NUL
 						echo Moving "%%~fi" to "%outfolder%\%%a\%%a.pro\Data\%%~nxi"
 						robocopy "%%~fi" "%outfolder%\%%a\%%a.pro\Data\%%~nxi" /E /MOVE
 						

@@ -209,7 +209,7 @@ default_time_range <- function(min_weeks=2, min_samples = 200, pool = NULL){
         
     }else{
         
-        min <- paste0("SELECT time_run FROM file_info order by time_run DESC LIMIT ",min_samples,",1") %>% 
+        min <- paste0("SELECT time_run FROM file_info ORDER BY time_run DESC LIMIT ",N-1, ",1") %>% 
             dbGetQuery(pool,.) %>% 
             as.character %>% 
             as.POSIXct(format= "%Y-%m-%d %H:%M:%S")

@@ -51,6 +51,7 @@ RUN R -e "BiocManager::install('mzR', lib='/srv/shiny-server/QC4Metabolomics/pac
 RUN R -e "BiocManager::install('packrat', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
 
 # Make colors available in a console connection. Installed here since it cannot install on windows
+RUN R -e "BiocManager::install('remotes')"
 RUN R -e "BiocManager::install('jalvesaq/colorout', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
 
 # Make packrat install all remaining packages

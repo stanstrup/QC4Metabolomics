@@ -2,10 +2,17 @@ basedir <- "/data"
 
 message("Starting conversion at: ", Sys.time())
 
-files <- list.files(basedir, recursive = TRUE, include.dirs = TRUE, pattern = "\\.raw$", full.names = TRUE)
+# files <- list.files(basedir, recursive = TRUE, include.dirs = TRUE, pattern = "\\.raw$", full.names = TRUE)
+
+files <- readLines(paste0(basedir,"/","raw_filelist.txt"))
+files <- paste0(basedir,"/",files)
+files <- gsub("\"","",files)
+files <- gsub("\\\\","/",files)
+files <- trimws(files)
+
+
 
 outdir <- paste0(dirname(files), Sys.getenv("msconvert_outdir_prefix"))
-
 
 
 # remove files that already exist

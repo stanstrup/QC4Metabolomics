@@ -170,7 +170,7 @@ files_l <- split(files, ceiling(seq_along(files)/20))
 for(i in seq_along(files_l)){
     
     # Get md5 of all files
-    files_tab <- data_frame(path = files_l[[i]]) %>% 
+    files_tab <- tibble(path = files_l[[i]]) %>% 
                  mutate(file_md5 = path %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% normalizePath %>% md5sum %>% as.vector )
     
     

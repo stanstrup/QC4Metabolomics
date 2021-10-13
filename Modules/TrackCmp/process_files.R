@@ -141,14 +141,14 @@ for(ii in seq_along(file_tbl_l)){
 																				peaks <- findPeaks_l(MetabolomiQCsR.env$TrackCmp$findPeaks, object = raw, ROI.list = ROI, mzdiff=0) %>% 
 																						 as.data.frame %>% as.tbl
 																				
-																				EIC <- get_EICs(raw, data_frame(mz_lower = ..2$mz - MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * ..2$mz * 1E-6, 
+																				EIC <- get_EICs(raw, tibble(mz_lower = ..2$mz - MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * ..2$mz * 1E-6, 
 																												mz_upper = ..2$mz + MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * ..2$mz * 1E-6)
 																								) 
 																				
 																				# function to convert scan to rt
 																				scan2rt_fun <- approxfun(seq_along(raw@scantime),raw@scantime)
 																				
-																				data_frame(ROI = list(ROI), peaks = list(peaks), EIC = list(EIC), scan2rt_fun = list(scan2rt_fun)) %>% 
+																				tibble(ROI = list(ROI), peaks = list(peaks), EIC = list(EIC), scan2rt_fun = list(scan2rt_fun)) %>% 
 																				return()
 																			
 												  }
@@ -176,7 +176,7 @@ for(ii in seq_along(file_tbl_l)){
                                                                                MetabolomiQCsR.env$TrackCmp$std_match$rt_tol,
                                                                                MetabolomiQCsR.env$TrackCmp$std_match$ppm
                                                                               ) %>% 
-                                                                data_frame(row = .) %>% 
+                                                                tibble(row = .) %>% 
                                                                 bind_cols(.x) %>% 
                                                                 left_join(.y, by = "row", suffix = c(".stds", ".peaks")) %>% 
                                                                 mutate(found = ifelse(is.na(row),FALSE,TRUE)) %>% 
@@ -191,7 +191,7 @@ for(ii in seq_along(file_tbl_l)){
                              rename(mode.file = mode) %>% 
                              select(-EIC) %>% 
                              unnest(peaks, .drop = FALSE) %>% 
-                             bind_cols(data_frame(EIC=unlist(file_stds_tbl$EIC,recursive = FALSE)))
+                             bind_cols(tibble(EIC=unlist(file_stds_tbl$EIC,recursive = FALSE)))
     
     # try to avoid memory leak
     rm(file_stds_tbl)

@@ -98,7 +98,7 @@ for(ii in seq_along(file_tbl_std_l)){
     data_all %<>%    mutate(   EIC = map2( raw, conts, get_EICs )   )
     
     # put EIC and contaminants together
-    data_all %<>% mutate(EIC = map2(EIC,conts, ~ bind_cols(.y, data_frame(EIC = .x) ))) %>% 
+    data_all %<>% mutate(EIC = map2(EIC,conts, ~ bind_cols(.y, tibble(EIC = .x) ))) %>% 
                   select(-raw,-conts) %>% 
                   unnest
     

@@ -51,7 +51,7 @@ heatmap_data_selected <-  reactive({
                                 cut_off <- 10^(input$int_cutoff) %>% as.character
                                 
                                 md5_str <- files_tbl_selected() %>% extract2("file_md5") %>% paste(collapse="','") %>% paste0("('",.,"')")
-                                
+
                                 ion_id_str <-   paste0("
                                                         SELECT DISTINCT(ion_id)
                                                         FROM cont_data
@@ -86,6 +86,8 @@ heatmap_data_selected <-  reactive({
   output$heatmap <- renderPlot({
 
      data <- heatmap_data_selected()
+     data <- data %>% mutate(ion_id = if_else(mode == "neg",-ion_id,ion_id)) #this seem to have been expected before
+     
       
      validate(
               need(length(unique(data$ion_id))>1, "Less than two ions fit the criteria. Not showing anything since clustering would fail.")

@@ -4,8 +4,15 @@
 \alias{get_EICs}
 \title{Get EICs from xcmsRaw object}
 \usage{
-get_EICs(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30,
-  range_tbl_cols = c("mz_lower", "mz_upper"), BPI = FALSE, min_int = 0)
+get_EICs(
+  xraw,
+  range_tbl,
+  exclude_mz = NULL,
+  exclude_ppm = 30,
+  range_tbl_cols = c("mz_lower", "mz_upper"),
+  BPI = FALSE,
+  min_int = 0
+)
 }
 \arguments{
 \item{xraw}{\code{\link{xcmsRaw}} object to get EIC(s)/TIC from.}

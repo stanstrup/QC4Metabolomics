@@ -4,8 +4,15 @@
 \alias{EIC_contaminants}
 \title{Find EICs that behave like contaminants}
 \usage{
-EIC_contaminants(raw, bin_ppm = 30, interval_ppm = 30, min_time = 5,
-  merge_corr = 0.9, merge_ppm = 30, min_int = 5000)
+EIC_contaminants(
+  raw,
+  bin_ppm = 30,
+  interval_ppm = 30,
+  min_time = 5,
+  merge_corr = 0.9,
+  merge_ppm = 30,
+  min_int = 5000
+)
 }
 \arguments{
 \item{raw}{\code{\link{xcmsRaw}} object to profile}

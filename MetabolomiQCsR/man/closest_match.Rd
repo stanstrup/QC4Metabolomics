@@ -4,8 +4,15 @@
 \alias{closest_match}
 \title{Match list of standards to peak table}
 \usage{
-closest_match(stds, peakTable, rt_tol = 0.25, mz_ppm = 30, rt_col = "rt",
-  mz_col = "mz", int_col = "into")
+closest_match(
+  stds,
+  peakTable,
+  rt_tol = 0.25,
+  mz_ppm = 30,
+  rt_col = "rt",
+  mz_col = "mz",
+  int_col = "into"
+)
 }
 \arguments{
 \item{stds}{\code{\link{tibble}} of standards to match to a peak table}

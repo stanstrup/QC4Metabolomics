@@ -4,8 +4,13 @@
 \alias{plot_contaminants}
 \title{Bar plot of contaminants}
 \usage{
-plot_contaminants(data, title, x_var = "comp_name", y_var = "EIC_median",
-  y_lab = "Median EIC")
+plot_contaminants(
+  data,
+  title,
+  x_var = "comp_name",
+  y_var = "EIC_median",
+  y_lab = "Median EIC"
+)
 }
 \arguments{
 \item{data}{tbl with the contamination amounts}

@@ -10,6 +10,7 @@ require(lubridate)
 require(viridis)
 
 
+
 # functions ---------------------------------------------------------------
 plotmargin_fix <- function(p){
                                             p$x$layout$margin$l <- p$x$layout$margin$l + 30 # avoid cut axis titles
@@ -54,7 +55,7 @@ output$file_date_range_ui <- renderUI({
 
 
 # Build project selector --------------------------------------------------
-# Get avaiable projects
+# Get available projects
 project_available <- reactive({ 
     
     global_instruments_input() %>%
@@ -231,7 +232,14 @@ std_data_selected <-  reactive({
   observe({             
     data <- std_data_selected()
     years <- data %>% extract2("time_run") %>% year %>% unique %>% sort(decreasing = TRUE)
-          
+    
+
+    en_locale_name <- switch(Sys.info()[['sysname']],
+                             Windows= "english",
+                             Linux  = grep("en_US", system("locale -a", intern = TRUE), value = TRUE)[1]
+                             )
+    
+    
     for (i in years) {
                       local({ 
                                 
@@ -245,15 +253,15 @@ std_data_selected <-  reactive({
                                                                                 {c(min = paste0(min(.),"-01-01"), max = paste0(max(.),"-12-31"))} %>%
                                                                                 as.Date %>%
                                                                                 {seq(from = min(.), to = max(.), by = "day")} %>%
-                                                                                data_frame(date = .) %>%
-                                                                                mutate(yday = yday(date), week = isoweek(date), wday =  wday(date, label=TRUE), year =  isoyear(date), month = month(date, label = TRUE)) %>%
-                                                                                mutate(wday = ordered(wday, levels=c("Mon","Tues","Wed","Thurs","Fri","Sat","Sun"))) %>%
+                                                                                tibble(date = .) %>%
+                                                                                mutate(yday = yday(date), week = isoweek(date), wday =  wday(date, label=TRUE, locale = en_locale_name), year =  isoyear(date), month = month(date, label = TRUE)) %>%
+                                                                                mutate(wday = ordered(wday, levels=c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"))) %>%
                                                                                 group_by(year, week) %>%
                                                                                 mutate(mon_month = month[1]) %>%
                                                                                 ungroup
                     
                     
-                    
+
                                                                     plot_data <- data %>%
                                                                                     select(time_run, project) %>%
                                                                                     mutate(year = isoyear(time_run), yday = yday(time_run)) %>%

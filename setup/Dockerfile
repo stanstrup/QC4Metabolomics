@@ -40,11 +40,12 @@ COPY ./.Rprofile /srv/shiny-server/QC4Metabolomics/.Rprofile
 # Dir need to exist for manual install there
 RUN mkdir -p "/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0"
 
-# To install packages that doesn't work from packrat. "Remotes" only temporary till Rhdf5lib is fixed on BioC
-RUN R -e "install.packages('BiocManager');BiocManager::install('remotes')"
+# To install packages that doesn't work from packrat.
+RUN R -e "install.packages('BiocManager')"
 
 # Doesn't compile from source. Maybe the space bug in the end?
-RUN R -e "BiocManager::install('grimbough/Rhdf5lib', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
+RUN R -e "BiocManager::install('Rhdf5lib', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
+RUN R -e "BiocManager::install('mzR', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
 
 # If packrat updates during restore it might fail everything so we make sure to have the latest version.
 RUN R -e "BiocManager::install('packrat', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
@@ -83,7 +84,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt
 
 RUN R -e "BiocManager::install('bnosac/cronR')"
-RUN R -e "library(cronR);cmd <- cron_rscript('/srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.sh', cmd = '/bin/bash', rscript_log = '/var/log/QC_cron.log');cron_add(cmd, frequency = '*/5 * * * *', id = 'QC_processing', description = 'Process files every 5 minute')"
+RUN R -e "library(cronR);cmd <- cron_rscript('/srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.sh', cmd = '/bin/bash', rscript_log = '/var/log/QC_cron.log');cron_add(cmd, frequency = '*/5 * * * *', id = 'QC_processing', description = 'Process files every 5 minute', ask = FALSE)"
 
 RUN mkdir /setup
 COPY ./setup/cron_with_env.sh /setup/cron_with_env.sh
@@ -105,3 +106,4 @@ RUN mkdir -p /var/lib/shiny-server/bookmarks/shiny
 COPY ./setup/shiny-server.conf /etc/shiny-server/shiny-server.conf
 EXPOSE 3838
 ###############################################################################
+

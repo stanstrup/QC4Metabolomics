@@ -74,7 +74,7 @@ services:
     restart: always
     environment:
       TZ: Europe/Copenhagen
-    command: '/usr/bin/shiny-server.sh'
+    command: '/init'
 
 
   ms_converter:

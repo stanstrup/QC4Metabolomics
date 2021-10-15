@@ -1,4 +1,4 @@
-FROM rocker/shiny:3.6.0 AS base
+FROM rocker/shiny:4.1.1 AS base
 
 
 ##### System libs setup #######################################################
@@ -8,7 +8,7 @@ RUN apt-get update && \
 	# needed for certain R packages
 	libnetcdf-dev \
 	libxml2-dev \
-	libmariadb-client-lgpl-dev \
+	libmysqlclient-dev \
 	libssl-dev \
 	\
 	default-jre \
@@ -38,25 +38,29 @@ COPY ./.Rprofile /srv/shiny-server/QC4Metabolomics/.Rprofile
 
 #Initialise packrat
 # Dir need to exist for manual install there
-RUN mkdir -p "/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0"
+RUN mkdir -p "/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/4.1.1"
 
 # To install packages that doesn't work from packrat.
 RUN R -e "install.packages('BiocManager')"
 
 # Doesn't compile from source. Maybe the space bug in the end?
-RUN R -e "BiocManager::install('Rhdf5lib', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
-RUN R -e "BiocManager::install('mzR', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
+#RUN R -e "BiocManager::install('Rhdf5lib', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/4.1.1')"
+#RUN R -e "BiocManager::install('mzR', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/4.1.1')"
 
 # If packrat updates during restore it might fail everything so we make sure to have the latest version.
-RUN R -e "BiocManager::install('packrat', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
+RUN R -e "BiocManager::install('packrat', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/4.1.1')"
 
 # Make colors available in a console connection. Installed here since it cannot install on windows
 RUN R -e "BiocManager::install('remotes')"
-RUN R -e "BiocManager::install('jalvesaq/colorout', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/3.6.0')"
+RUN R -e "BiocManager::install('jalvesaq/colorout', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/4.1.1')"
 
 # Make packrat install all remaining packages
 WORKDIR /srv/shiny-server/QC4Metabolomics/ 
 RUN R -e "packrat::restore()"
+
+# Always use newest version of the package without having to do a packrat snapshot
+COPY ./MetabolomiQCsR /srv/shiny-server/QC4Metabolomics/MetabolomiQCsR/
+RUN R -e "packrat::install('MetabolomiQCsR/', build_vignettes = FALSE)"
 WORKDIR /
 ###############################################################################
 

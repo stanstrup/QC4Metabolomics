@@ -89,7 +89,7 @@ output$project_select_ui <- renderUI({
 
 
 # Build mode selector --------------------------------------------------
-# Get avaiable modes
+# Get available modes
 mode_available <-    reactive({    "
                                                  SELECT DISTINCT mode
                                                  FROM file_info

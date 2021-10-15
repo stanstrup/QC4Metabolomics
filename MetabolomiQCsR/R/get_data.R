@@ -29,7 +29,7 @@ globalVariables("MetabolomiQCsR.env")
 #' @importFrom purrr map_chr map
 #' @importFrom readr read_tsv
 #' @importFrom magrittr extract2
-#' @importFrom RCurl getURL
+#' @importFrom httr GET content
 #' @importFrom utils globalVariables suppressForeignCheck
 #' @importFrom ini read.ini
 #' 
@@ -54,7 +54,7 @@ get_cont_list <- function(polarity = c("positive", "negative", "unknown"), type 
         cont_list <- loc %>% 
                      {data_frame(polarity = names(.),loc = as.character(.))} %>% 
                      filter(polarity %in% polarity_un) %>% 
-                     mutate(cont_list = map_chr(loc, getURL)) %>% 
+                     mutate(cont_list = map_chr(loc, ~content(GET(..1)))) %>% 
                      mutate(cont_list = map(cont_list, read_tsv))
     }else{return(NULL)}
     

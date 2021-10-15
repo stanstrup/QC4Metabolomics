@@ -1,8 +1,8 @@
 Package: MetabolomiQCsR
 Type: Package
 Title: QC for LC-MS data
-Version: 1.3.2
-Date: 2019-05-16
+Version: 1.3.3
+Date: 2021-10-13
 Author: Jan Stanstrup
 Maintainer: Jan Stanstrup <stanstrup@gmail.com>
 Description: Functions for performing QC on LC-MS.

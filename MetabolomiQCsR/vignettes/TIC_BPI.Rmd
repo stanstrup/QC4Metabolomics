@@ -9,9 +9,11 @@ output:
                         number_sections: yes
                         css: style.css
 vignette: >
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{How to make EICs/TICs/BPIs}
   %\usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -39,6 +41,12 @@ library(magrittr)
 library(ggplot2)
 library(plotly)
 library(knitr)
+library(conflicted)
+
+conflict_prefer("summarise", "dplyr")
+conflict_prefer("layout", "plotly")
+conflict_prefer("select", "dplyr")
+conflict_prefer("mutate", "dplyr")
 ```
 
 
@@ -53,7 +61,7 @@ files
 
 Then we read the raw data with a wrapper that puts it into a table.
 ```{r xcmsRaw_to_tbl2}
-raw_tbl <- files %>% xcmsRaw_to_tbl
+raw_tbl <- files %>% xcmsRaw_to_tbl()
 
 raw_tbl
 ```
@@ -255,7 +263,8 @@ This probably only makes sense if you are look for the max of a peak or if you h
 ```{r 'multiple  EIC summary'}
 EIC_summary <-  range_tbls_and_files %>% 
                 select(-plot) %>% # can't unnest the plot and EIC at the same time 
-                unnest %>% 
+                unnest(cols = c(EIC)) %>%
+                ungroup %>%
                 group_by(file, mz, path) %>% 
                 summarise(EIC_median = median(intensity), 
                           EIC_mean   = mean(intensity), 

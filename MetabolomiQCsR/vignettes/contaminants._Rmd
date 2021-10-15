@@ -1,0 +1,188 @@
+---
+title: "Automatically annotation contaminants"
+author: "Jan Stanstrup"
+date: "22 jul 2016"
+output:
+          html_document:
+                        highlight: haddock
+                        toc: yes
+                        number_sections: yes
+                        css: style.css
+vignette: >
+  %\VignetteIndexEntry{Automatically annotation contaminants}
+  %\usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(svglite)
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", dev='svglite')
+```
+
+
+
+<style>
+pre code, pre, code {
+  white-space: pre !important;
+  overflow-x: scroll !important;
+  word-break: keep-all;
+  word-wrap: initial; 
+}
+</style>
+
+
+
+# Getting a list of known contaminants
+
+We can pull a list of known contaminants from a list hosted on github (see `?get_cont_list`).
+"Unknown" will used the positive mode list by default. This is mainly to do something when the ionization mode cannot be detected.
+
+
+We need to load some libraries we will be using.
+
+```{r libraries, message=FALSE, warning = FALSE}
+library(MetabolomiQCsR)
+library(purrr)
+library(tidyr)
+library(tibble)
+library(dplyr)
+library(magrittr)
+library(knitr)
+library(ggplot2)
+library(plotly)
+library(scales)
+library(conflicted)
+
+conflict_prefer("summarise", "dplyr")
+conflict_prefer("layout", "plotly")
+conflict_prefer("select", "dplyr")
+conflict_prefer("mutate", "dplyr")
+conflict_prefer("filter", "dplyr")
+```
+
+
+```{r contaminant list}
+contaminant_list <- get_cont_list(polarity = c("positive", "negative", "unknown"))
+contaminant_list %>% str
+```
+
+
+```{r contaminant list table}
+contaminant_list[[1]] %>% 
+                            slice(1:20) %>% 
+                            select(-ESI, -MALDI, -references) %>% 
+                            kable
+```
+
+
+
+
+
+# Read the raw files
+
+Input files. These are local files for now.
+
+```{r input files}
+files <- c("Z:/_Data/LIP1/0000_Test/2016-06-24 - Contamination hunt - part I/Infusion tests/mzML_centroided/IPA_VWR_Boiled.mzML",
+           "Z:/_Data/LIP1/0000_Test/2016-06-24 - Contamination hunt - part I/Infusion tests/mzML_centroided/EluentB_IPA1_Boiled.mzML",
+           "Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_034_2_1_1.mzML",
+           "Z:/_Data/LIP1/0036_SevaMeal/mzML/0036_LIP1p_20160201_057_36_1_1.mzML"
+)
+```
+
+
+```{r read raw files}
+data_raw <- xcmsRaw_to_tbl(files)
+```
+
+
+# Get list of all known contaminants
+
+Get list of contaminants for the polarities we have and add it to the file list.
+```{r list of contaminants}
+data_cont <-    data_raw %>% 
+                distinct(polarity) %>% 
+                mutate(cont_list = get_cont_list(polarity))
+```
+
+
+
+
+# Get EICs of all known contaminants
+
+Clean up some column names and calculate EIC intervals.
+
+```{r clean contaminant list}
+library(ini)
+
+ini <- read.ini(MetabolomiQCsR.env$general$settings_file)
+EIC_ppm <- ini$module_TrackCmp$ROI__ppm %>% as.numeric # 30
+
+data_cont %<>%  unnest(cont_list, .drop = FALSE) %>%  # one line per contaminant
+                setNames(make.names(names(.))) %>% 
+                mutate(comp_name = paste0(Compound.ID.or.species," (",Ion.type,", ", round(Monoisotopic.ion.mass..singly.charged.,4),")"), comp_mz = Monoisotopic.ion.mass..singly.charged. ) %>% 
+                mutate(mz_lower = comp_mz-((EIC_ppm)/1E6)*comp_mz, mz_upper = comp_mz+((EIC_ppm)/1E6)*comp_mz) %>% 
+                nest(-polarity, .key = contaminants)
+```
+
+
+Add the raw data to the table
+```{r merge tables}
+data <- left_join(data_raw,data_cont, by = "polarity")
+
+rm(data_cont,data_raw)
+```
+
+Get EICs for all contaminants and raw files
+```{r EIC for each contaminant}
+data %<>%    mutate(   EIC = map2( raw, contaminants, get_EICs )   )
+```
+
+
+```{r EIC unnest contaminants and EIC}
+data %<>%   mutate(EIC = map2(EIC,contaminants, ~ bind_cols(.y, data_frame(EIC = .x) ))) %>% 
+            select(-raw,-contaminants) %>% 
+            unnest
+
+data %>% select(file, polarity, comp_name, comp_mz, mz_lower, mz_upper, EIC)  %>% print(width=Inf)
+```
+
+
+
+# Summarise contamination
+
+```{r 'multiple  EIC summary'}
+EIC_summary <-  data %>% 
+                unnest %>% 
+                group_by(file, comp_name, comp_mz, path) %>% 
+                summarise(EIC_median = median(intensity), 
+                          EIC_mean   = mean(intensity), 
+                          EIC_sd     = sd(intensity), 
+                          EIC_max    = max(intensity)
+                          ) %>% 
+                ungroup %>% 
+                filter(EIC_median > 0)
+
+EIC_summary %>% select(-path) %>% slice(1:10) %>% kable # kable is just to show a nice table below instead of the print display
+```
+
+
+
+```{r EIC plotting contamination profile, fig.height = 8, fig.width = 9}
+EIC_summary %>% 
+                mutate(sample = gsub(".mzML","",file)) %>% 
+                mutate(sample = factor(sample,levels=unique(sample))) %>%
+                select(sample,comp_name,EIC_median) %>%
+                mutate(comp_name = factor(comp_name,levels=unique(comp_name)) ) %>%
+                nest(-sample) %>% 
+                mutate(gg = map2(data, sample, plot_contaminants))     ->
+EIC_plots
+
+
+EIC_plots %<>% mutate(  ggp = map(gg, plotly_build)  ) %>%
+               mutate(  ggp = map(ggp, ~ plotly_clean_tt(.x, rep=c(`comp_name:` = "<b>Compound:</b>", `EIC_median:` = "<b>EIC Median:</b>"))    )  )
+
+EIC_plots$ggp[[1]] 
+```

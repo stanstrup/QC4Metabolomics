@@ -17,3 +17,6 @@ runstuff_TrackCmp.bat
 trp.sql
 MetabolomiQCsR/vignettes/standard_stats_cache
 MetabolomiQCsR/inst/doc/standard_stats_cache
+MetabolomiQCsR/vignettes/.build.timestamp
+MetabolomiQCsR/vignettes/*.R
+MetabolomiQCsR/vignettes/*.html

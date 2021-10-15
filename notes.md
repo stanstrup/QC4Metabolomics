@@ -130,3 +130,33 @@ redo from "sudo chmod +x ./setup/converter_cron.sh".
 
 
 TODO: make script for the fixed and an update script.
+
+
+
+
+
+
+
+# Upgrade mariaDB
+Check the name of the mariaDB container
+```bash
+docker ps
+```
+
+Use the name to login to the machine:
+```bash
+docker exec -it qc4metabolomics-mariadb-1 bash
+```
+
+OR
+
+```bash
+winpty docker exec -it qc4metabolomics-mariadb-1 bash
+```
+
+Then upgrade the DB.
+```bash
+mysql_upgrade -p
+```
+
+Restart the container

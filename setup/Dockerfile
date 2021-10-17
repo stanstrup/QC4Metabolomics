@@ -31,37 +31,42 @@ RUN mkdir /data
 
 
 ##### Install R packages ######################################################
-# Copy packrat files
+# Copy rev files
 # We copy only the core app without modules so that we can faster rebuild if changes are made in modules
-COPY ./packrat /srv/shiny-server/QC4Metabolomics/packrat/
+COPY ./renv /srv/shiny-server/QC4Metabolomics/renv/
 COPY ./.Rprofile /srv/shiny-server/QC4Metabolomics/.Rprofile
+COPY ./renv.lock /srv/shiny-server/QC4Metabolomics/renv.lock
 
-#Initialise packrat
+
+# Make renv install all remaining packages
+WORKDIR /srv/shiny-server/QC4Metabolomics/
+RUN R -e "renv::restore()"
+RUN R -e "BiocManager::install('bnosac/cronR')"
+
+#RUN R -e "(getwd())"
+#RUN R -e "(.libPaths())"
+#RUN R -e "(list.dirs(.libPaths(), recursive = FALSE))"
+#RUN R -e "(list.dirs('/srv/shiny-server/QC4Metabolomics/renv/', recursive = TRUE))"
+
+
 # Dir need to exist for manual install there
-RUN mkdir -p "/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/4.1.1"
+#RUN mkdir -p "/srv/shiny-server/QC4Metabolomics/renv/library/R-4.1/x86_64-pc-linux-gnu"
 
-# To install packages that doesn't work from packrat.
-RUN R -e "install.packages('BiocManager')"
-
-# Doesn't compile from source. Maybe the space bug in the end?
-#RUN R -e "BiocManager::install('Rhdf5lib', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/4.1.1')"
-#RUN R -e "BiocManager::install('mzR', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/4.1.1')"
-
-# If packrat updates during restore it might fail everything so we make sure to have the latest version.
-RUN R -e "BiocManager::install('packrat', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/4.1.1')"
+# To install packages that doesn't work from renv.
+#RUN R -e "install.packages('BiocManager')"
+#RUN R -e "BiocManager::install('remotes')"
+#RUN R -e "BiocManager::install('remotes', lib='/srv/shiny-server/QC4Metabolomics/renv/library/R-4.1/x86_64-pc-linux-gnu')"
 
 # Make colors available in a console connection. Installed here since it cannot install on windows
-RUN R -e "BiocManager::install('remotes')"
-RUN R -e "BiocManager::install('jalvesaq/colorout', lib='/srv/shiny-server/QC4Metabolomics/packrat/lib/x86_64-pc-linux-gnu/4.1.1')"
+#RUN R -e "BiocManager::install('jalvesaq/colorout', lib='/srv/shiny-server/QC4Metabolomics/renv/library/R-4.1/x86_64-pc-linux-gnu')"
 
-# Make packrat install all remaining packages
-WORKDIR /srv/shiny-server/QC4Metabolomics/ 
-RUN R -e "packrat::restore()"
+# If renv updates during restore it might fail everything so we make sure to have the latest version.
+#RUN R -e "BiocManager::install('renv', lib='/srv/shiny-server/QC4Metabolomics/renv/library/R-4.1/x86_64-pc-linux-gnu')"
 
-# Always use newest version of the package without having to do a packrat snapshot
+
+# Always use newest version of the package without having to do a renv snapshot
 COPY ./MetabolomiQCsR /srv/shiny-server/QC4Metabolomics/MetabolomiQCsR/
-RUN R -e "packrat::install('MetabolomiQCsR/', build_vignettes = FALSE)"
-WORKDIR /
+RUN R -e "remotes::install_local('MetabolomiQCsR', build_vignettes = FALSE)"
 ###############################################################################
 
 
@@ -88,7 +93,11 @@ RUN apt-get update && \
 	cron \
     && rm -rf /var/lib/apt
 
-RUN R -e "BiocManager::install('bnosac/cronR')"
+# needed outside project folder too
+#RUN R -e "install.packages('BiocManager')"
+#RUN R -e "BiocManager::install('remotes')"
+#RUN R -e "BiocManager::install('bnosac/cronR')"
+WORKDIR /srv/shiny-server/QC4Metabolomics/
 RUN R -e "library(cronR);cmd <- cron_rscript('/srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.sh', cmd = '/bin/bash', rscript_log = '/var/log/QC_cron.log');cron_add(cmd, frequency = '*/5 * * * *', id = 'QC_processing', description = 'Process files every 5 minute', ask = FALSE)"
 
 RUN mkdir /setup

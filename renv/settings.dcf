@@ -1,0 +1,8 @@
+external.libraries:
+ignored.packages: MetabolomiQCsR
+package.dependency.fields: Imports, Depends, LinkingTo
+r.version:
+snapshot.type: implicit
+use.cache: FALSE
+vcs.ignore.library: TRUE
+vcs.ignore.local: TRUE

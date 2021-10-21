@@ -146,7 +146,7 @@ getEIC_C_wrap <- function(xraw_values, range_tbl) {
 #'
 #' @importFrom massageR is_between
 #' @importFrom tidyr fill
-#' @importFrom dplyr rename_ bind_cols filter select as.tbl
+#' @importFrom dplyr rename_ bind_cols filter select as_tibble
 #' @importFrom tibble data_frame
 #' @importFrom purrr map pmap
 #' @importFrom magrittr extract2 %<>%
@@ -204,7 +204,7 @@ get_EICs <- function(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30, range
     }else{
     # Get EIC for each interval
     range_tbl %<>%      mutate(EIC   = pmap(list(mz_lower,mz_upper,BPI), function(lower,upper, BPI) EIC_calc(xraw_values, lower, upper, BPI = BPI)   )  ) %>% # get the EICs
-                        mutate(EIC   = map(EIC,  ~ do.call(cbind.data.frame,.) %>% as.tbl  ))     # EICs are lists. make nice data.frame
+                        mutate(EIC   = map(EIC,  ~ do.call(cbind.data.frame,.) %>% as_tibble  ))     # EICs are lists. make nice data.frame
     }              
     
     return(range_tbl %>% extract2("EIC"))

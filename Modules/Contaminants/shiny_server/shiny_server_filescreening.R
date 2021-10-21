@@ -38,8 +38,8 @@ file_screening_selected <-  reactive({
 
                                             ) %>% 
                                     dbGetQuery(pool,.) %>% 
-                                    as.tbl %>% 
-                                    mutate_each(~as.POSIXct(., tz="UTC"), time_run)
+                                    as_tibble %>% 
+                                    mutate(across(time_run, ~as.POSIXct(., tz="UTC")))
                                 
                                 out
                                 })

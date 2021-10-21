@@ -72,8 +72,8 @@ heatmap_data_selected <-  reactive({
                                              file_md5 IN ",md5_str,")"
                                             ) %>% 
                                     dbGetQuery(pool,.) %>% 
-                                    as.tbl %>% 
-                                    mutate_each(~as.POSIXct(., tz="UTC"), time_run) %>% 
+                                    as_tibble %>% 
+                                    mutate(across(time_run, ~as.POSIXct(., tz="UTC"))) %>% 
                                     mutate(time_run = with_tz(time_run, Sys.timezone(location = TRUE))) # time zone fix
                                 
                                 out
@@ -138,12 +138,12 @@ heatmap_data_selected <-  reactive({
     fill_data_pos <- data %>%     
                      filter(mode=="pos") %>% 
                      with( expand.grid(file_md5 = unique(file_md5), ion_id = unique(ion_id), stringsAsFactors = FALSE)) %>% 
-                     as.tbl
+                     as_tibble
     
     fill_data_neg <- data %>%     
                      filter(mode=="neg") %>% 
                      with( expand.grid(file_md5 = unique(file_md5), ion_id = unique(ion_id), stringsAsFactors = FALSE)) %>% 
-                     as.tbl
+                     as_tibble
     
     
     fill_data <- bind_rows(fill_data_pos, fill_data_neg) %>% 

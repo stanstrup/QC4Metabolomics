@@ -38,7 +38,7 @@ return(token)
 #' @export
 #'
 #'@importFrom httr GET content
-#'@importFrom dplyr mutate_at vars as.tbl
+#'@importFrom dplyr mutate_at vars as_tibble
 #' 
 
 ic_boxes <- function(token){
@@ -48,7 +48,7 @@ ic_boxes <- function(token){
 
     boxes <- GET(paste0("https://app.ic-meter.com/icm/api/boxlocations/1.0/list?access_token=",token))
     boxes <- content(boxes)
-    boxes <- do.call(rbind.data.frame, c(boxes, stringsAsFactors = FALSE)) %>% as.tbl
+    boxes <- do.call(rbind.data.frame, c(boxes, stringsAsFactors = FALSE)) %>% as_tibble
     
     boxes %<>% mutate_at(vars(fromDate,lastMeasurementDate), ~as.POSIXct(strptime(.,"%Y-%m-%dT%H:%M:%SZ", tz="UTC")))
     
@@ -69,7 +69,7 @@ ic_boxes <- function(token){
 #' @export
 #'
 #'@importFrom httr GET content
-#'@importFrom dplyr mutate_at vars as.tbl mutate
+#'@importFrom dplyr mutate_at vars as_tibble mutate
 #' 
 
 ic_measurements <- function(token,  boxQR, fromDate, toDate){
@@ -90,14 +90,14 @@ ic_measurements <- function(token,  boxQR, fromDate, toDate){
     
     data <- lapply(test_dat$rows, function(x) unlist(x[[1]])) %>% 
             {do.call(rbind.data.frame, c(., stringsAsFactors = FALSE))} %>% 
-            as.tbl
+            as_tibble
     
     
     names <- sapply(test_dat$cols, function(x) x$label)
     
     
     if(ncol(data)==0){
-        data <- data.frame(a= character(0), b= character(0), c = character(0), d = character(0), stringsAsFactors = FALSE) %>% as.tbl
+        data <- data.frame(a= character(0), b= character(0), c = character(0), d = character(0), stringsAsFactors = FALSE) %>% as_tibble
     }
     
     colnames(data) <- names

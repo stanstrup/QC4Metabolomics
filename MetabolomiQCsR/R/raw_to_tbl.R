@@ -41,7 +41,7 @@ extract_polarity <- function(xraw){
 #' @export
 #'
 #'@importFrom tibble data_frame
-#'@importFrom dplyr as.tbl mutate mutate_each select %>%
+#'@importFrom dplyr as_tibble mutate across select %>%
 #'@importFrom purrr map map_chr
 #'@importFrom xcms xcmsRaw
 #' 
@@ -51,10 +51,10 @@ xcmsRaw_to_tbl <- function(files, ...){
     . <- path <- polarity <- NULL # make build check happy
 
     data <- files %>% 
-            data_frame(path = .) %>% as.tbl %>%                  # string to tbl
+            data_frame(path = .) %>% as_tibble %>%                  # string to tbl
             mutate(file=basename(path)) %>% 
             mutate(raw   = map(path, function(file, ...) xcmsRaw(file, ...), ...)  ) %>%           # read raw data
-            mutate_each(as.factor,path,file) %>% 
+            mutate(across(c(path,file), as.factor)) %>% 
             mutate(polarity = map_chr(raw,extract_polarity)) %>% # get polarity for each raw data
             select(file,polarity,raw,path)                       # just re-arrange for readability
     

@@ -38,9 +38,9 @@ file_tbl <-  paste0("
                     "
                     ) %>% 
             dbGetQuery(pool,.) %>% 
-            as.tbl %>% 
-            mutate_each(~as.POSIXct(., tz="UTC"), time_run) %>% 
-            mutate_each(as.factor, file_md5, project, instrument, mode)
+            as_tibble %>% 
+            mutate(across(time_run, ~as.POSIXct(., tz="UTC"))) %>% 
+            mutate(across(c(file_md5, project, instrument, mode), as.factor))
 
 
 
@@ -66,11 +66,11 @@ if(nrow(file_tbl)==0){
 # Get list of compounds ---------------------------------------------------
 std_compounds <- "SELECT * from std_compounds WHERE enabled=1" %>% 
                  dbGetQuery(pool,.) %>% 
-                 as.tbl %>% 
-                 mutate_each(~as.POSIXct(., tz="UTC"), updated_at) %>% 
-                 mutate_each(as.logical, enabled) %>% 
-                 mutate_each(as.factor, mode, cmp_name, instrument) %>% 
-                 mutate_each(~(.*60), cmp_rt1, cmp_rt2) %>% 
+                 as_tibble %>% 
+                 mutate(across(updated_at, ~as.POSIXct(., tz="UTC"))) %>% 
+                 mutate(across(enabled, as.logical)) %>% 
+                 mutate(across(c(mode, cmp_name, instrument), as.factor)) %>% 
+                 mutate(across(c(cmp_rt1, cmp_rt2), ~(.*60))) %>% 
                  rename(rt=cmp_rt1, mz = cmp_mz) # here we only support one rt atm
 
 
@@ -139,7 +139,7 @@ for(ii in seq_along(file_tbl_l)){
 																							   )
 																				
 																				peaks <- findPeaks_l(MetabolomiQCsR.env$TrackCmp$findPeaks, object = raw, ROI.list = ROI, mzdiff=0) %>% 
-																						 as.data.frame %>% as.tbl
+																						 as.data.frame %>% as_tibble
 																				
 																				EIC <- get_EICs(raw, tibble(mz_lower = ..2$mz - MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * ..2$mz * 1E-6, 
 																												mz_upper = ..2$mz + MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * ..2$mz * 1E-6)
@@ -201,7 +201,7 @@ for(ii in seq_along(file_tbl_l)){
     # Additional peak stats ---------------------------------------------------
     # rt and mz deviations
     file_stds_tbl_flat %<>% mutate(mz_dev_ppm = ((mz.peaks - mz.stds)/mz.stds)*1E6 ) %>% 
-                            mutate_each(~(./60),rt.stds, rt.peaks, rtmin, rtmax) %>% 
+                            mutate(across(c(rt.stds, rt.peaks, rtmin, rtmax), ~(./60))) %>% 
                             mutate(rt_dev = rt.peaks - rt.stds)
     
     
@@ -223,7 +223,7 @@ for(ii in seq_along(file_tbl_l)){
     
     
     # Fill zeros when not found -----------------------------------------------
-    file_stds_tbl_flat %<>% mutate_each(~if_else(is.na(.),0,as.numeric(.)), into, intb, maxo,  FWHM, FWHM_dp)
+    file_stds_tbl_flat %<>% mutate(across(c(into, intb, maxo,  FWHM, FWHM_dp), ~if_else(is.na(.),0,as.numeric(.))))
     
     
     

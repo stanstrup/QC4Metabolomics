@@ -177,7 +177,7 @@ files_tbl_selected <- reactive({
                                     "(mode in ",mode_select,")"
                                     
                                     ) %>% 
-                                    dbGetQuery(pool,.) %>% as.tbl
+                                    dbGetQuery(pool,.) %>% as_tibble
                                })
 
 
@@ -199,8 +199,8 @@ std_data_selected <-  reactive({
                                              " WHERE file_md5 in (",.,")
                                             ") %>% 
                                      dbGetQuery(pool,.) %>% 
-                                     as.tbl %>% 
-                                    mutate_each(~as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S"), time_run)
+                                     as_tibble %>% 
+                                    mutate(across(time_run, ~as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S")))
                                 })
 
 

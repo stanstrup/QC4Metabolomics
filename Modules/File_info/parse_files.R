@@ -36,7 +36,7 @@ while( N_todo(pool) != 0 ){
     # Get new files -----------------------------------------------------------
     # 20 newest files
     file_tbl <- "SELECT * FROM files WHERE file_md5 NOT IN (SELECT file_md5 FROM file_info)" %>% 
-                dbGetQuery(pool,.) %>% as.tbl %>% 
+                dbGetQuery(pool,.) %>% as_tibble %>% 
                 mutate(file_date = path %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.info %>% extract2("ctime")) %>% 
                 arrange(desc(file_date)) %>% 
                 select(-file_date) %>% 

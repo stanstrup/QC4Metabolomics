@@ -25,7 +25,7 @@ globalVariables("MetabolomiQCsR.env")
 #' @export
 #'
 #' @importFrom tibble data_frame
-#' @importFrom dplyr filter mutate as.tbl left_join %>%
+#' @importFrom dplyr filter mutate as_tibble left_join %>%
 #' @importFrom purrr map_chr map
 #' @importFrom readr read_tsv
 #' @importFrom magrittr extract2
@@ -59,7 +59,7 @@ get_cont_list <- function(polarity = c("positive", "negative", "unknown"), type 
     }else{return(NULL)}
     
     out <- polarity %>% 
-                         {data_frame(polarity=.)} %>% as.tbl %>% 
+                         {data_frame(polarity=.)} %>% as_tibble %>% 
                           left_join(cont_list, by="polarity") %>% 
                           extract2("cont_list")
     

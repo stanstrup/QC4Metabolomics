@@ -175,7 +175,7 @@ files_tbl_selected <- reactive({
                                     "(mode in ",mode_select,")"
                                     
                                     ) %>% 
-                                    dbGetQuery(pool,.) %>% as.tbl
+                                    dbGetQuery(pool,.) %>% as_tibble
                                })
 
 
@@ -201,8 +201,8 @@ std_data_selected <-  reactive({
                                              WHERE std_stat_data.file_md5 in (",.,")
                                             ") %>% 
                                      dbGetQuery(pool,.) %>% 
-                                     as.tbl %>% 
-                                    mutate_each(~as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S"), updated_at, time_run) %>% 
+                                     as_tibble %>% 
+                                    mutate(across(c(updated_at, time_run), ~as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S"))) %>% 
                                     mutate(time_run = with_tz(time_run, Sys.timezone(location = TRUE))) %>% # time zone fix
                                     mutate(filename = sub('\\..*$', '', basename(path)))
                                 })

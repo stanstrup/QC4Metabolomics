@@ -69,7 +69,7 @@ data_selected <-      reactive({
                                                     "WHERE ",
                                                     "(DATE(time) BETWEEN '",input$file_date_range_input[1],"' AND '",input$file_date_range_input[2],"')"
                                                     ) %>% 
-                                           dbGetQuery(pool,.) %>% as.tbl
+                                           dbGetQuery(pool,.) %>% as_tibble
     
                                     Encoding(out$metric) <- "UTF-8"
                                     

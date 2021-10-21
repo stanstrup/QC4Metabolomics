@@ -35,9 +35,9 @@ file_tbl <-  paste0("
                     "
                     ) %>% 
             dbGetQuery(pool,.) %>% 
-            as.tbl %>% 
-            mutate_each(~as.POSIXct(., tz="UTC"), time_run) %>% 
-            mutate_each(as.factor, file_md5, project, mode)
+            as_tibble %>% 
+            mutate(across(time_run, ~as.POSIXct(., tz="UTC"))) %>% 
+            mutate(across(c(file_md5, project, mode), as.factor))
 
 
 
@@ -49,7 +49,7 @@ file_tbl %<>% filter(dead_files)
 
 
 # Get contaminants table --------------------------------------------------
-data_cont <- dbReadTable(pool, "cont_cmp") %>% as.tbl %>% 
+data_cont <- dbReadTable(pool, "cont_cmp") %>% as_tibble %>% 
              mutate(mz_lower = mz-((MetabolomiQCsR.env$Contaminants$EIC_ppm )/1E6)*mz, mz_upper = mz+((MetabolomiQCsR.env$Contaminants$EIC_ppm )/1E6)*mz)
 
 

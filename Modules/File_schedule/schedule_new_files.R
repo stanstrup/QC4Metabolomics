@@ -25,7 +25,7 @@ if(nrow(new_files)==0){
  new_files %<>% 
                   cbind(tibble(module = list(MetabolomiQCsR.env$module_File_schedule$enabled_modules))) %>% 
                   unnest(module) %>% 
-                  as.tbl %>% 
+                  as_tibble %>% 
                   mutate(priority = 1L)
 
 

@@ -148,7 +148,7 @@ peak_factor <- function(EIC, rt, factor="TF"){
           
     # Median smoothing. Avoids single zero values breaking things. Already smooth peaks are unaffected.
     if(  !all( c(EIC$intensity[C_scan-1], EIC$intensity[C_scan+1]) == 0 )  ){ # If the values on each side of the mid of the peak are both 0 don't do smoothing (a 1 scan spike would cause this).
-        EIC <- EIC %>% mutate(intensity = smooth(intensity, kind="3")) 
+        EIC <- EIC %>% mutate(intensity = stats::smooth(intensity, kind="3")) 
     }
     
     
@@ -181,8 +181,11 @@ peak_factor <- function(EIC, rt, factor="TF"){
     if(is.na(A_scans)) return(NA)
         
     A       <- A_side %>% 
-               slice((A_scans-1):A_scans) %>% 
-               with(approx(per_max,scan_rt,xout=cut_off)$y)
+               slice((A_scans-1):A_scans)
+    
+    if(nrow(A)<2) return(NA)
+    
+    A %<>% with(approx(per_max,scan_rt,xout=cut_off)$y)
     
     
     # Get B
@@ -191,8 +194,12 @@ peak_factor <- function(EIC, rt, factor="TF"){
     if(is.na(B_scans)) return(NA)
     
     B       <- B_side %>% 
-               slice((B_scans-1):B_scans) %>% 
-               with(approx(per_max,scan_rt,xout=cut_off)$y)
+               slice((B_scans-1):B_scans)
+    
+    
+    if(nrow(B)<2) return(NA)
+    
+    B %<>% with(approx(per_max,scan_rt,xout=cut_off)$y)
     
     
     

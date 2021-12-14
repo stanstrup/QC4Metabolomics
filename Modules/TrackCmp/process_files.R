@@ -71,7 +71,7 @@ std_compounds <- "SELECT * from std_compounds WHERE enabled=1" %>%
                  mutate(across(enabled, as.logical)) %>% 
                  mutate(across(c(mode, cmp_name, instrument), as.factor)) %>% 
                  mutate(across(c(cmp_rt1, cmp_rt2), ~(.*60))) %>% 
-                 rename(rt=cmp_rt1, mz = cmp_mz) # here we only support one rt atm
+                 dplyr::rename(rt=cmp_rt1, mz = cmp_mz) # here we only support one rt atm
 
 
 
@@ -188,7 +188,7 @@ for(ii in seq_along(file_tbl_l)){
     
     # Flattern ----------------------------------------------------------------
     file_stds_tbl_flat <-    file_stds_tbl %>%
-                             rename(mode.file = mode) %>% 
+                             dplyr::rename(mode.file = mode) %>% 
                              select(-EIC) %>% 
                              unnest(peaks, .drop = FALSE) %>% 
                              bind_cols(tibble(EIC=unlist(file_stds_tbl$EIC,recursive = FALSE)))

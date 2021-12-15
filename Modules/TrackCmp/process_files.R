@@ -87,7 +87,7 @@ for(ii in seq_along(file_tbl_l)){
     
     # Joined data appropiately ------------------------------------------------
   file_stds_tbl <- left_join(file_tbl_l[[ii]], std_compounds, by = c("instrument", "mode")) %>% 
-                   nest(-file_md5, -module, -priority, -time_run, -project, -instrument, -mode, -path, .key = "stds") %>% 
+                   nest(stds = c(cmp_id, cmp_name, mz, rt, cmp_rt2, enabled, updated_at)) %>% 
                    mutate(stds = pmap(list(stds, instrument, mode), ~mutate(..1, instrument=..2, mode = ..3)))
     
     
@@ -128,33 +128,38 @@ for(ii in seq_along(file_tbl_l)){
     
     
     file_stds_tbl %<>% mutate(out = 
-							  map2(path, stds, ~ {
-																				raw <- ..1 %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% normalizePath %>% 
-																					   xcmsRaw(profparam = MetabolomiQCsR.env$TrackCmp$xcmsRaw$profparam)
-																				
-																				ROI <- tbl2ROI(tbl    = ..2, 
-																							   raw    = raw, 
-																							   ppm    = MetabolomiQCsR.env$TrackCmp$ROI$ppm,
-																							   rt_tol = MetabolomiQCsR.env$TrackCmp$std_match$rt_tol
-																							   )
-																				
-																				peaks <- findPeaks_l(MetabolomiQCsR.env$TrackCmp$findPeaks, object = raw, ROI.list = ROI, mzdiff=0) %>% 
-																						 as.data.frame %>% as_tibble
-																				
-																				EIC <- get_EICs(raw, tibble(mz_lower = ..2$mz - MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * ..2$mz * 1E-6, 
-																												mz_upper = ..2$mz + MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * ..2$mz * 1E-6)
-																								) 
-																				
-																				# function to convert scan to rt
-																				scan2rt_fun <- approxfun(seq_along(raw@scantime),raw@scantime)
-																				
-																				tibble(ROI = list(ROI), peaks = list(peaks), EIC = list(EIC), scan2rt_fun = list(scan2rt_fun)) %>% 
-																				return()
-																			
-												  }
-										 ) 
-							  )%>% 
-                      unnest(out)
+                    							  map2(path, stds, function(a,b) {
+                    																				raw <- a %>% 
+                          																				  as.character %>% 
+                          																				  paste0(MetabolomiQCsR.env$general$base,"/",.) %>% 
+                          																				  normalizePath %>% 
+                          																					xcmsRaw(profparam = MetabolomiQCsR.env$TrackCmp$xcmsRaw$profparam)
+                    																				
+                    																				ROI <- tbl2ROI(tbl    = b,
+                          																							   raw    = raw,
+                          																							   ppm    = MetabolomiQCsR.env$TrackCmp$ROI$ppm,
+                          																							   rt_tol = MetabolomiQCsR.env$TrackCmp$std_match$rt_tol
+                          																							   )
+                    # 																				
+                    																				peaks <- findPeaks_l(MetabolomiQCsR.env$TrackCmp$findPeaks, object = raw, ROI.list = ROI, mzdiff=0) %>%
+                    																						      as.data.frame %>%
+                    																				          as_tibble
+# 
+                    																				EIC <- get_EICs(raw, tibble(mz_lower = b$mz - MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * b$mz * 1E-6,
+                    																												            mz_upper = b$mz + MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * b$mz * 1E-6
+                    																												            )
+                    																								        )
+                    # 																				
+                    # 																				# function to convert scan to rt
+                    																				scan2rt_fun <- approxfun(seq_along(raw@scantime),raw@scantime)
+
+                    																				tibble(ROI = list(ROI), peaks = list(peaks), EIC = list(EIC), scan2rt_fun = list(scan2rt_fun)) %>%
+                    																				return()
+                    																			
+                    												           }
+                    										 ) 
+                    							  ) %>% 
+                                          unnest(out)
     
     
     
@@ -189,8 +194,8 @@ for(ii in seq_along(file_tbl_l)){
     # Flattern ----------------------------------------------------------------
     file_stds_tbl_flat <-    file_stds_tbl %>%
                              dplyr::rename(mode.file = mode) %>% 
-                             select(-EIC) %>% 
-                             unnest(peaks, .drop = FALSE) %>% 
+                             select(-EIC, -stds, -ROI, -instrument ) %>% 
+                             unnest(peaks) %>% 
                              bind_cols(tibble(EIC=unlist(file_stds_tbl$EIC,recursive = FALSE)))
     
     # try to avoid memory leak

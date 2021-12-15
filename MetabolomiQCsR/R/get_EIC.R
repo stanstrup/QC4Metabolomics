@@ -113,7 +113,7 @@ getEIC_C_wrap <- function(xraw_values, range_tbl) {
     
     out <-    bind_rows(out,.id = "range_id") %>% # we flatten everything to be able to match the RT to the scan fast
               left_join(scan_times, by="scan") %>%
-              nest(-range_id) %>% # then we need to split things again
+              group_nest(across(c(range_id))) %>% # then we need to split things again
               extract2("data")
 
     return(out)
@@ -146,7 +146,7 @@ getEIC_C_wrap <- function(xraw_values, range_tbl) {
 #'
 #' @importFrom massageR is_between
 #' @importFrom tidyr fill
-#' @importFrom dplyr rename_ bind_cols filter select as_tibble
+#' @importFrom dplyr rename bind_cols filter select as_tibble
 #' @importFrom tibble data_frame
 #' @importFrom purrr map pmap
 #' @importFrom magrittr extract2 %<>%
@@ -159,7 +159,7 @@ get_EICs <- function(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30, range
     
     
     # get the right columns from range_tbl_cols
-    range_tbl %<>% rename_(mz_lower = range_tbl_cols[1],mz_upper = range_tbl_cols[2])
+    range_tbl %<>% rename(mz_lower = range_tbl_cols[1],mz_upper = range_tbl_cols[2])
 
     
     # get raw values

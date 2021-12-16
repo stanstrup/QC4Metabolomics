@@ -141,7 +141,7 @@ for(ii in seq_along(file_tbl_l)){
                           																							   rt_tol = MetabolomiQCsR.env$TrackCmp$std_match$rt_tol
                           																							   )
                     # 																				
-                    																				peaks <- findPeaks_l(MetabolomiQCsR.env$TrackCmp$findPeaks, object = raw, ROI.list = ROI, mzdiff=0) %>%
+                    																				peaks <- findPeaks_l(MetabolomiQCsR.env$TrackCmp$findPeaks, object = raw, ROI.list = ROI, mzdiff=0, mzCenterFun = "apex") %>%
                     																						      as.data.frame %>%
                     																				          as_tibble
 # 
@@ -249,6 +249,7 @@ for(ii in seq_along(file_tbl_l)){
                             gather(stat_name, value, -file_md5, -cmp_id, -found) %>% 
                             left_join(std_stat_types, by="stat_name") %>% 
                             select(file_md5, stat_id, cmp_id, found, value) %>% 
+                            mutate(value = if_else(is.nan(value), NA_real_, value)) %>% 
                             sqlAppendTable(pool, "std_stat_data", .) ->
     sql_query
                             

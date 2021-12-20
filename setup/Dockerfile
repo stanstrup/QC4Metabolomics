@@ -83,6 +83,7 @@ RUN R -e "library(cronR);cmd <- cron_rscript('/srv/shiny-server/QC4Metabolomics/
 RUN mkdir /setup
 COPY ./setup/cron_with_env.sh /setup/cron_with_env.sh
 RUN chmod +x  /setup/cron_with_env.sh
+RUN chmod +x  /srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.sh
 ###############################################################################
 
 

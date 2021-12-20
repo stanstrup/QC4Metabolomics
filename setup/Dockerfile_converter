@@ -25,7 +25,7 @@ COPY ./setup/converter_std.R /converter_scripts/converter_std.R
 COPY ./setup/converter_std.sh /converter_scripts/converter_std.sh
 COPY ./setup/cron_with_env.sh /setup/cron_with_env.sh
 RUN chmod +x /setup/cron_with_env.sh
-
+RUN chmod +x /converter_scripts/converter_std.sh
 
 ##### R packages ##########################################################
 

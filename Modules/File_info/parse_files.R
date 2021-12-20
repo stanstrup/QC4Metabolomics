@@ -60,7 +60,8 @@ while( N_todo(pool) != 0 ){
         
     
     
-    
+
+    # invalid info (NAs) -----------------------------------------------------
     # lets check if the coersion caused invalid names in required fields
     if(MetabolomiQCsR.env$module_File_info$mode_from_other_field)  bad <- file_tbl %>% select(project, sample_id, instrument) %>% {rowSums(is.na(.)) > 0}
     if(!MetabolomiQCsR.env$module_File_info$mode_from_other_field) bad <- file_tbl %>% select(project, mode, sample_id, instrument) %>% {rowSums(is.na(.)) > 0}
@@ -141,6 +142,71 @@ while( N_todo(pool) != 0 ){
     }
     
     
+
+
+    # Invalid mode ------------------------------------------------------------
+    # mode can only be 'pos','neg','unknown'
+    
+    # lets check if the coersion caused invalid modes
+    file_tbl %<>% mutate(FLAG = ifelse(mode %in% c('pos','neg','unknown'),FALSE, TRUE))
+    
+    
+    
+    # Does some have invalid file name?
+    if(any(file_tbl$FLAG)){
+        
+        file_tbl %>% 
+            filter(FLAG) %>% 
+            slice(1) %>% select(mode) %>%
+            paste0(sum(file_tbl$FLAG), " files had invalid mode specification First was: ",.,". They will be ignored. ") %>% 
+            write_to_log(cat = "warning", source = log_source, pool = pool)
+        
+      # Move to ignore list
+      con <- poolCheckout(pool)
+      dbBegin(con)
+      
+      # add
+      res <- file_tbl %>%
+        filter(FLAG) %>% 
+        select(path, file_md5) %>% 
+        sqlAppendTable(con, "files_ignore", .) %>% 
+        dbSendQuery(con,.)
+      
+      res <- dbCommit(con)
+      
+      # remove
+      md5del <- filter(file_tbl, FLAG) %>% select(path, file_md5) %>% pull(file_md5)
+      
+      for(i in seq_along(md5del)){
+        sql_query <- paste0("DELETE FROM files WHERE (file_md5='",md5del[i],"')")
+        dbSendQuery(con,sql_query)
+        dbCommit(con)
+      }
+      
+      poolReturn(con)
+      
+      
+      
+        
+    file_tbl %<>% filter(!FLAG) %>% select(-FLAG)
+        
+    }else{
+      file_tbl %<>% select(-FLAG)  
+    }
+    
+    
+    
+    # Do nothing if no new files
+    if(nrow(file_tbl)==0){
+        write_to_log("No valid files left in batch to add to queue", cat = "info", source = log_source, pool = pool)
+        
+      next
+    }
+        
+    
+    
+
+
     
     # Get run time from the XML data ------------------------------------------
     gc_pipe <- function(x){ gc();return(x)} # there seems to be a memory leak in the way I do it. So this will clean up after each file

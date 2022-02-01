@@ -11,11 +11,17 @@ files <- gsub("\\\\","/",files)
 files <- trimws(files)
 
 
+# remove files that don't exist (anymore)
+file_exist <-  file.exists(files)
+files <- files[file_exist]
+
+
+
 
 outdir <- paste0(dirname(files), Sys.getenv("msconvert_outdir_prefix"))
 
 
-# remove files that already exist
+# remove files that have already been converted
 files_b <- basename(files)
 files_out <- paste0(outdir,"/",gsub(".raw$","",files_b),".mzML")
 

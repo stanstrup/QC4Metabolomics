@@ -2,8 +2,7 @@
 navbarPageWithInputs <- function(..., inputs) {
   navbar <- navbarPage(...)
   form <- tags$form(class = "navbar-form", style="float: right; margin-bottom: 0px;", inputs)
-  navbar[[3]][[1]]$children[[1]] <- htmltools::tagAppendChild(
-    navbar[[3]][[1]]$children[[1]], form)
+  navbar[[4]][[1]][[1]]$children[[1]]$children[[2]] <- htmltools::tagAppendChild(navbar[[4]][[1]][[1]]$children[[1]]$children[[2]], form)
   navbar
 }
 

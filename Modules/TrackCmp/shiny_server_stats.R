@@ -165,7 +165,6 @@ files_tbl_selected <- reactive({
                                     mode_select    <- input$std_stats_mode_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
                                     REGEXP <- std_stats_sample_id_reactive() %>% ifelse(.=="",".*",.)
                                     REGEXP_inv <- input$std_stats_sample_id_inv %>% ifelse("NOT ", "")
-                                    
                                     instrument_select <- global_instruments_input() %>% paste(collapse="','") %>% paste0("('",.,"')")
                                     
 

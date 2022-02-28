@@ -167,6 +167,7 @@ files_tbl_selected <- reactive({
                                     mode_select    <- input$mode_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
                                     REGEXP <- sample_id_reactive() %>% ifelse(.=="",".*",.)
                                     REGEXP_inv <- input$sample_id_inv %>% ifelse("NOT ", "")
+									instrument_select <- global_instruments_input() %>% paste(collapse="','") %>% paste0("('",.,"')")
                                     
                                     paste0(
                                     "SELECT * FROM file_info ",
@@ -174,8 +175,8 @@ files_tbl_selected <- reactive({
                                     "(sample_id ",REGEXP_inv,"REGEXP ","'",REGEXP,"') AND ",
                                     "(DATE(time_run) BETWEEN '",input$file_date_range_input[1],"' AND '",input$file_date_range_input[2],"') AND ",
                                     "(project in ",project_select,") AND ",
-                                    "(mode in ",mode_select,")"
-                                    
+                                    "(mode in ",mode_select,") AND",
+                                    "(instrument in ",instrument_select,")"
                                     ) %>% 
                                     dbGetQuery(pool,.) %>% as_tibble
                                })

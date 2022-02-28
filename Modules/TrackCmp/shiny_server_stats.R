@@ -87,7 +87,7 @@ output$std_stats_project_select_ui <- renderUI({
 
 
 # Build mode selector --------------------------------------------------
-# Get avaiable modes
+# Get available modes
 std_stats_mode_available <-    reactive({    "
                                                  SELECT DISTINCT mode
                                                  FROM file_info
@@ -166,14 +166,17 @@ files_tbl_selected <- reactive({
                                     REGEXP <- std_stats_sample_id_reactive() %>% ifelse(.=="",".*",.)
                                     REGEXP_inv <- input$std_stats_sample_id_inv %>% ifelse("NOT ", "")
                                     
+                                    instrument_select <- global_instruments_input() %>% paste(collapse="','") %>% paste0("('",.,"')")
+                                    
+
                                     paste0(
                                     "SELECT * FROM file_info ",
                                     "WHERE ",
                                     "(sample_id ",REGEXP_inv,"REGEXP ","'",REGEXP,"') AND ",
                                     "(DATE(time_run) BETWEEN '",input$file_date_range_input[1],"' AND '",input$file_date_range_input[2],"') AND ",
                                     "(project in ",project_select,") AND ",
-                                    "(mode in ",mode_select,")"
-                                    
+                                    "(mode in ",mode_select,") AND",
+                                    "(instrument in ",instrument_select,")"
                                     ) %>% 
                                     dbGetQuery(pool,.) %>% as_tibble
                                })

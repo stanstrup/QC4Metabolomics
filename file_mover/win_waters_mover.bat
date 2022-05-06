@@ -1,4 +1,4 @@
-@echo off
+@echo off & setlocal
 
 REM ****** SETTINGS ******
 REM No trailing spaces!
@@ -7,6 +7,8 @@ set "outfolder=C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\data\new_loc"
 set "delim=_"
 set "expect_delims=2"
 set "symlinkback=TRUE"
+
+
 
 
 
@@ -45,9 +47,15 @@ for /d /r "%infolder%" %%i in (*) do  @if exist %%i\_extern.inf (
 					if exist "%outfolder%\%%a\%%a.pro\Data\%%~nxi" echo raw folder already exists! Folder ignored.
 					
 					if not exist "%outfolder%\%%a\%%a.pro\Data\%%~nxi\" (
-						PING localhost -n 30 >NUL
+					
+
+						for %%q in ("%%~fi\*") do call :loop "%%~fi\%%~nxq"
+						echo files in "%%~fi" are not locked. Will transfer in 10 sec.
+						
+						
+						("%systemroot%\system32\timeout.exe" /t 10)>nul
 						echo Moving "%%~fi" to "%outfolder%\%%a\%%a.pro\Data\%%~nxi"
-						robocopy "%%~fi" "%outfolder%\%%a\%%a.pro\Data\%%~nxi" /E /MOVE
+						robocopy "%%~fi" "%outfolder%\%%a\%%a.pro\Data\%%~nxi" /E /MOVE /NFL /NJS /NDL
 						
 						REM make symlink in original location
 						if %symlinkback% == TRUE (
@@ -69,3 +77,15 @@ for /d /r "%infolder%" %%i in (*) do  @if exist %%i\_extern.inf (
 	echo.
 
 )
+
+goto :EOF
+
+
+:loop
+REM echo checking %1
+powershell -Command "[System.IO.File]::Open('%1', 'Open', 'Write')">nul 2>&1 || (
+	echo %1 is locked. Will wait 10 sec and try again.
+	("%systemroot%\system32\timeout.exe" /t 10)>nul
+	goto :loop
+)
+

@@ -20,3 +20,5 @@ MetabolomiQCsR/inst/doc/standard_stats_cache
 MetabolomiQCsR/vignettes/.build.timestamp
 MetabolomiQCsR/vignettes/*.R
 MetabolomiQCsR/vignettes/*.html
+MetabolomiQCsR/inst/doc/*
+MetabolomiQCsR/MetabolomiQCsR.pdf

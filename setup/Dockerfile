@@ -1,4 +1,4 @@
-FROM rocker/shiny:4.1.1 AS base
+FROM rocker/shiny:4.2 AS base
 
 
 ##### System libs setup #######################################################

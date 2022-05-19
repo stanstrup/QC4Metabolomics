@@ -1330,8 +1330,8 @@
       "Source": "Git",
       "RemoteType": "git2r",
       "RemoteUrl": "https://gitlab.com/R_packages/massageR.git",
-      "RemoteSha": "8a0c62b8f848fbcca65404d5315ca8cf5e9db72d",
-      "Hash": "199552d31d78d5412a8e67debebf6269",
+      "RemoteSha": "",
+      "Hash": "ab5afa7f6c1ef4ac8c12a17c1761b91c",
       "Requirements": [
         "dplyr",
         "igraph",
@@ -1571,8 +1571,8 @@
       "RemoteRepo": "pool",
       "RemoteUsername": "rstudio",
       "RemoteRef": "HEAD",
-      "RemoteSha": "00fad2c2258f40759c4eddb83275dc7b50697bcb",
-      "Hash": "595094396a1b0751ccfbcde2240fb090",
+      "RemoteSha": "203bb123879f54a28882d0596a5d4cabaabb0d38",
+      "Hash": "b1e405cf9c0310c2f11678018eec4fb5",
       "Requirements": [
         "DBI",
         "R6",

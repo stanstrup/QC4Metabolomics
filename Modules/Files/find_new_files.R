@@ -138,6 +138,16 @@ ignored_files <- (files %in% ignored_files)
 files <- files[!ignored_files]
 
 
+
+
+
+# Remove non-existing files -----------------------------------------------
+file_exists <- file.exists(files)
+
+files <- files[file_exists]
+
+
+
 # Do nothing if no new files ----------------------------------------------
 if(length(files)==0){
     write_to_log("No new files to add to queue", source = log_source, cat = "info", pool = pool)
@@ -164,7 +174,7 @@ order <- files %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.
 files <- files[order]
 
 
-# loop through subsets of the files untill all files are in the DB
+# loop through subsets of the files until all files are in the DB
 files_l <- split(files, ceiling(seq_along(files)/20))
 
 for(i in seq_along(files_l)){

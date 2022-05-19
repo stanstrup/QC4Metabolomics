@@ -18,6 +18,8 @@ RUN apt-get update && \
 	\
 	librsvg2-dev \
 	\
+	git \
+	\
     && rm -rf /var/lib/apt
 
 RUN sudo R CMD javareconf

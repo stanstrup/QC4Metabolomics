@@ -43,6 +43,8 @@ COPY ./renv.lock /srv/shiny-server/QC4Metabolomics/renv.lock
 # Make renv install all remaining packages
 WORKDIR /srv/shiny-server/QC4Metabolomics/
 RUN R -e "renv::restore()"
+RUN R -e "renv::install('git2r')"
+
 RUN R -e "BiocManager::install('bnosac/cronR')"
 
 

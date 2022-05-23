@@ -78,6 +78,8 @@ services:
 
 
   ms_converter:
+    cap_add:
+      - SYS_PTRACE
     networks:
             frontend:
                 ipv4_address: 172.20.0.5

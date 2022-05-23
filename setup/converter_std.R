@@ -1,3 +1,5 @@
+library(purrr)
+
 basedir <- "/data"
 
 message("Starting conversion at: ", Sys.time())
@@ -40,6 +42,6 @@ if(length(files)!=0){
   
   cmd <- paste0('wine msconvert "',files,'" ', gsub("\\\\","",Sys.getenv("msconvert_args")), ' --outdir "',outdir,'" && echo "',files_out,'" >> "',basedir,'"/mzML_filelist.txt')
   
-  sapply(cmd, system)
+  sapply(cmd, possibly(system, "FAILED TO CONVERT"))
   
 }

@@ -142,7 +142,7 @@ files <- files[!ignored_files]
 
 
 # Remove non-existing files -----------------------------------------------
-file_exists <- file.exists(files)
+file_exists <- file.exists(paste0(MetabolomiQCsR.env$general$base,"/",files))
 
 files <- files[file_exists]
 

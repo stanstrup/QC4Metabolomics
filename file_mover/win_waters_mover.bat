@@ -48,21 +48,25 @@ for /d /r "%infolder%" %%i in (*) do  @if exist %%i\_extern.inf (
 					
 					if not exist "%outfolder%\%%a\%%a.pro\Data\%%~nxi\" (
 					
-
-						for %%q in ("%%~fi\*") do call :loop "%%~fi\%%~nxq"
-						echo files in "%%~fi" are not locked. Will transfer in 10 sec.
+						REM if an IDX file does not exist yet the run has not really started. So we should NOT copy anything
+						if exist "%%~fi\*.IDX" (
 						
-						
-						("%systemroot%\system32\timeout.exe" /t 10)>nul
-						echo Moving "%%~fi" to "%outfolder%\%%a\%%a.pro\Data\%%~nxi"
-						robocopy "%%~fi" "%outfolder%\%%a\%%a.pro\Data\%%~nxi" /E /MOVE /NFL /NJS /NDL
-						
-						REM make symlink in original location
-						if %symlinkback% == TRUE (
-							mklink /D "%%~fi" "%outfolder%\%%a\%%a.pro\Data\%%~nxi"
+							for %%q in ("%%~fi\*") do call :loop "%%~fi\%%~nxq"
+							echo files in "%%~fi" are not locked. Will transfer in 10 sec.
 							
-						REM write to text file the path of the new file
-						echo "%%a\%%a.pro\Data\%%~nxi" >> %outfolder%\raw_filelist.txt
+							
+							("%systemroot%\system32\timeout.exe" /t 10)>nul
+							echo Moving "%%~fi" to "%outfolder%\%%a\%%a.pro\Data\%%~nxi"
+							robocopy "%%~fi" "%outfolder%\%%a\%%a.pro\Data\%%~nxi" /E /MOVE /NFL /NJS /NDL
+							
+							REM make symlink in original location
+							if %symlinkback% == TRUE (
+								mklink /D "%%~fi" "%outfolder%\%%a\%%a.pro\Data\%%~nxi"
+								
+							REM write to text file the path of the new file
+							echo "%%a\%%a.pro\Data\%%~nxi" >> %outfolder%\raw_filelist.txt
+							)
+						
 						)
 					)
 

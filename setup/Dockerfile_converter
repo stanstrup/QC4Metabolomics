@@ -3,15 +3,16 @@ FROM chambm/pwiz-skyline-i-agree-to-the-vendor-licenses AS converter
 
 ##### System libs setup #######################################################
 # Install needed linux tools
-RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial-cran35/" | sudo tee -a /etc/apt/sources.list && \
-    gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 && \
-	gpg -a --export E084DAB9 | sudo apt-key add - \
-	&& \
+RUN apt-get update -qq && \
+	apt-get install -y --no-install-recommends software-properties-common dirmngr && \
+	wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc && \
+	add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" && \
 	apt-get update && \
-    apt-get install  -y --allow-unauthenticated \
+    apt-get install -y --allow-unauthenticated --no-install-recommends \
 	\
 	r-base \
 	cron \
+	build-essential \
 	\
 	&& rm -rf /var/lib/apt
 	

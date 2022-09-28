@@ -44,6 +44,26 @@ file_tbl <-  paste0("
 
 
 
+
+# Check if any on ignore list ---------------------------------------------
+ignored <-  paste0("
+                    SELECT * FROM files_ignore
+                    "
+                    ) %>% 
+            dbGetQuery(pool,.) %>% 
+            distinct() %>% 
+            as_tibble %>% 
+            mutate(ignore = TRUE)
+
+file_tbl <- 
+  left_join(file_tbl, file_tbl, by = c("path", "file_md5")) %>%
+  mutate(ignore = if_else(!is.na(ignore),ignore,FALSE)) %>% 
+  filter(!ignore) %>% 
+  select(-ignore)
+
+
+
+
 # Check if files still exist. ---------------------------------------------
 dead_files <- rem_dead_files(file_md5 = file_tbl$file_md5, path = file_tbl$path, pool = pool, log_source = log_source)
 
@@ -157,9 +177,15 @@ for(ii in seq_along(file_tbl_l)){
       md5del <- filter(file_stds_tbl, !has_ms1) %>% select(path, file_md5) %>% pull(file_md5)
       
       for(i in seq_along(md5del)){
-        sql_query <- paste0("DELETE FROM files WHERE (file_md5='",md5del[i],"')")
-        dbSendQuery(con,sql_query)
-        dbCommit(con)
+        
+        for(files_tables in c("file_info", "file_schedule", "files")){
+          
+          sql_query <- paste0("DELETE FROM ",files_tables," WHERE (file_md5='",md5del[i],"')")
+          dbSendQuery(con,sql_query)
+          dbCommit(con)
+          
+        }
+        
       }
       
       poolReturn(con)
@@ -175,12 +201,7 @@ for(ii in seq_along(file_tbl_l)){
     
     
     
-    
-    
-    
-    
-    
-    
+
     
     
     

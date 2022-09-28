@@ -56,7 +56,7 @@ ignored <-  paste0("
             mutate(ignore = TRUE)
 
 file_tbl <- 
-  left_join(file_tbl, file_tbl, by = c("path", "file_md5")) %>%
+  left_join(file_tbl, ignored, by = c("path", "file_md5")) %>%
   mutate(ignore = if_else(!is.na(ignore),ignore,FALSE)) %>% 
   filter(!ignore) %>% 
   select(-ignore)
@@ -143,12 +143,22 @@ for(ii in seq_along(file_tbl_l)){
     
     
     
-    
+    check_if_ms1 <- function(path){
+      
+      raw <- readMSData(paste0(MetabolomiQCsR.env$general$base,"/",path), mode = "onDisk", msLevel. = 1:2)
+      
+      if(  ncol(fData(raw))==0   )  return(FALSE)
+       
+      return({
+      any(1 == unique(fData(raw)[, "msLevel"]))
+      })
+      
+    }
     
     
     # ignore files with no MS1
     file_stds_tbl <- file_stds_tbl %>% 
-            mutate(has_ms1 = map_lgl(path, ~ any(1 == unique(fData(readMSData(paste0(MetabolomiQCsR.env$general$base,"/",.), mode = "onDisk"))[, "msLevel"]))))
+            mutate(has_ms1 = map_lgl(path, check_if_ms1))
     
     
     

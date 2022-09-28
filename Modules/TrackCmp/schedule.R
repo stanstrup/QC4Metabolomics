@@ -10,6 +10,7 @@ library(purrr)
 library(tidyr)
 library(dplyr)
 library(purrrlyr)
+library(MSnbase)
 
 library(MetabolomiQCsR)
 setwd("Modules/TrackCmp")

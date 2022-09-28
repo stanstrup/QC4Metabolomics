@@ -118,6 +118,72 @@ for(ii in seq_along(file_tbl_l)){
     file_stds_tbl %<>% filter(!to_ignore)
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    # ignore files with no MS1
+    file_stds_tbl <- file_stds_tbl %>% 
+            mutate(has_ms1 = map_lgl(path, ~ any(1 == unique(fData(readMSData(paste0(MetabolomiQCsR.env$general$base,"/",.), mode = "onDisk"))[, "msLevel"]))))
+    
+    
+    
+    if(any(!file_stds_tbl$has_ms1)){
+        
+        file_stds_tbl %>% 
+            filter(!has_ms1) %>% 
+            slice(1) %>% select(path) %>%
+            paste0(sum(file_stds_tbl$has_ms1), " files did not contain any MS1 data. First was: ",.,". They will be ignored.") %>% 
+            write_to_log(cat = "warning", source = log_source, pool = pool)
+        
+      # Move to ignore list
+      con <- poolCheckout(pool)
+      dbBegin(con)
+      
+      # add
+      res <- file_stds_tbl %>%
+        filter(!has_ms1) %>% 
+        select(path, file_md5) %>% 
+        sqlAppendTable(con, "files_ignore", .) %>% 
+        dbSendQuery(con,.)
+      
+      res <- dbCommit(con)
+      
+      # remove
+      md5del <- filter(file_stds_tbl, !has_ms1) %>% select(path, file_md5) %>% pull(file_md5)
+      
+      for(i in seq_along(md5del)){
+        sql_query <- paste0("DELETE FROM files WHERE (file_md5='",md5del[i],"')")
+        dbSendQuery(con,sql_query)
+        dbCommit(con)
+      }
+      
+      poolReturn(con)
+      
+      
+      
+        
+    file_stds_tbl %<>% filter(has_ms1) %>% select(-has_ms1)
+        
+    }else{
+      file_stds_tbl %<>% select(-has_ms1)  
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     # Do nothing if nothing left
     if(nrow(file_stds_tbl)==0) next
     

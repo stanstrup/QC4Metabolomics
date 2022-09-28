@@ -52,7 +52,7 @@ output$file_date_range_ui <- renderUI({
 
 
 # Build project selector --------------------------------------------------
-# Get avaiable projects
+# Get available projects
 std_stats_project_available <- reactive({ 
     
     global_instruments_input() %>%

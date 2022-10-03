@@ -11,6 +11,10 @@ library(tidyr)
 library(dplyr)
 library(purrrlyr)
 library(MSnbase)
+library(parallelly)
+library(furrr)
+
+plan(multicore, workers = pmax(availableCores()-1, 1))
 
 library(MetabolomiQCsR)
 setwd("Modules/TrackCmp")

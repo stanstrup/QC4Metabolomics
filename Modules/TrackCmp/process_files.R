@@ -225,7 +225,7 @@ for(ii in seq_along(file_tbl_l)){
     
     
     file_stds_tbl %<>% mutate(out = 
-                    							  map2(path, stds, function(a,b) {
+                    							  future_map2(path, stds, function(a,b) {
                     																				raw <- a %>% 
                           																				  as.character %>% 
                           																				  paste0(MetabolomiQCsR.env$general$base,"/",.) %>% 

@@ -18,10 +18,12 @@ log_source = "File_info"
 
 # Funs --------------------------------------------------------------------
 N_todo <- function(pool) {
-                        "SELECT COUNT(*) FROM files WHERE file_md5 NOT IN (SELECT file_md5 FROM file_info)" %>%
+                        "SELECT COUNT(*) FROM files WHERE file_md5 NOT IN (SELECT file_md5 FROM file_info) AND file_md5 NOT IN (SELECT file_md5 FROM files_ignore)" %>%
                         dbGetQuery(pool,.) %>%
                         as.numeric
 }
+
+
 
 
 # Establish connection to get new files -----------------------------------------------
@@ -35,7 +37,7 @@ while( N_todo(pool) != 0 ){
     
     # Get new files -----------------------------------------------------------
     # 20 newest files
-    file_tbl <- "SELECT * FROM files WHERE file_md5 NOT IN (SELECT file_md5 FROM file_info)" %>% 
+    file_tbl <- "SELECT * FROM files WHERE file_md5 NOT IN (SELECT file_md5 FROM file_info) AND file_md5 NOT IN (SELECT file_md5 FROM files_ignore)" %>% 
                 dbGetQuery(pool,.) %>% as_tibble %>% 
                 mutate(file_date = path %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.info %>% extract2("ctime")) %>% 
                 arrange(desc(file_date)) %>% 
@@ -224,6 +226,64 @@ while( N_todo(pool) != 0 ){
     file2time <- Vectorize(file2time)
     
     file_tbl %<>% mutate(time_run = file2time(path))
+    
+    
+    
+
+    # If it could not get the file time add to ignore list --------------------
+
+        if(any(is.na(file_tbl$time_run))){
+        
+        file_tbl %>% 
+            filter(is.na(file_tbl$time_run)) %>% 
+            slice(1) %>%
+            {paste0(sum(is.na(file_tbl$time_run)), " files had missing run time. First was: ",.$filename,". They will be ignored. ")} %>% 
+            write_to_log(cat = "warning", source = log_source, pool = pool)
+        
+      # Move to ignore list
+      con <- poolCheckout(pool)
+      dbBegin(con)
+      
+      # add
+      res <- file_tbl %>%
+        filter(is.na(time_run)) %>%
+        select(path, file_md5) %>% 
+        sqlAppendTable(con, "files_ignore", .) %>% 
+        dbSendQuery(con,.)
+      
+      res <- dbCommit(con)
+      
+      # remove
+      md5del <- file_tbl %>% filter(is.na(time_run)) %>% 
+        #select(path, file_md5) %>% 
+        pull(file_md5)
+      
+      for(i in seq_along(md5del)){
+        sql_query <- paste0("DELETE FROM files WHERE (file_md5='",md5del[i],"')")
+        dbSendQuery(con,sql_query)
+        dbCommit(con)
+      }
+      
+      poolReturn(con)
+      
+      
+        
+    file_tbl %<>% filter(!is.na(time_run))
+        
+    }
+    
+    
+    
+    # Do nothing if no new files
+    if(nrow(file_tbl)==0){
+        write_to_log("No valid files left in batch to add to queue", cat = "info", source = log_source, pool = pool)
+        
+      next
+    }
+        
+    
+    
+    
     
     
     

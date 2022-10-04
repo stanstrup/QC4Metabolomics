@@ -147,11 +147,11 @@ for(ii in seq_along(file_tbl_l)){
       
       raw <- readMSData(paste0(MetabolomiQCsR.env$general$base,"/",path), mode = "onDisk", msLevel. = 1:2)
       
-      if(  ncol(fData(raw))==0   )  return(FALSE)
-       
-      return({
-      any(1 == unique(fData(raw)[, "msLevel"]))
-      })
+      if(  ncol(fData(raw))>10   ){ # at least 10 scans to be meaningful
+        return(TRUE)
+        }else{
+        return(FALSE)
+        }
       
     }
     
@@ -167,7 +167,7 @@ for(ii in seq_along(file_tbl_l)){
         file_stds_tbl %>% 
             filter(!has_ms1) %>% 
             slice(1) %>% select(path) %>%
-            paste0(sum(file_stds_tbl$has_ms1), " files did not contain any MS1 data. First was: ",.,". They will be ignored.") %>% 
+            paste0(sum(file_stds_tbl$has_ms1), " files did not contain any MS1 data or two few scans to be meaningful. First was: ",.,". They will be ignored.") %>% 
             write_to_log(cat = "warning", source = log_source, pool = pool)
         
       # Move to ignore list
@@ -224,39 +224,40 @@ for(ii in seq_along(file_tbl_l)){
     
     
     
-    file_stds_tbl %<>% mutate(out = 
-                    							  future_map2(path, stds, function(a,b) {
-                    																				raw <- a %>% 
-                          																				  as.character %>% 
-                          																				  paste0(MetabolomiQCsR.env$general$base,"/",.) %>% 
-                          																				  normalizePath %>% 
-                          																					xcmsRaw(profparam = MetabolomiQCsR.env$TrackCmp$xcmsRaw$profparam)
-                    																				
-                    																				ROI <- tbl2ROI(tbl    = b,
-                          																							   raw    = raw,
-                          																							   ppm    = MetabolomiQCsR.env$TrackCmp$ROI$ppm,
-                          																							   rt_tol = MetabolomiQCsR.env$TrackCmp$std_match$rt_tol
-                          																							   )
-                    # 																				
-                    																				peaks <- findPeaks_l(MetabolomiQCsR.env$TrackCmp$findPeaks, object = raw, ROI.list = ROI, mzdiff=0, mzCenterFun = "apex") %>%
-                    																						      as.data.frame %>%
-                    																				          as_tibble
-# 
-                    																				EIC <- get_EICs(raw, tibble(mz_lower = b$mz - MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * b$mz * 1E-6,
-                    																												            mz_upper = b$mz + MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * b$mz * 1E-6
-                    																												            )
-                    																								        )
-                    # 																				
-                    # 																				# function to convert scan to rt
-                    																				scan2rt_fun <- approxfun(seq_along(raw@scantime),raw@scantime)
-
-                    																				tibble(ROI = list(ROI), peaks = list(peaks), EIC = list(EIC), scan2rt_fun = list(scan2rt_fun)) %>%
-                    																				return()
-                    																			
-                    												           }
-                    										 ) 
-                    							  ) %>% 
-                                          unnest(out)
+    file_stds_tbl <- file_stds_tbl %>% mutate(out = map2(path, stds, function(a,b) {
+      
+      
+                                    																				raw <- a %>% 
+                                          																				  as.character %>% 
+                                          																				  paste0(MetabolomiQCsR.env$general$base,"/",.) %>% 
+                                          																				  normalizePath %>% 
+                                          																					xcmsRaw(profparam = MetabolomiQCsR.env$TrackCmp$xcmsRaw$profparam)
+                                    																				
+                                    																				ROI <- tbl2ROI(tbl    = b,
+                                          																							   raw    = raw,
+                                          																							   ppm    = MetabolomiQCsR.env$TrackCmp$ROI$ppm,
+                                          																							   rt_tol = MetabolomiQCsR.env$TrackCmp$std_match$rt_tol
+                                          																							   )
+                                    # 																				
+                                    																				peaks <- findPeaks_l(MetabolomiQCsR.env$TrackCmp$findPeaks, object = raw, ROI.list = ROI, mzdiff=0, mzCenterFun = "apex") %>%
+                                    																						      as.data.frame %>%
+                                    																				          as_tibble
+                # 
+                                    																				EIC <- get_EICs(raw, tibble(mz_lower = b$mz - MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * b$mz * 1E-6,
+                                    																												            mz_upper = b$mz + MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * b$mz * 1E-6
+                                    																												            )
+                                    																								        )
+                                    # 																				
+                                    # 																				# function to convert scan to rt
+                                    																				scan2rt_fun <- approxfun(seq_along(raw@scantime),raw@scantime)
+                
+                                    																				tibble(ROI = list(ROI), peaks = list(peaks), EIC = list(EIC), scan2rt_fun = list(scan2rt_fun)) %>%
+                                    																				return()
+                                    																			
+                                    												           }
+                                    										 ) 
+                                    				 ) %>% 
+                                                          unnest(out)
     
     
     

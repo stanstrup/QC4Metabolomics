@@ -19,6 +19,10 @@ RUN apt-get update && \
 	librsvg2-dev \
 	\
 	git \
+	
+	# for easier debugging
+	htop \
+	nano \
 	\
     && rm -rf /var/lib/apt
 

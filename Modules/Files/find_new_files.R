@@ -228,7 +228,7 @@ for(i in seq_along(files_l)){
     files_tab %<>% filter(!(file_md5 %in% md5_already_in_db))
     
     
-    # If several files in our batch has has the same MD5 add the newest to the ignore list
+    # If several files in our batch has the same MD5 add the newest to the ignore list
     
     if(any(duplicated(files_tab$file_md5))){
      

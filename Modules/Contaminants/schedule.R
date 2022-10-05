@@ -9,11 +9,6 @@ library(magrittr)
 library(purrr)
 library(tidyr)
 library(dplyr)
-library(parallelly)
-library(furrr)
-
-plan(multicore, workers = pmax(availableCores()-1, 1))
-
 
 
 library(MetabolomiQCsR)

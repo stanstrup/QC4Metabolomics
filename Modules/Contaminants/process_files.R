@@ -95,7 +95,7 @@ for(ii in seq_along(file_tbl_std_l)){
                 mutate(raw = map(path %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% normalizePath, xcmsRaw, profstep = 0))
     
     # Get EIC for all contaminants
-    data_all %<>%    mutate(   EIC = future_map2( raw, conts, get_EICs )   )
+    data_all %<>%    mutate(   EIC = map2( raw, conts, get_EICs )   )
     
     # put EIC and contaminants together
     data_all %<>% mutate(EIC = map2(EIC,conts, ~ bind_cols(.y, tibble(EIC = .x) ))) %>% 

@@ -145,9 +145,11 @@ for(ii in seq_along(file_tbl_l)){
     
     check_if_ms1 <- function(path){
       
+      #print(path)
+      
       raw <- readMSData(paste0(MetabolomiQCsR.env$general$base,"/",path), mode = "onDisk", msLevel. = 1:2)
       
-      if(  nrow(filter(fData(raw), msLevel==1))>10   ){ # at least 10 scans to be meaningful
+      if(  nrow(fData(raw))>0  &&   nrow(filter(fData(raw), msLevel==1))>10   ){ # at least 10 scans to be meaningful
         return(TRUE)
         }else{
         return(FALSE)

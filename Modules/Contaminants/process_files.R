@@ -90,6 +90,93 @@ file_tbl_std_l <- file_tbl_std_l[1:min(length(file_tbl_std_l),10)] # to avoid do
 for(ii in seq_along(file_tbl_std_l)){
     print("Starting next batch of files")
     
+  
+  
+  
+  
+  
+  
+      
+    check_if_ms1 <- function(path){
+      
+      #print(path)
+      
+      raw <- readMSData(paste0(MetabolomiQCsR.env$general$base,"/",path), mode = "onDisk", msLevel. = 1:2)
+      
+      if(  nrow(fData(raw))>0  &&   nrow(filter(fData(raw), msLevel==1))>10   ){ # at least 10 scans to be meaningful
+        return(TRUE)
+        }else{
+        return(FALSE)
+        }
+      
+    }
+    
+    
+    # ignore files with no MS1
+    file_tbl_std_l[[ii]] <- file_tbl_std_l[[ii]] %>% 
+            mutate(has_ms1 = map_lgl(path, check_if_ms1))
+    
+    
+    
+    if(any(!file_tbl_std_l[[ii]]$has_ms1)){
+        
+        file_tbl_std_l[[ii]] %>% 
+            filter(!has_ms1) %>% 
+            slice(1) %>% select(path) %>%
+            paste0(sum(file_tbl_std_l[[ii]]$has_ms1), " files did not contain any MS1 data or two few scans to be meaningful. First was: ",.,". They will be ignored.") %>% 
+            write_to_log(cat = "warning", source = log_source, pool = pool)
+        
+      # Move to ignore list
+      con <- poolCheckout(pool)
+      dbBegin(con)
+      
+      # add
+      res <- file_tbl_std_l[[ii]] %>%
+        filter(!has_ms1) %>% 
+        select(path, file_md5) %>% 
+        sqlAppendTable(con, "files_ignore", .) %>% 
+        dbSendQuery(con,.)
+      
+      res <- dbCommit(con)
+      
+      # remove
+      md5del <- filter(file_tbl_std_l[[ii]], !has_ms1) %>% select(path, file_md5) %>% pull(file_md5)
+      
+      for(i in seq_along(md5del)){
+        
+        for(files_tables in c("file_info", "file_schedule", "files")){
+          
+          sql_query <- paste0("DELETE FROM ",files_tables," WHERE (file_md5='",md5del[i],"')")
+          dbSendQuery(con,sql_query)
+          dbCommit(con)
+          
+        }
+        
+      }
+      
+      poolReturn(con)
+      
+      
+      
+        
+    file_tbl_std_l[[ii]] %<>% filter(has_ms1) %>% select(-has_ms1)
+        
+    }else{
+      file_tbl_std_l[[ii]] %<>% select(-has_ms1)  
+    }
+    
+    
+  
+    # Do nothing if nothing left
+    if(nrow(file_stds_tbl)==0) next
+    
+  
+  
+  
+    
+    
+    
+  
     # Read raw data
     data_all <- file_tbl_std_l[[ii]] %>%
                 mutate(raw = map(path %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% normalizePath, xcmsRaw, profstep = 0))

@@ -19,7 +19,7 @@
 #' }
 #' 
 #' @importFrom massageR which.median longest_piece_above loc_mat_2_group_idx seq_rel
-#' @importFrom tibble data_frame
+#' @importFrom tibble tibble
 #' @importFrom dplyr %>% filter arrange mutate group_by ungroup summarise bind_cols select n
 #' @importFrom purrr map_lgl map
 #' @importFrom WGCNA cor allowWGCNAThreads
@@ -38,7 +38,7 @@ EIC_contaminants <- function(raw, bin_ppm = 30, interval_ppm = 30, min_time = 5,
     scan_per_min <- 60/as.numeric(names(which.max(table(diff(raw@scantime)))))
     
     # put raw data in a matrix
-    raw_mat <- data_frame(mz = raw@env$mz, intensity = raw@env$intensity)    
+    raw_mat <- tibble(mz = raw@env$mz, intensity = raw@env$intensity)    
     
     
     # Generate mz slices. They are ppm so size will change over the range
@@ -69,7 +69,7 @@ EIC_contaminants <- function(raw, bin_ppm = 30, interval_ppm = 30, min_time = 5,
     
     
     # Make intervals around the actual median mz values
-    EIC_intervals <- data_frame(mz=median_mzs, 
+    EIC_intervals <- tibble(mz=median_mzs, 
                                 mz_lower = mz-(interval_ppm/1E6)*mz, 
                                 mz_upper = mz+(interval_ppm/1E6)*mz
                                 ) 
@@ -77,7 +77,7 @@ EIC_contaminants <- function(raw, bin_ppm = 30, interval_ppm = 30, min_time = 5,
     # Get all EICs
     EICs <- get_EICs(raw, EIC_intervals)
     
-    data <- bind_cols(EIC_intervals, EIC = data_frame(EIC = EICs))
+    data <- bind_cols(EIC_intervals, EIC = tibble(EIC = EICs))
     
     
     

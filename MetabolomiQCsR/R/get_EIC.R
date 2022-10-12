@@ -77,7 +77,7 @@ EIC_calc <- function(tbl, lower, upper, BPI = FALSE){
 #'
 #' @importFrom dplyr select distinct %>% bind_rows left_join
 #' @importFrom magrittr %<>% extract2
-#' @importFrom tibble data_frame
+#' @importFrom tibble tibble
 #' @importFrom tidyr nest
 #' 
 #' 
@@ -107,7 +107,7 @@ getEIC_C_wrap <- function(xraw_values, range_tbl) {
                               PACKAGE ='xcms' 
                             )
         
-        out[[i]] <- do.call(data_frame,out[[i]])
+        out[[i]] <- do.call(tibble,out[[i]])
     }
     
     
@@ -147,7 +147,7 @@ getEIC_C_wrap <- function(xraw_values, range_tbl) {
 #' @importFrom massageR is_between
 #' @importFrom tidyr fill
 #' @importFrom dplyr rename bind_cols filter select as_tibble
-#' @importFrom tibble data_frame
+#' @importFrom tibble tibble
 #' @importFrom purrr map pmap
 #' @importFrom magrittr extract2 %<>%
 #' 
@@ -163,7 +163,7 @@ get_EICs <- function(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30, range
 
     
     # get raw values
-    xraw_values <- data_frame(intensity = xraw@env$intensity, mz = xraw@env$mz, scan = as.integer(NA))
+    xraw_values <- tibble(intensity = xraw@env$intensity, mz = xraw@env$mz, scan = as.integer(NA))
     
     
     # Figure which scans each belongs to
@@ -179,7 +179,7 @@ get_EICs <- function(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30, range
     if(!is.null(exclude_mz)){
         # Get ranges for mz's to exclude
         exclude_mz %>% 
-                        data_frame(mz=.) %>% 
+                        tibble(mz=.) %>% 
                         mutate(mz_lower = mz-((exclude_ppm)/1E6)*mz, 
                                mz_upper = mz+((exclude_ppm)/1E6)*mz
                               ) ->
@@ -190,7 +190,7 @@ get_EICs <- function(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30, range
         xraw_values %<>% 
                             {is_between(.$mz,exclude_mz_ranges$mz_lower,exclude_mz_ranges$mz_upper)} %>% 
                             apply(1,any) %>% 
-                            {bind_cols(xraw_values, data_frame(exclude = .))} %>% 
+                            {bind_cols(xraw_values, tibble(exclude = .))} %>% 
                             filter(!exclude) %>% select(-exclude)
     }
     
@@ -200,7 +200,7 @@ get_EICs <- function(xraw, range_tbl, exclude_mz = NULL, exclude_ppm = 30, range
 
     
     if(!BPI){ # if we don't need BPI we can use the fast C function
-        range_tbl %<>% getEIC_C_wrap(xraw_values,.) %>% data_frame(EIC = .) %>% bind_cols(range_tbl,.)
+        range_tbl %<>% getEIC_C_wrap(xraw_values,.) %>% tibble(EIC = .) %>% bind_cols(range_tbl,.)
     }else{
     # Get EIC for each interval
     range_tbl %<>%      mutate(EIC   = pmap(list(mz_lower,mz_upper,BPI), function(lower,upper, BPI) EIC_calc(xraw_values, lower, upper, BPI = BPI)   )  ) %>% # get the EICs

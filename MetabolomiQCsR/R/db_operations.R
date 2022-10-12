@@ -95,7 +95,7 @@ write_to_log <- function(msg, cat, source, pool = NULL){
 #'
 #' @keywords internal
 #' 
-#' @importFrom tibble data_frame
+#' @importFrom tibble tibble
 #' @importFrom dplyr %>% mutate filter rowwise ungroup arrange select
 #' @importFrom DBI dbListTables dbListFields dbBegin dbSendQuery dbCommit
 #' @importFrom purrr map map_lgl map2_chr
@@ -114,7 +114,7 @@ rem_dead_files <- function(file_md5, path, pool = NULL, log_source){
     if(is.null(pool)) dbPool_MetabolomiQCs(5)
     
     
-    file_tbl <- data_frame(file_md5 = file_md5, path = path) %>% 
+    file_tbl <- tibble(file_md5 = file_md5, path = path) %>% 
                 mutate(file_exists = path %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.exists)
     
         
@@ -123,7 +123,7 @@ rem_dead_files <- function(file_md5, path, pool = NULL, log_source){
         # get all tables that references files
         # also add a list of all files to remove
         tab_with_files <-   dbListTables(pool) %>% 
-                            data_frame(table = .) %>% 
+                            tibble(table = .) %>% 
                             mutate(fields = map(table, ~ dbListFields(pool,.x))) %>% 
                             mutate(has_file_md5 = map_lgl(fields, ~ "file_md5" %in% .x)) %>% 
                             filter(has_file_md5) %>%

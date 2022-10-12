@@ -24,7 +24,7 @@ globalVariables("MetabolomiQCsR.env")
 #' 
 #' @export
 #'
-#' @importFrom tibble data_frame
+#' @importFrom tibble tibble
 #' @importFrom dplyr filter mutate as_tibble left_join %>%
 #' @importFrom purrr map_chr map
 #' @importFrom readr read_tsv
@@ -52,14 +52,14 @@ get_cont_list <- function(polarity = c("positive", "negative", "unknown"), type 
     
     if(type=="URL"){
         cont_list <- loc %>% 
-                     {data_frame(polarity = names(.),loc = as.character(.))} %>% 
+                     {tibble(polarity = names(.),loc = as.character(.))} %>% 
                      filter(polarity %in% polarity_un) %>% 
                      mutate(cont_list = map_chr(loc, ~content(GET(..1)))) %>% 
                      mutate(cont_list = map(cont_list, read_tsv))
     }else{return(NULL)}
     
     out <- polarity %>% 
-                         {data_frame(polarity=.)} %>% as_tibble %>% 
+                         {tibble(polarity=.)} %>% as_tibble %>% 
                           left_join(cont_list, by="polarity") %>% 
                           extract2("cont_list")
     

@@ -212,16 +212,29 @@ while( N_todo(pool) != 0 ){
     
     # Get run time from the XML data ------------------------------------------
     gc_pipe <- function(x){ gc();return(x)} # there seems to be a memory leak in the way I do it. So this will clean up after each file
+    read_xml_p <- possibly(read_xml,NA_character_)
     
-    file2time <- . %>%  
-                        as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% normalizePath %>% 
-                        read_xml %>% 
-                        xml_child(paste0(names(xml_ns(.)[1]),":mzML")) %>% 
-                        xml_child(paste0(names(xml_ns(.)[1]),":run")) %>% 
-                        xml_attr("startTimeStamp") %>% 
-                        strptime("%Y-%m-%dT%H:%M:%SZ", tz="UTC") %>% 
-                        format("%Y-%m-%d %H:%M:%S") %>% 
-                        gc_pipe
+    file2time <- function(x){
+      out <- x %>% 
+        as.character %>% 
+        paste0(MetabolomiQCsR.env$general$base,"/",.) %>% 
+        normalizePath %>% 
+        read_xml_p
+      
+      
+      if(!is.na(out)){
+       out %>% 
+        xml_child(paste0(names(xml_ns(.)[1]),":mzML")) %>% 
+        xml_child(paste0(names(xml_ns(.)[1]),":run")) %>% 
+        xml_attr("startTimeStamp") %>% 
+        strptime("%Y-%m-%dT%H:%M:%SZ", tz="UTC") %>% 
+        format("%Y-%m-%d %H:%M:%S") %>% 
+        gc_pipe
+      }else{
+        return(NA)
+        }
+    }
+    
     
     file2time <- Vectorize(file2time)
     

@@ -31,5 +31,5 @@ module_names %>%
   sort %>% 
   {paste0("Modules/",.,"/","schedule.R")} %>%
   paste0('/usr/local/bin/Rscript \"',.,'\"') %>% 
-  {invisible(lapply(.,system))}
+  {print(.);invisible(lapply(.,system))}
 

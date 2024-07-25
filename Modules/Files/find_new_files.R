@@ -149,7 +149,7 @@ files <- files[file_exists]
 
 
 # Do nothing if no new files ----------------------------------------------
-if(length(files)==0){
+if(length(files)==0 | all(is.na(files))){
     write_to_log("No new files to add to queue", source = log_source, cat = "info", pool = pool)
     
     # close connections

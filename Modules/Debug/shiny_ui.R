@@ -4,7 +4,7 @@ DebugUI <- function(id){
     
     ns <- NS(id)
 
-    tagList(
+
             tabPanel("Debug",
                                         fluidPage(
                                             
@@ -19,15 +19,15 @@ DebugUI <- function(id){
                                             
                                             br(),
                                             
-                                            h4("Installed packages in packrat"),
+                                            h4("Installed packages in renv"),
                                             dataTableOutput(ns("packages_packrat")),
                                             
                                             br(),
                                             
-                                            h4("Installed packages NOT in packrat"),
+                                            h4("Installed packages NOT in renv"),
                                             dataTableOutput(ns("packages"))
                                         )
                     )
 
-        )
+
 }

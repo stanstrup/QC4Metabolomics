@@ -15,7 +15,7 @@ Debug <- function(input, output, session, global_instruments_input){
                                                                             unrowname %>% 
                                                                             as.data.frame %>% 
                                                                             select(Package,LibPath,Version,Built) %>% 
-                                                                            filter(grepl("packrat/lib/",.$LibPath,fixed = TRUE))
+                                                                            filter(grepl("renv/library/",.$LibPath,fixed = TRUE))
                                                          })
                                               )
     
@@ -26,7 +26,7 @@ Debug <- function(input, output, session, global_instruments_input){
                                                                             unrowname %>% 
                                                                             as.data.frame %>% 
                                                                             select(Package,LibPath,Version,Built) %>% 
-                                                                            filter(!grepl("packrat/lib/",.$LibPath,fixed = TRUE))
+                                                                            filter(!grepl("renv/library/",.$LibPath,fixed = TRUE))
                                                   })
                                       )
 

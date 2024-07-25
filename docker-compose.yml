@@ -1,5 +1,3 @@
-version: '3.7'
-
 networks:
   frontend:
     ipam:
@@ -25,7 +23,7 @@ services:
       MYSQL_USER: qc_db_user
       MYSQL_PASSWORD: qc_db_pw
       TZ: Europe/Copenhagen
-    command: 'mysqld --innodb-flush-method=fsync'
+    command: 'mariadbd --innodb-flush-method=fsync'
     
     
   qc_process:

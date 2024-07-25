@@ -6,9 +6,9 @@ TrackCmpUI <- function(id){
     
     ns <- NS(id)
     
-    tagList(
+    navbarMenu("Track compounds",
 
-            source("../Modules/TrackCmp/shiny_ui_stats.R", local=TRUE)$value,
-            source("../Modules/TrackCmp/shiny_ui_cmp.R", local=TRUE)$value
-    )
+                    source("../Modules/TrackCmp/shiny_ui_stats.R", local=TRUE)$value,
+                    source("../Modules/TrackCmp/shiny_ui_cmp.R", local=TRUE)$value
+            )
 }

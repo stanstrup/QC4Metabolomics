@@ -1,6 +1,9 @@
 packrat/lib
 packrat/lib-ext
 packrat/lib-R
+renv/library
+renv/local
+renv/staging
 .Rproj.user
 .git
 setup/Dockerfile

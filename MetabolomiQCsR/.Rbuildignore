@@ -2,3 +2,9 @@
 ^\.Rproj\.user$
 build_manual.bat
 MetabolomiQCsR.pdf
+^\.gitlab-ci\.yml$
+^cache$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$

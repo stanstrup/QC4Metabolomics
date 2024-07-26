@@ -1,4 +1,4 @@
-FROM rocker/shiny:4.2 AS base
+FROM rocker/shiny:4.4.1 AS base
 
 
 ##### System libs setup #######################################################
@@ -15,6 +15,10 @@ RUN apt-get update && \
 	default-jdk \
 	liblzma-dev \
 	libbz2-dev \
+	\
+	# for textshaping
+	libharfbuzz-dev libfribidi-dev \
+	\
 	\
 	librsvg2-dev \
 	\

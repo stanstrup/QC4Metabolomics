@@ -1,4 +1,4 @@
-bioconductor.version: 3.15
+bioconductor.version: 3.19
 external.libraries:
 ignored.packages: MetabolomiQCsR
 package.dependency.fields: Imports, Depends, LinkingTo

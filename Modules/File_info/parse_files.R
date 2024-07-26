@@ -211,31 +211,35 @@ while( N_todo(pool) != 0 ){
 
     
     # Get run time from the XML data ------------------------------------------
-    gc_pipe <- function(x){ gc();return(x)} # there seems to be a memory leak in the way I do it. So this will clean up after each file
-    read_xml_p <- possibly(read_xml,NA_character_)
-    
-    file2time <- function(x){
-      out <- x %>% 
-        as.character %>% 
-        paste0(MetabolomiQCsR.env$general$base,"/",.) %>% 
-        normalizePath %>% 
-        read_xml_p
+    file2time <- function(file, by_lines = 100L, max_rounds = 10L ) {
       
+      path <- paste0(MetabolomiQCsR.env$general$base,"/",file) %>% 
+                  normalizePath
       
-      if(!is.na(out)){
-       out %>% 
-        xml_child(paste0(names(xml_ns(.)[1]),":mzML")) %>% 
-        xml_child(paste0(names(xml_ns(.)[1]),":run")) %>% 
-        xml_attr("startTimeStamp") %>% 
-        strptime("%Y-%m-%dT%H:%M:%SZ", tz="UTC") %>% 
-        format("%Y-%m-%d %H:%M:%S") %>% 
-        gc_pipe
+      round <- 1L
+      output <- vector( mode = "character", length = 1 )
+      out_round = ""
+      while( !grepl( "startTimeStamp", output)  & round <= max_rounds ) {
+        out_round <- readr::read_lines(path, skip = by_lines*(round-1), n_max =by_lines )
+        output <- paste0(c(output, out_round), collapse="\n")
+        round <- round + 1L
+      }
+      
+      if(grepl( "startTimeStamp", output)){
+      
+      out <- gsub('.*startTimeStamp=\"(.*?)\".*', "\\1", output) %>% 
+              strptime("%Y-%m-%dT%H:%M:%SZ", tz="UTC") %>% 
+                format("%Y-%m-%d %H:%M:%S") 
+      
+      return(out)
+        
       }else{
         return(NA)
-        }
+      }
+      
     }
-    
-    
+
+
     file2time <- Vectorize(file2time)
     
     file_tbl %<>% mutate(time_run = file2time(path))

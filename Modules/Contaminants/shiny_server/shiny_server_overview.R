@@ -86,6 +86,9 @@ heatmap_data_selected <-  reactive({
   output$heatmap <- renderPlot({
 
      data <- heatmap_data_selected()
+     
+     #saveRDS(data,"data.rds")
+     
      data <- data %>% mutate(ion_id = if_else(mode == "neg",-ion_id,ion_id)) #this seem to have been expected before
      
       
@@ -162,6 +165,7 @@ heatmap_data_selected <-  reactive({
     if(range_weeks>=20) date_breaks <- "1 month"
     if(range_weeks<20) date_breaks <- "1 week"
     if(range_weeks<2) date_breaks <- "1 day"
+    if(range_weeks<1/5) date_breaks <- "1 hour"
     
     
     p <- ggplot(data=fill_data, aes(x=time_run, y = reorder(x_text, c_ord), fill=log10(value))) + 

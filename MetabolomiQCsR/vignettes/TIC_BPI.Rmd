@@ -203,22 +203,12 @@ range_tbls_and_files$EIC[[1]]
 
 
 So now we need to wrangle the data a bit to be able to unwrap those nested tables.
-We go into the `EIC` lists, merge the lists while we add a row to show which m/z slice each belongs to.
-While we are at it we change the new `mz` column to a factor.
+
 ```{r 'multiple  EIC 5'}
-range_tbls_and_files %<>% mutate(EIC = map2(EIC,ranges, ~ bind_rows(.x %>% setNames(.y$mz), .id = "mz") %>% 
-                                                          mutate(mz = mz %>% as.numeric %>% as.factor) 
-                                            )
-                                 )
+range_tbls_and_files <- range_tbls_and_files %>% 
+  unnest(c(ranges, EIC)) %>% 
+  unnest(EIC)
 
-range_tbls_and_files$EIC[[1]]
-```
-
-
-So now we can get rid of those nested tables.
-First we remove the `ranges` and the `raw` columns because we cannot unnest everything together.
-```{r 'multiple  EIC 6'}
-range_tbls_and_files %<>% select(-ranges, -raw) %>% unnest
 ```
 
 

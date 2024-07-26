@@ -65,7 +65,7 @@ if(nrow(file_tbl)==0){
 
 
 
-# Joined data appropiately ------------------------------------------------
+# Joined data appropriately ------------------------------------------------
 data_cont_split <- split(data_cont, data_cont$mode)
 
 
@@ -82,7 +82,7 @@ file_tbl_std <-   file_tbl %>%
 
 
 
-# loop through subsets of the files untill all files are in the DB --------
+# loop through subsets of the files until all files are in the DB --------
 file_tbl_std_l <- split(file_tbl_std, ceiling(1:nrow(file_tbl)/10))
 file_tbl_std_l <- file_tbl_std_l[1:min(length(file_tbl_std_l),10)] # to avoid doing to many. # memory leak
 
@@ -168,7 +168,7 @@ for(ii in seq_along(file_tbl_std_l)){
     
   
     # Do nothing if nothing left
-    if(nrow(file_stds_tbl)==0) next
+    if(nrow(file_tbl_std_l[[ii]])==0) next
     
   
   

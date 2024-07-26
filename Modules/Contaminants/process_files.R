@@ -187,13 +187,13 @@ for(ii in seq_along(file_tbl_std_l)){
     # put EIC and contaminants together
     data_all %<>% mutate(EIC = map2(EIC,conts, ~ bind_cols(.y, tibble(EIC = .x) ))) %>% 
                   select(-raw,-conts) %>% 
-                  unnest
+                  unnest(cols = c(EIC))
     
     
     # Summarize
     EIC_summary <-  data_all %>% 
                     select(file_md5, ion_id, EIC) %>% 
-                    unnest %>% 
+                    unnest(cols = c(EIC)) %>% 
                     group_by(file_md5, ion_id) %>% 
                     summarise(EIC_median = median(intensity), 
                               EIC_mean   = mean(intensity), 
@@ -205,7 +205,7 @@ for(ii in seq_along(file_tbl_std_l)){
                     filter(value > 0)
     
     
-    files_with_no_cont <- unique(data_all[(! data_all$file_md5 %in% EIC_summary$file_md5), "path"]) %>% as.character
+    files_with_no_cont <- unique(data_all[(! data_all$file_md5 %in% EIC_summary$file_md5), "path", drop = TRUE]) %>% as.character
     
     if(length(files_with_no_cont)!=0) write_to_log(paste0("No contaminant was found in: ", paste(files_with_no_cont, collapse=", ")), cat = "warning", source = log_source, pool = pool)
     

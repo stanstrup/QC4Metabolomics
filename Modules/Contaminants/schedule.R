@@ -9,6 +9,7 @@ library(magrittr)
 library(purrr)
 library(tidyr)
 library(dplyr)
+library(MSnbase)
 
 
 library(MetabolomiQCsR)

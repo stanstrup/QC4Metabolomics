@@ -1,53 +1,51 @@
 
-  get_raw_long <- function(raw){
-      tibble(int    = as.list(intensity(raw)),
-                       mz    = as.list(mz(raw)),
-                       scan = as.numeric(scanIndex(raw)),
-                       scan_rt = rtime(raw)
-                      ) %>% 
-                    unnest(c(int, mz))
-    }
-    
+get_raw_long <- function(raw){
+  tibble(int     = as.list(intensity(raw)),
+         mz      = as.list(mz(raw)),
+         scan    = as.numeric(scanIndex(raw)),
+         scan_rt = rtime(raw)
+  ) %>% 
+    unnest(c(int, mz))
+}
 
+
+get_1_EIC <- function(raw_long, lower, upper){
   
-    extract_intervals <- function(raw, lower, upper){
-      
-      raw_long <- get_raw_long(raw)
-      
-      raw_long_distinct <- distinct(raw_long, scan, scan_rt)
-      
-      below <- outer(upper,raw_long$mz, "-") > 0
-      above <- outer(lower,raw_long$mz, "-") < 0
-      inside <- below & above
-      
-      
-      # map through the contaminants/rows
-      EICs <- map(1:nrow(inside), ~ {
-                      raw_long[inside[..1,],] %>% 
-                        group_by(scan, scan_rt) %>% 
-                        summarise(intensity = max(int, na.rm = TRUE), .groups = "drop") %>% 
-                        full_join(raw_long_distinct, by = c("scan", "scan_rt")) %>% 
-                        arrange(scan) %>% 
-                        mutate(intensity = if_else(is.na(intensity), 0, intensity))
-      }
-      )
-      
-      
-      
-    }
+  raw_long %>% 
+    filter(mz>lower, mz<upper) %>% 
+    group_by(scan, scan_rt) %>% 
+    summarise(intensity = max(int, na.rm = TRUE), .groups = "drop") %>% 
+    full_join(raw_long_distinct, by = c("scan", "scan_rt")) %>% 
+    arrange(scan) %>% 
+    mutate(intensity = if_else(is.na(intensity), 0, intensity))
+  
+}
+
+
+extract_intervals <- function(raw, lower, upper){
+  
+  raw_long <- get_raw_long(raw)
+  
+  raw_long_distinct <- distinct(raw_long, scan, scan_rt)
+  
+  
+  # map through the contaminants/rows
+  EICs <- map2(lower, upper, ~get_1_EIC(raw_long, ..1, ..2))
+
+}
 
     
-    
-    check_if_ms1 <- function(raw){
-      
-      if(  nrow(fData(raw))>0  &&   nrow(filter(fData(raw), msLevel==1))>10   ){ # at least 10 scans to be meaningful
-        return(TRUE)
-        }else{
-        return(FALSE)
-        }
-      
-    }
-    
+
+check_if_ms1 <- function(raw){
+  
+  if(  nrow(fData(raw))>0  &&   nrow(filter(fData(raw), msLevel==1))>10   ){ # at least 10 scans to be meaningful
+    return(TRUE)
+  }else{
+    return(FALSE)
+  }
+  
+}
+
 
 # Establish connection to get new files -----------------------------------------------
 log_source <- "Contaminants"

@@ -267,8 +267,7 @@ std_data_selected <-  reactive({
                                                                                     select(time_run, project) %>%
                                                                                     mutate(year = isoyear(time_run), yday = yday(time_run)) %>%
                                                                                     group_by(year, yday) %>%
-                                                                                    summarise(`Samples #` = n(), project = paste(unique(project),collapse="/")) %>%
-                                                                                    ungroup %>%
+                                                                                    summarise(`Samples #` = n(), project = paste(unique(project),collapse="/"), .groups = "drop") %>%
                                                                                     right_join(calendar, by = c("year", "yday")) %>%
                                                                                     filter(year==my_i) %>% 
                                                                                     mutate(`Samples #` = ifelse(is.na(`Samples #`),0,`Samples #`)) %>% 

@@ -92,16 +92,13 @@ for(ii in seq_along(file_tbl_std_l)){
     
   
   
-  
+    file_tbl_std_l[[ii]] <- file_tbl_std_l[[ii]] %>% 
+                              mutate(raw = map(path, ~readMSData(paste0(MetabolomiQCsR.env$general$base,"/",..1), mode = "onDisk", msLevel. = 1:2)))
   
   
   
       
-    check_if_ms1 <- function(path){
-      
-      #print(path)
-      
-      raw <- readMSData(paste0(MetabolomiQCsR.env$general$base,"/",path), mode = "onDisk", msLevel. = 1:2)
+    check_if_ms1 <- function(raw){
       
       if(  nrow(fData(raw))>0  &&   nrow(filter(fData(raw), msLevel==1))>10   ){ # at least 10 scans to be meaningful
         return(TRUE)
@@ -114,9 +111,9 @@ for(ii in seq_along(file_tbl_std_l)){
     
     # ignore files with no MS1
     file_tbl_std_l[[ii]] <- file_tbl_std_l[[ii]] %>% 
-            mutate(has_ms1 = map_lgl(path, check_if_ms1))
+                              mutate(has_ms1 = map_lgl(raw,check_if_ms1))
     
-    
+
     
     if(any(!file_tbl_std_l[[ii]]$has_ms1)){
         
@@ -174,19 +171,62 @@ for(ii in seq_along(file_tbl_std_l)){
   
   
     
+    raw <- file_tbl_std_l[[ii]]$raw[[1]]
+    conts <- file_tbl_std_l[[ii]]$conts[[1]]
+    
+    
+    
+    get_raw_long <- function(raw){
+      raw_long <- tibble(int    = as.list(intensity(raw)),
+                       mz    = as.list(mz(raw)),
+                       scan = as.numeric(scanIndex(raw)),
+                       scan_rt = rtime(raw)
+                      ) %>% 
+                    unnest(c(int, mz))
+    }
+    
+    
+    # get raw data in long format
+    data_all <- file_tbl_std_l[[ii]] %>% mutate(raw_long = map(raw, get_raw_long))
+    
+    
+
+    
+    
+    extract_intervals <- function(raw_long, lower, upper){
+      
+      raw_long_distinct <- distinct(raw_long, scan, scan_rt)
+      
+      below <- outer(upper,raw_long$mz, "-") > 0
+      above <- outer(lower,raw_long$mz, "-") < 0
+      inside <- below & above
+      
+      
+      # map through the contaminants/rows
+      EICs <- map(1:nrow(inside), ~ {
+                      raw_long[inside[..1,],] %>% 
+                        group_by(scan, scan_rt) %>% 
+                        summarise(intensity = max(int, na.rm = TRUE), .groups = "drop") %>% 
+                        full_join(raw_long_distinct, by = c("scan", "scan_rt")) %>% 
+                        arrange(scan) %>% 
+                        mutate(intensity = if_else(is.na(intensity), 0, intensity))
+      }
+      )
+      
+      
+      
+    }
+
+  # Get EIC for all contaminants
+  data_all <- data_all %>% 
+                    mutate(EIC = map2(raw_long,conts, ~extract_intervals(..1, ..2$mz_lower, ..2$mz_upper ))   )
     
     
   
-    # Read raw data
-    data_all <- file_tbl_std_l[[ii]] %>%
-                mutate(raw = map(path %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% normalizePath, xcmsRaw, profstep = 0))
-    
-    # Get EIC for all contaminants
-    data_all %<>%    mutate(   EIC = map2( raw, conts, get_EICs )   )
     
     # put EIC and contaminants together
-    data_all %<>% mutate(EIC = map2(EIC,conts, ~ bind_cols(.y, tibble(EIC = .x) ))) %>% 
-                  select(-raw,-conts) %>% 
+    data_all <- data_all %>% mutate(EIC = map2(EIC,conts, ~ bind_cols(.y, tibble(EIC = .x) ))) %>% 
+                  select(-raw,-conts, -raw_long ) %>% 
                   unnest(cols = c(EIC))
     
     
@@ -198,7 +238,8 @@ for(ii in seq_along(file_tbl_std_l)){
                     summarise(EIC_median = median(intensity), 
                               EIC_mean   = mean(intensity), 
                               EIC_sd     = sd(intensity), 
-                              EIC_max    = max(intensity)
+                              EIC_max    = max(intensity),
+                              .groups = "drop"
                               ) %>% 
                     ungroup %>% 
                     gather(stat, value, -file_md5, -ion_id) %>% 

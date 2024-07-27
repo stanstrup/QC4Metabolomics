@@ -169,15 +169,8 @@ for(ii in seq_along(file_tbl_std_l)){
     
   
   
-  
-    
-    raw <- file_tbl_std_l[[ii]]$raw[[1]]
-    conts <- file_tbl_std_l[[ii]]$conts[[1]]
-    
-    
-    
-    get_raw_long <- function(raw){
-      raw_long <- tibble(int    = as.list(intensity(raw)),
+  get_raw_long <- function(raw){
+      tibble(int    = as.list(intensity(raw)),
                        mz    = as.list(mz(raw)),
                        scan = as.numeric(scanIndex(raw)),
                        scan_rt = rtime(raw)
@@ -189,8 +182,6 @@ for(ii in seq_along(file_tbl_std_l)){
     # get raw data in long format
     data_all <- file_tbl_std_l[[ii]] %>% mutate(raw_long = map(raw, get_raw_long))
     
-    
-
     
     
     extract_intervals <- function(raw_long, lower, upper){
@@ -309,7 +300,10 @@ for(ii in seq_along(file_tbl_std_l)){
     }
 
 
-    
+    # cleanup
+    file_tbl_std_l[[ii]] <- file_tbl_std_l[[ii]] %>% select(-raw)
+    rm(data_all)
+    gc()
 }
 
 

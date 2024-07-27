@@ -11,6 +11,8 @@ get_raw_long <- function(raw){
 
 get_1_EIC <- function(raw_long, lower, upper){
   
+  raw_long_distinct <- distinct(raw_long, scan, scan_rt)
+  
   raw_long %>% 
     filter(mz>lower, mz<upper) %>% 
     group_by(scan, scan_rt) %>% 
@@ -25,9 +27,6 @@ get_1_EIC <- function(raw_long, lower, upper){
 extract_intervals <- function(raw, lower, upper){
   
   raw_long <- get_raw_long(raw)
-  
-  raw_long_distinct <- distinct(raw_long, scan, scan_rt)
-  
   
   # map through the contaminants/rows
   EICs <- map2(lower, upper, ~get_1_EIC(raw_long, ..1, ..2))

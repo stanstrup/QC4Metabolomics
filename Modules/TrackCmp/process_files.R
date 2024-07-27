@@ -149,7 +149,7 @@ for(ii in seq_along(file_tbl_l)){
       
       raw <- readMSData(paste0(MetabolomiQCsR.env$general$base,"/",path), mode = "onDisk", msLevel. = 1:2)
       
-      if(  nrow(fData(raw))>0  &&   nrow(filter(fData(raw), msLevel==1))>10   ){ # at least 10 scans to be meaningful
+      if(  nrow(fData(raw))>0  &&   nrow(filter(fData(raw), msLevel==1))>10  && !all(sapply(mz(raw), length)==0)   ){ # at least 10 scans to be meaningful
         return(TRUE)
         }else{
         return(FALSE)

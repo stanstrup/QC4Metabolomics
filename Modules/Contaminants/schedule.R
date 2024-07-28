@@ -10,6 +10,7 @@ library(purrr)
 library(tidyr)
 library(dplyr)
 library(MSnbase)
+library(Spectra)
 
 
 library(MetabolomiQCsR)

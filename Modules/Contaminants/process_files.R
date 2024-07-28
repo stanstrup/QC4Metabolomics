@@ -148,7 +148,7 @@ for(ii in seq_along(file_tbl_std_l)){
     
   
   
-    file_tbl_std_l[[ii]] <- file_tbl_std_l[[ii]] %>% slice(1) %>% 
+    file_tbl_std_l[[ii]] <- file_tbl_std_l[[ii]] %>%
                               mutate(raw = map(path, ~Spectra(paste0(MetabolomiQCsR.env$general$base,"/",..1))))
   
   

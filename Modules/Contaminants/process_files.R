@@ -1,3 +1,10 @@
+CutBySize <- function(m, block.size, nb = ceiling(m / block.size)) {
+  int <- m / nb
+  upper <- round(1:nb * int)
+  lower <- c(1, upper[-nb] + 1)
+  cbind(lower, upper)
+}
+
 
 get_raw_long <- function(raw){
 as_tibble(peaksData(raw)) %>% 
@@ -24,16 +31,68 @@ get_1_EIC <- function(raw_long, raw_long_distinct, lower, upper){
 }
 
 
-extract_intervals <- function(raw, lower, upper){
+extract_intervals <- function(raw, lower, upper, min_intensity = 1.2){
   
 
   raw_long <- get_raw_long(raw)
 
   raw_long_distinct <- distinct(raw_long, scan, scan_rt)
+  raw_long_distinct_empty <- raw_long_distinct %>% mutate(intensity=0)
+  
+  raw_long <-  raw_long %>% 
+                filter(intensity>=min_intensity) %>% 
+                filter(mz>min(lower), mz<max(upper))
+  
+  possible_conts <- max(raw_long$mz)>lower & min(raw_long$mz)<upper
+  EICs_final <- vector("list", length(possible_conts))
+  
 
-  EICs <- map2(lower, upper, ~get_1_EIC(raw_long, raw_long_distinct, ..1, ..2))
+  EICs <- map2(lower[possible_conts], upper[possible_conts], ~get_1_EIC(raw_long, raw_long_distinct, ..1, ..2))
+
+
+  
+
+  # cut_points <- CutBySize(nrow(raw_long), 1e6)
+  # 
+  # inside <- map2(cut_points[, "lower"], cut_points[, "upper"], ~ {
+  #   
+  #   #out <- which(outer(upper,raw_long$mz[..1:..2], "-") > 0 & outer(lower,raw_long$mz[..1:..2], "-") < 0, arr.ind = TRUE)
+  #   # Rfast
+  #   out <- which(Outer(raw_long$mz[..1:..2],upper[possible_conts], "-") < 0 & Outer(raw_long$mz[..1:..2],lower[possible_conts], "-") > 0, arr.ind = TRUE)
+  #   out[,"col"] <- out[,"col"]+..1-1
+  #   return(out)
+  #   }
+  # )
+  # 
+  # 
+  # inside <- do.call(rbind,inside)
+  # 
+  # inside_split <- split(inside[,"col"], inside[,"row"])
+  # 
+  #   
+  #     # map through the contaminants/rows
+  #     EICs <- map(1:length(inside_split), ~ {
+  #                     raw_long[inside_split[[..1]],] %>%
+  #                       group_by(scan, scan_rt) %>%
+  #                       summarise(intensity = max(intensity, na.rm = TRUE), .groups = "drop") %>%
+  #                       full_join(raw_long_distinct, by = c("scan", "scan_rt")) %>%
+  #                       arrange(scan) %>%
+  #                       mutate(intensity = if_else(is.na(intensity), 0, intensity))
+  #                       }
+  #                 )
+  
+      
+      
+      
+   
+  EICs_final[which(possible_conts)] <- EICs
+  EICs_final[which(!possible_conts)] <- rep(list(raw_long_distinct_empty), sum(!possible_conts))
+
+  
   
   return(EICs)
+  
+  
 }
 
     

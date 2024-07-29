@@ -13,28 +13,26 @@ as_tibble(peaksData(raw)) %>%
 
 get_1_EIC <- function(raw_long, raw_long_distinct, lower, upper){
   
-
-  raw_long %>% 
-    filter(mz>lower, mz<upper) %>% 
+    raw_long %>% 
+  {.[.$mz>lower & .$mz<upper,]} %>% 
     group_by(scan, scan_rt) %>% 
     summarise(intensity = max(intensity, na.rm = TRUE), .groups = "drop") %>% 
     full_join(raw_long_distinct, by = c("scan", "scan_rt")) %>% 
     arrange(scan) %>% 
     mutate(intensity = if_else(is.na(intensity), 0, intensity))
-  
-  
+
 }
 
 
 extract_intervals <- function(raw, lower, upper){
   
-  
+
   raw_long <- get_raw_long(raw)
 
   raw_long_distinct <- distinct(raw_long, scan, scan_rt)
-  
-  EICs <- map2(lower, upper, ~get_1_EIC(raw_long, raw_long_distinct, ..1, ..2))
 
+  EICs <- map2(lower, upper, ~get_1_EIC(raw_long, raw_long_distinct, ..1, ..2))
+  
   return(EICs)
 }
 

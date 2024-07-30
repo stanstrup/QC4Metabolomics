@@ -12,7 +12,7 @@ services:
                 ipv4_address: 172.20.0.2
     volumes:
       - type: bind
-        source: C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\db
+        source: ==path to save the db on your machine==
         target: /var/lib/mysql
     ports:
       - "12345:3306"
@@ -36,10 +36,10 @@ services:
       target: process
     volumes:
         - type: bind
-          source: C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\config
+          source: ==path to save the config file on your machine==
           target: /config
         - type: bind
-          source: C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\data
+          source: ==base folder where your mzML data is stored==
           target: /data   
     depends_on:
         - mariadb
@@ -61,10 +61,10 @@ services:
       - "80:3838"
     volumes:
         - type: bind
-          source: C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\config
+          source: ==path to save the config file on your machine==
           target: /config
         - type: bind
-          source: C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\data
+          source: ==base folder where your mzML data is stored==
           target: /data   
     depends_on:
         - mariadb
@@ -87,7 +87,7 @@ services:
       target: converter
     volumes:
         - type: bind
-          source: C:\Users\tmh331\Desktop\gits\QC4Metabolomics_test\data
+          source: ==base folder where your raw data is stored==
           target: /data   
     restart: always
     environment:

@@ -9,7 +9,7 @@ MetabolomiQCsR.Rcheck
 /setup/db_model.mwb.bak
 db_model.mwb.bak
 *temp*
-.~lock.overview.pptx#
+.~*.pptx#
 packrat/lib*/
 runstuff_Contaminants.bat
 runstuff_Files_etc.bat
@@ -22,3 +22,11 @@ MetabolomiQCsR/vignettes/*.R
 MetabolomiQCsR/vignettes/*.html
 MetabolomiQCsR/inst/doc/*
 MetabolomiQCsR/MetabolomiQCsR.pdf
+renv/sandbox/
+renv/cellar/
+renv/library/
+renv/local/
+renv/lock/
+renv/python/
+renv/staging/
+docker-compose.yml

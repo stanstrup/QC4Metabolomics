@@ -46,11 +46,8 @@ extract_intervals <- function(raw, lower, upper, min_intensity = 1.2){
     
 
 check_if_ms1 <- function(raw){
-  
-  msLevel(raw)
-  
-  
-  if(  length(raw)>0  &&   length(msLevel(raw))>10   ){ # at least 10 scans to be meaningful
+
+  if(  length(raw)>0  &&   sum(msLevel(raw)==1)>10   ){ # at least 10 scans to be meaningful
     return(TRUE)
   }else{
     return(FALSE)

@@ -30,3 +30,4 @@ renv/lock/
 renv/python/
 renv/staging/
 docker-compose.yml
+tracked_stds.xlsx

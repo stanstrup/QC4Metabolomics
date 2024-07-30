@@ -1,14 +1,10 @@
 get_raw_long <- function(raw){
-as_tibble(peaksData(raw)) %>% 
-    group_by(group) %>% 
-    group_nest() %>% 
     bind_cols(scan_rt = rtime(raw),
-              scan    =  scanIndex(raw)
+              scan    =  scanIndex(raw),
+              tibble(mz_int = lapply(peaksData(raw), as_tibble))
              ) %>% 
-   unnest(data) %>% 
-   select(-group, -group_name)
+   unnest(mz_int)
 }
-
 
 extract_intervals <- function(raw, lower, upper, min_intensity = 1.2){
   

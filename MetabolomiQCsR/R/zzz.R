@@ -48,6 +48,7 @@
     MetabolomiQCsR.env$db$user                                 <<- ini$db$user %>% as.character
     MetabolomiQCsR.env$db$password                             <<- ini$db$password %>% as.character
     MetabolomiQCsR.env$db$host                                 <<- ini$db$host %>% as.character
+    MetabolomiQCsR.env$db$port                                 <<- ini$db$port %>% as.numeric
 
     
 }

@@ -19,6 +19,7 @@ dbPool_MetabolomiQCs <- function(idleTimeout = 1){
                   host = MetabolomiQCsR.env$db$host,
                   username = MetabolomiQCsR.env$db$user,
                   password = MetabolomiQCsR.env$db$password,
+                  port = MetabolomiQCsR.env$db$port,
                   idleTimeout = idleTimeout*60*1000
                 )
   
@@ -197,6 +198,8 @@ default_time_range <- function(min_weeks=2, min_samples = 200, pool = NULL){
             dbGetQuery(pool,.) %>% 
             as.character %>% 
             as.POSIXct(format= "%Y-%m-%d %H:%M:%S")
+    
+    if(is.na(max)) return(NA)
     
     N <- {max-weeks(2)} %>% strftime("%Y-%m-%d %H:%M:%S") %>% 
           paste0("SELECT COUNT(time_run) FROM file_info WHERE time_run > '",.,"'") %>% 

@@ -29,5 +29,7 @@ renv/local/
 renv/lock/
 renv/python/
 renv/staging/
+renv/.gitignore
 docker-compose.yml
 tracked_stds.xlsx
+docker-compose_full.yml

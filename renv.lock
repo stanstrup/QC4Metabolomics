@@ -32,26 +32,6 @@
     "Version": "3.19"
   },
   "Packages": {
-    "AnnotationDbi": {
-      "Package": "AnnotationDbi",
-      "Version": "1.66.0",
-      "Source": "Bioconductor",
-      "Repository": "Bioconductor 3.19",
-      "Requirements": [
-        "Biobase",
-        "BiocGenerics",
-        "DBI",
-        "IRanges",
-        "KEGGREST",
-        "R",
-        "RSQLite",
-        "S4Vectors",
-        "methods",
-        "stats",
-        "stats4"
-      ],
-      "Hash": "b7df9c597fb5533fc8248d73b8c703ac"
-    },
     "AnnotationFilter": {
       "Package": "AnnotationFilter",
       "Version": "1.28.0",
@@ -151,26 +131,6 @@
       ],
       "Hash": "b892e27fc9659a4c8f8787d34c37b8b2"
     },
-    "Biostrings": {
-      "Package": "Biostrings",
-      "Version": "2.72.1",
-      "Source": "Bioconductor",
-      "Repository": "Bioconductor 3.19",
-      "Requirements": [
-        "BiocGenerics",
-        "GenomeInfoDb",
-        "IRanges",
-        "R",
-        "S4Vectors",
-        "XVector",
-        "crayon",
-        "grDevices",
-        "methods",
-        "stats",
-        "utils"
-      ],
-      "Hash": "886ff0ed958d6f839ed2e0d01f6853b3"
-    },
     "DBI": {
       "Package": "DBI",
       "Version": "1.2.3",
@@ -219,28 +179,6 @@
       ],
       "Hash": "395472c65cd9d606a1a345687102f299"
     },
-    "Formula": {
-      "Package": "Formula",
-      "Version": "1.2-5",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "stats"
-      ],
-      "Hash": "7a29697b75e027767a53fde6c903eca7"
-    },
-    "GO.db": {
-      "Package": "GO.db",
-      "Version": "3.19.1",
-      "Source": "Bioconductor",
-      "Requirements": [
-        "AnnotationDbi",
-        "R",
-        "methods"
-      ],
-      "Hash": "46bfc38370acea3503c223347915e43b"
-    },
     "GenomeInfoDb": {
       "Package": "GenomeInfoDb",
       "Version": "1.40.1",
@@ -288,34 +226,6 @@
       ],
       "Hash": "a3c822ef3c124828e25e7a9611beeb50"
     },
-    "Hmisc": {
-      "Package": "Hmisc",
-      "Version": "5.1-3",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "Formula",
-        "R",
-        "base64enc",
-        "cluster",
-        "colorspace",
-        "data.table",
-        "foreign",
-        "ggplot2",
-        "grid",
-        "gridExtra",
-        "gtable",
-        "htmlTable",
-        "htmltools",
-        "knitr",
-        "methods",
-        "nnet",
-        "rmarkdown",
-        "rpart",
-        "viridis"
-      ],
-      "Hash": "9a446aea30bff7e8ee20f4c0973e8851"
-    },
     "IRanges": {
       "Package": "IRanges",
       "Version": "2.38.1",
@@ -331,20 +241,6 @@
         "utils"
       ],
       "Hash": "066f3c5d6b022ed62c91ce49e4d8f619"
-    },
-    "KEGGREST": {
-      "Package": "KEGGREST",
-      "Version": "1.44.1",
-      "Source": "Bioconductor",
-      "Repository": "Bioconductor 3.19",
-      "Requirements": [
-        "Biostrings",
-        "R",
-        "httr",
-        "methods",
-        "png"
-      ],
-      "Hash": "017f19c09477c0473073518db9076ac1"
     },
     "MALDIquant": {
       "Package": "MALDIquant",
@@ -375,14 +271,9 @@
     },
     "MSnbase": {
       "Package": "MSnbase",
-      "Version": "2.31.0",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "MSnbase",
-      "RemoteUsername": "lgatto",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "3c7a4abe9cc71ba2c50613d5f462db2214c3a779",
+      "Version": "2.30.1",
+      "Source": "Bioconductor",
+      "Repository": "Bioconductor 3.19",
       "Requirements": [
         "Biobase",
         "BiocGenerics",
@@ -411,7 +302,7 @@
         "stats4",
         "vsn"
       ],
-      "Hash": "dde1fabed66cde495bab5f2003ec7dbd"
+      "Hash": "f8f6d0dd7f50b84f515725e30c76ba24"
     },
     "MassSpecWavelet": {
       "Package": "MassSpecWavelet",
@@ -630,25 +521,6 @@
       ],
       "Hash": "23f94b9f026a5baa667046bfbd17bc6e"
     },
-    "RSQLite": {
-      "Package": "RSQLite",
-      "Version": "2.3.7",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "DBI",
-        "R",
-        "bit64",
-        "blob",
-        "cpp11",
-        "memoise",
-        "methods",
-        "pkgconfig",
-        "plogr",
-        "rlang"
-      ],
-      "Hash": "46b45a4dd7bb0e0f4e3fc22245817240"
-    },
     "Rcpp": {
       "Package": "Rcpp",
       "Version": "1.0.13",
@@ -791,33 +663,6 @@
       ],
       "Hash": "83d45b690bffd09d1980c224ef329f5b"
     },
-    "WGCNA": {
-      "Package": "WGCNA",
-      "Version": "1.72-5",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "AnnotationDbi",
-        "GO.db",
-        "Hmisc",
-        "R",
-        "Rcpp",
-        "doParallel",
-        "dynamicTreeCut",
-        "fastcluster",
-        "foreach",
-        "grDevices",
-        "impute",
-        "matrixStats",
-        "parallel",
-        "preprocessCore",
-        "splines",
-        "stats",
-        "survival",
-        "utils"
-      ],
-      "Hash": "d3ed61fd3a3dc4f9b4b837c86edb4af2"
-    },
     "XML": {
       "Package": "XML",
       "Version": "3.99-0.17",
@@ -902,16 +747,6 @@
       ],
       "Hash": "cad6cf7f1d5f6e906700b9d3e718c796"
     },
-    "backports": {
-      "Package": "backports",
-      "Version": "1.5.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "e1e1b9d75c37401117b636b7ae50827a"
-    },
     "base64enc": {
       "Package": "base64enc",
       "Version": "0.1-3",
@@ -945,18 +780,6 @@
         "utils"
       ],
       "Hash": "9fe98599ca456d6552421db0d6772d8f"
-    },
-    "blob": {
-      "Package": "blob",
-      "Version": "1.2.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "methods",
-        "rlang",
-        "vctrs"
-      ],
-      "Hash": "40415719b5a479b87949f3aa0aee737c"
     },
     "brio": {
       "Package": "brio",
@@ -1013,18 +836,6 @@
         "utils"
       ],
       "Hash": "d7e13f49c19103ece9e58ad2d83a7354"
-    },
-    "checkmate": {
-      "Package": "checkmate",
-      "Version": "2.3.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "backports",
-        "utils"
-      ],
-      "Hash": "c01cab1cb0f9125211a6fc99d540e315"
     },
     "cli": {
       "Package": "cli",
@@ -1256,17 +1067,6 @@
       ],
       "Hash": "fedd9d00c2944ff00a0e2696ccf048ec"
     },
-    "dynamicTreeCut": {
-      "Package": "dynamicTreeCut",
-      "Version": "1.63-1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "stats"
-      ],
-      "Hash": "11d27b7a5f49a221224f56134f06b1f9"
-    },
     "evaluate": {
       "Package": "evaluate",
       "Version": "0.24.0",
@@ -1308,16 +1108,6 @@
       "Repository": "CRAN",
       "Hash": "680887028577f3fa2a81e410ed0d6e42"
     },
-    "fastcluster": {
-      "Package": "fastcluster",
-      "Version": "1.2.6",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "2ed9ecb93023f39a449726ed4d43dff8"
-    },
     "fastmap": {
       "Package": "fastmap",
       "Version": "1.2.0",
@@ -1349,19 +1139,6 @@
         "utils"
       ],
       "Hash": "618609b42c9406731ead03adf5379850"
-    },
-    "foreign": {
-      "Package": "foreign",
-      "Version": "0.8-87",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "methods",
-        "stats",
-        "utils"
-      ],
-      "Hash": "81fc09bdeab0077a73927ed1243404b6"
     },
     "formatR": {
       "Package": "formatR",
@@ -1568,24 +1345,6 @@
         "vctrs"
       ],
       "Hash": "b59377caa7ed00fa41808342002138f9"
-    },
-    "htmlTable": {
-      "Package": "htmlTable",
-      "Version": "2.4.3",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "checkmate",
-        "htmltools",
-        "htmlwidgets",
-        "knitr",
-        "magrittr",
-        "methods",
-        "rstudioapi",
-        "stringr"
-      ],
-      "Hash": "ca027d8771f2c039aed82f00a81e725b"
     },
     "htmltools": {
       "Package": "htmltools",
@@ -1887,28 +1646,6 @@
       ],
       "Hash": "7ce2733a9826b3aeb1775d56fd305472"
     },
-    "massageR": {
-      "Package": "massageR",
-      "Version": "0.7.2",
-      "Source": "GitLab",
-      "RemoteType": "gitlab",
-      "RemoteHost": "gitlab.com",
-      "RemoteRepo": "massageR",
-      "RemoteUsername": "R_packages",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "8a0c62b8f848fbcca65404d5315ca8cf5e9db72d",
-      "Requirements": [
-        "R",
-        "dplyr",
-        "igraph",
-        "plyr",
-        "purrr",
-        "purrrlyr",
-        "reshape2",
-        "rlang"
-      ],
-      "Hash": "d19c017f37ce55f26f3bd620953ee666"
-    },
     "matrixStats": {
       "Package": "matrixStats",
       "Version": "1.3.0",
@@ -2024,18 +1761,6 @@
       ],
       "Hash": "2769a88be217841b1f33ed469675c3cc"
     },
-    "nnet": {
-      "Package": "nnet",
-      "Version": "7.3-19",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "stats",
-        "utils"
-      ],
-      "Hash": "2c797b46eea7fb58ede195bc0b1f1138"
-    },
     "openssl": {
       "Package": "openssl",
       "Version": "2.2.0",
@@ -2129,13 +1854,6 @@
       ],
       "Hash": "0d3d789055c873f48521ce7e23c23f48"
     },
-    "plogr": {
-      "Package": "plogr",
-      "Version": "0.2.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "09eb987710984fc2905c7129c7d85e65"
-    },
     "plotly": {
       "Package": "plotly",
       "Version": "4.10.4",
@@ -2178,16 +1896,6 @@
         "Rcpp"
       ],
       "Hash": "6b8177fd19982f0020743fadbfdbd933"
-    },
-    "png": {
-      "Package": "png",
-      "Version": "0.1-8",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "bd54ba8a0a5faded999a7aab6e46b374"
     },
     "pool": {
       "Package": "pool",
@@ -2355,20 +2063,6 @@
       ],
       "Hash": "9de96463d2117f6ac49980577939dfb3"
     },
-    "remotes": {
-      "Package": "remotes",
-      "Version": "2.5.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "methods",
-        "stats",
-        "tools",
-        "utils"
-      ],
-      "Hash": "3ee025083e66f18db6cf27b56e23e141"
-    },
     "renv": {
       "Package": "renv",
       "Version": "1.0.7",
@@ -2439,26 +2133,6 @@
         "yaml"
       ],
       "Hash": "27f9502e1cdbfa195f94e03b0f517484"
-    },
-    "rpart": {
-      "Package": "rpart",
-      "Version": "4.1.23",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "grDevices",
-        "graphics",
-        "stats"
-      ],
-      "Hash": "b3d390424f41d04174cccf84d49676c2"
-    },
-    "rstudioapi": {
-      "Package": "rstudioapi",
-      "Version": "0.16.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "96710351d642b70e8f02ddeb237c46a7"
     },
     "sass": {
       "Package": "sass",
@@ -2602,22 +2276,6 @@
         "vctrs"
       ],
       "Hash": "960e2ae9e09656611e0b8214ad543207"
-    },
-    "survival": {
-      "Package": "survival",
-      "Version": "3.7-0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "Matrix",
-        "R",
-        "graphics",
-        "methods",
-        "splines",
-        "stats",
-        "utils"
-      ],
-      "Hash": "5aaa9cbaf4aba20f8e06fdea1850a398"
     },
     "svglite": {
       "Package": "svglite",
@@ -2863,14 +2521,9 @@
     },
     "xcms": {
       "Package": "xcms",
-      "Version": "4.3.0",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "xcms",
-      "RemoteUsername": "sneumann",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "a075df8e56d703c48dc286149df81d5ef6cce8f6",
+      "Version": "4.2.2",
+      "Source": "Bioconductor",
+      "Repository": "Bioconductor 3.19",
       "Requirements": [
         "Biobase",
         "BiocGenerics",
@@ -2894,7 +2547,7 @@
         "mzR",
         "progress"
       ],
-      "Hash": "eb602af3577ced9e6aecd1b8181e0a1e"
+      "Hash": "e87b93b83aeabbd60aeeb22523500fea"
     },
     "xfun": {
       "Package": "xfun",

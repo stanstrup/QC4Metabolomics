@@ -23,7 +23,7 @@ function logifySlider (sliderId, sci = false) {
 tabPanel("Contaminations",
                             fluidPage(  tags$head(tags$script(HTML(JS.logify))),
                                         tags$head(tags$script(HTML('Shiny.addCustomMessageHandler("jsCode", function(message) { eval(message.value); });'))),
-                                        
+                                        tags$style(type='text/css', ".selectize-dropdown-content {max-height: 400px; }"),
                                         
                                         fluidRow(
                                                     column(2,

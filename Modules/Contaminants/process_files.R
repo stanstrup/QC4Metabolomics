@@ -230,9 +230,9 @@ for(ii in seq_along(file_tbl_std_l)){
     
     # Summarize
     EIC_summary <-  data_all %>% 
-                    select(file_md5, ion_id, EIC) %>% 
+                    select(file_md5, ion_id, mode, EIC) %>% 
                     unnest(cols = c(EIC)) %>% 
-                    group_by(file_md5, ion_id) %>% 
+                    group_by(file_md5, ion_id, mode) %>% 
                     summarise(EIC_median = median(intensity), 
                               EIC_mean   = mean(intensity), 
                               EIC_sd     = sd(intensity), 
@@ -240,7 +240,7 @@ for(ii in seq_along(file_tbl_std_l)){
                               .groups = "drop"
                               ) %>% 
                     ungroup %>% 
-                    gather(stat, value, -file_md5, -ion_id) %>% 
+                    gather(stat, value, -file_md5, -ion_id, -mode) %>% 
                     filter(value > 0)
     
     

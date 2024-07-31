@@ -14,12 +14,13 @@ CREATE TABLE cont_data (
 file_md5 CHAR(32) NOT NULL, 
 ion_id   int      NOT NULL,
 stat     ENUM('EIC_median', 'EIC_mean', 'EIC_sd', 'EIC_max') NOT NULL,
-value DOUBLE NULL,
+mode     ENUM('pos', 'neg') NOT NULL,
+value    DOUBLE NULL,
 
 FOREIGN KEY(file_md5) REFERENCES files(file_md5),
-FOREIGN KEY(ion_id)   REFERENCES cont_cmp(ion_id),
+FOREIGN KEY(ion_id, mode)     REFERENCES cont_cmp(ion_id, mode),
 
-PRIMARY KEY(file_md5, ion_id, stat)
+PRIMARY KEY(file_md5, ion_id, mode, stat)
 );
 
 CREATE INDEX `idx_cont_data_value`  ON `cont_data` (value) COMMENT '' ALGORITHM DEFAULT LOCK DEFAULT;

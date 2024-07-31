@@ -4,9 +4,9 @@ output$int_cutoff_ui <- renderUI({
                      
         out <- sliderInput(ns("int_cutoff"), 
                     "Minimum intensity in any sample", 
-                    min = max(1,ceiling(log10(int_range[1,"min"]))), 
-                    max = max(3,floor(log10(int_range[1,"max"]))), 
-                    value = 6, 
+                    min   = max(1,ceiling(log10(int_range[1,"min"]))), 
+                    max   = max(3,floor(log10(int_range[1,"max"]))), 
+                    value = max(3,floor(log10(int_range[1,"max"]))), 
                     step = 1)
         
         
@@ -53,7 +53,7 @@ heatmap_data_selected <-  reactive({
                                 md5_str <- files_tbl_selected() %>% extract2("file_md5") %>% paste(collapse="','") %>% paste0("('",.,"')")
 
                                 ion_id_str <-   paste0("
-                                                        SELECT DISTINCT(ion_id)
+                                                        SELECT DISTINCT ion_id, mode
                                                         FROM cont_data
                                                         WHERE (cont_data.stat = '",metric,"') AND (value > ",cut_off,")
                                                        ") %>% 
@@ -62,9 +62,9 @@ heatmap_data_selected <-  reactive({
                                                 paste(collapse="','") %>% paste0("('",.,"')")
 
                                 out <- paste0("
-                                             SELECT cont_data.*, cont_cmp.name, cont_cmp.mode, cont_cmp.anno, cont_cmp.notes, file_info.sample_id, file_info.time_run, files.path
+                                             SELECT cont_data.*, cont_cmp.name, cont_cmp.anno, cont_cmp.notes, file_info.sample_id, file_info.time_run, files.path
                                              FROM cont_data
-                                             LEFT JOIN cont_cmp USING(ion_id)
+                                             LEFT JOIN cont_cmp USING(ion_id, mode)
                                              LEFT JOIN file_info USING(file_md5)
                                              LEFT JOIN files USING(file_md5)
                                              WHERE (cont_data.stat = '",metric,"') AND (
@@ -87,11 +87,6 @@ heatmap_data_selected <-  reactive({
 
      data <- heatmap_data_selected()
      
-     #saveRDS(data,"data.rds")
-     
-     data <- data %>% mutate(ion_id = if_else(mode == "neg",-ion_id,ion_id)) #this seem to have been expected before
-     
-      
      validate(
               need(length(unique(data$ion_id))>1, "Less than two ions fit the criteria. Not showing anything since clustering would fail.")
              )
@@ -101,22 +96,22 @@ heatmap_data_selected <-  reactive({
           
     # Matrix shapes etc
     data_wide <- data %>% 
-                    select(file_md5, value, ion_id) %>% 
+                    select(file_md5, value, ion_id, mode) %>% 
                     spread(file_md5, value)
     
-    data_wide_mat <- data_wide %>% select(-ion_id) %>% as.matrix %>% unname(force=TRUE)
+    data_wide_mat <- data_wide %>% select(-ion_id, -mode) %>% as.matrix %>% unname(force=TRUE)
     data_wide_mat_NA <- data_wide_mat
     data_wide_mat[is.na(data_wide_mat)] <- 0
     
  
     # get cluster order
-    pos_idx <- which(data_wide$ion_id>0)
-    neg_idx <- which(data_wide$ion_id<0)
+    pos_idx <- which(data_wide$mode == "pos")
+    neg_idx <- which(data_wide$mode == "neg")
     
-    c_ord <- data_wide %>% select(ion_id) %>% mutate(c_ord = NA)
+    c_ord <- data_wide %>% select(ion_id, mode) %>% mutate(c_ord = NA)
     
     if(length(pos_idx)>0){ 
-    c_ord_pos <- hclustfun(distfun(data_wide_mat[pos_idx,])) %>% extract2("order") %>% order
+    c_ord_pos <- hclustfun(distfun(t(scale(t(data_wide_mat[pos_idx,]))))) %>% extract2("order") %>% order
         c_ord$c_ord[pos_idx] <- c_ord_pos
     }
     
@@ -126,7 +121,7 @@ heatmap_data_selected <-  reactive({
     }
     
     
-    data %<>% left_join(c_ord, by="ion_id")
+    data %<>% left_join(c_ord, by=c("ion_id", "mode"))
     
     
     
@@ -141,16 +136,18 @@ heatmap_data_selected <-  reactive({
     fill_data_pos <- data %>%     
                      filter(mode=="pos") %>% 
                      with( expand.grid(file_md5 = unique(file_md5), ion_id = unique(ion_id), stringsAsFactors = FALSE)) %>% 
-                     as_tibble
+                     as_tibble %>% 
+                     mutate(mode = "pos")
     
     fill_data_neg <- data %>%     
                      filter(mode=="neg") %>% 
                      with( expand.grid(file_md5 = unique(file_md5), ion_id = unique(ion_id), stringsAsFactors = FALSE)) %>% 
-                     as_tibble
+                     as_tibble %>% 
+                     mutate(mode = "neg")
     
     
     fill_data <- bind_rows(fill_data_pos, fill_data_neg) %>% 
-                 left_join(., data %>% distinct(ion_id, mode, c_ord, name), by="ion_id") %>% 
+                 left_join(., data %>% distinct(ion_id, mode, c_ord, name), by=c("ion_id", "mode")) %>% 
                  left_join(., data %>% distinct(file_md5, time_run), by="file_md5") %>% 
                  left_join(., data, by=c("file_md5", "ion_id", "mode", "c_ord", "time_run", "name")) %>% 
                  mutate(x_text = paste0(name, " (",ion_id,")"))
@@ -187,6 +184,6 @@ heatmap_data_selected <-  reactive({
 
     
       p
-  })
-
+  },height = exprToFunction(17*nrow(distinct(heatmap_data_selected(), ion_id, stat))+300), res = 100
+  )
 

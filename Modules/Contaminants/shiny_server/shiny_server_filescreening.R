@@ -29,9 +29,9 @@ file_screening_selected <-  reactive({
                                 
 
                                 out <- paste0("
-                                             SELECT cont_data.*, cont_cmp.name, cont_cmp.mode, cont_cmp.mz, cont_cmp.anno, cont_cmp.notes, file_info.sample_id, file_info.time_run
+                                             SELECT cont_data.*, cont_cmp.name,cont_cmp.mz, cont_cmp.anno, cont_cmp.notes, file_info.sample_id, file_info.time_run
                                              FROM cont_data
-                                             LEFT JOIN cont_cmp USING(ion_id)
+                                             LEFT JOIN cont_cmp USING(ion_id, mode)
                                              LEFT JOIN file_info USING(file_md5)
                                              WHERE (cont_data.stat = '",metric,"') AND (
                                              file_md5 = '", input$file_select,"')"
@@ -52,7 +52,8 @@ file_screening_selected <-  reactive({
 # PLOT: File screening ------------------------------------------------------
 output$file_screen_plot <- renderPlotly({
     
-
+req(input$file_select)
+  
     title <-    files_tbl_selected() %>%
                 filter(file_md5 == input$file_select) %>%
                 distinct %>%

@@ -9,7 +9,7 @@ plotmargin_fix <- function(p){
                                         }
 
 
-distfun  <-     function(x) as.dist(1-cor(t(x)))
+distfun  <-     function(x) dist(x, method="euclidean")
 hclustfun <-    function(x) hclust(x, method="ward.D2")
     
 

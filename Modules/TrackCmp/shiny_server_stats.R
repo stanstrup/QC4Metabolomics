@@ -35,6 +35,10 @@ files_date_range <-    reactive({   default_time_range(min_weeks=2, min_samples 
 
 # build the ui
 output$file_date_range_ui <- renderUI({
+  
+  validate(
+    need(files_date_range(), "no files found so no time-range could be selected")
+    )
     
                                         ns <- session$ns
                                         

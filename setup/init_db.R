@@ -20,7 +20,7 @@ ini <- MetabolomiQCsR.env$general$settings_file %>% read.ini
 module_table  <- ini %>% 
                  list.match("module_.*") %>% 
                  list.stack(fill = TRUE, idcol="module") %>% 
-                 as.tbl %>% 
+                 as_tibble %>% 
                  transmute(enabled = as.logical(enabled), 
                            init_db_priority = as.integer(init_db_priority), 
                            module = module %>% gsub("module_", "", .) %>% as.character
@@ -30,7 +30,7 @@ module_table  <- ini %>%
 
 # Add create/drop/create factor
 module_table %<>% cbind(tibble(sql_fun = list(factor(c("drop","create","check"),c("drop","create","check"))))) %>% 
-                  as.tbl %>% 
+                  as_tibble %>% 
                   unnest(sql_fun)
 
 

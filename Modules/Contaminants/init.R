@@ -1,15 +1,13 @@
 source(".Rprofile", local = TRUE)
-print(.libPaths())
 
 # Libraries ---------------------------------------------------------------
 library(DBI)
 library(magrittr)
 library(dplyr)
 library(pool)
-
-setwd("../")
 library(MetabolomiQCsR)
-setwd("Contaminants")
+
+setwd("Modules/Contaminants")
 
 source("get_settings.R", local = TRUE)
 
@@ -25,17 +23,17 @@ pool <- dbPool_MetabolomiQCs(30)
 conts <- get_cont_list(c("positive","negative"))
 
 conts[[1]] %<>% mutate(mode = "pos")
-conts[[2]] %<>% mutate(mode = "neg") %>% mutate( `Ion ID` =  -`Ion ID`)
+conts[[2]] %<>% mutate(mode = "neg")
 
 conts <- bind_rows(conts[[1]], conts[[2]])
 
-conts %>%   mutate(anno = paste0(`Formula for M or subunit or sequence`," (",`Ion type`,")")) %>% 
-            select(name = `Compound ID or species`, 
-                 ion_id = `Ion ID`, 
+conts %>%   mutate(anno = paste0(molecular_formula," (",ion_type ,")")) %>% 
+            select(name = compound_ID, 
+                 ion_id = ion_ID, 
                  mode = mode, 
-                 mz = `Monoisotopic ion mass (singly charged)`, 
+                 mz = mz, 
                  anno = anno,
-                 notes = `Possible origin and other comments`
+                 notes = origin
                  ) %>% 
             mutate_all(~gsub(";","\\\\;",.)) %>%
             sqlAppendTable(pool,"cont_cmp",.) ->

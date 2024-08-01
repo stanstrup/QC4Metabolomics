@@ -140,9 +140,25 @@ module_table %>% filter(sql_fun == "create") %>%
                  message
 
 
-
-
 # Close connection
 poolReturn(con)
 poolClose(initpool)
 rm(initpool, con)
+
+# Find and run init scripts -----------------------------------------------
+
+
+initR_scripts <- module_table %>% rowwise %>% 
+                  mutate(Rinit_path = paste0("Modules/",module,"/init.R")) %>% 
+                  ungroup %>% 
+                  mutate(file_exists = file.exists(Rinit_path)) %>% 
+                  filter(file_exists) %>% 
+                  distinct(module, Rinit_path)
+
+wd <- getwd()
+
+walk(initR_scripts$Rinit_path, source)
+
+setwd(wd)
+
+

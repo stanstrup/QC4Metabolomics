@@ -1,0 +1,8 @@
+/data/Mcourse_20230509_Sold_031_pos_5A-0424.mzML
+/data/Mcourse_20230509_Sold_032_pos_2A-0002.mzML
+/data/Mcourse_20230509_Sold_033_pos_4C-0002.mzML
+/data/Mcourse_20230509_Sold_034_pos_7A-0000.mzML
+/data/Mcourse_20230509_Sold_125_neg_7A-0204.mzML
+/data/Mcourse_20230509_Sold_126_neg_2A-0424.mzML
+/data/Mcourse_20230509_Sold_127_neg_2A-0024.mzML
+/data/Mcourse_20230509_Sold_128_neg_6A-0002.mzML

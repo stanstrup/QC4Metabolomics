@@ -2,12 +2,38 @@
 QC systems for metabolomics studies
 
 
+## Demo
 
-## Installation
+### Prerequisites
 
-WIP. You won't get very far at the moment...
+* [Docker](https://www.docker.com/)
+* [Docker compose](https://docs.docker.com/compose/install/)
+* [Git](https://git-scm.com/downloads) and [git-lfs](https://github.com/git-lfs/git-lfs?utm_source=gitlfs_site&utm_medium=installation_link&utm_campaign=gitlfs#installing)
+* Everything else will be downloaded automatically when you build the docker image
 
-* Run QC system on another computer
+
+### Running the demo
+
+```bash
+cd /opt
+sudo git lfs clone https://github.com/stanstrup/QC4Metabolomics.git
+cd QC4Metabolomics
+sudo chmod +x ./setup/*.sh
+```
+
+```bash
+docker-compose --file docker-compose_demo.yml up --build
+```
+If you The app 
+wait 5 min for the db to initialize
+
+
+
+
+
+## Running your own system
+
+Coming soon!
 
 
 
@@ -63,4 +89,96 @@ What the scripts are meant to do:
   
 
 
+
+## Troubleshooting
+Get into the container. Can you ref container by name=???
+
+```bash
+docker exec -it b099a8f5f3c5  bash
+```
+
+
+## RedHat
+### Install Docker on RedHat
+https://www.cyberciti.biz/faq/install-use-setup-docker-on-rhel7-centos7-linux/
+
+```bash
+sudo yum remove docker docker-common docker-selinux docker-engine-selinux && docker-engine docker-ce
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo yum install docker-ce
+sudo systemctl enable docker.service
+sudo systemctl start docker.service
+```
+
+
+### Install Docker compose
+
+```bash
+sudo yum install epel-release
+sudo yum install -y python-pip
+sudo pip install docker-compose
+```
+
+### git-lfs
+```bash
+sudo yum install docker git git-lfs
+```
+
+## Other issues
+### Getting through firewall on linux
+This might be needed
+```bash
+systemctl enable firewalld
+systemctl start firewalld
+
+sudo firewall-cmd --add-port=80/tcp --permanent
+sudo firewall-cmd --reload
+sudo systemctl restart docker.service
+```
+
+
+
+### Upgrade mariaDB
+If you upgrade to a new version with an updated mariaDB version you might need to manuall update the database.
+
+Check the name of the mariaDB container
+
+```bash
+docker ps
+```
+
+Use the name to login to the machine:
+
+```bash
+docker exec -it qc4metabolomics-mariadb-1 bash
+```
+
+OR
+
+```bash
+winpty docker exec -it qc4metabolomics-mariadb-1 bash
+```
+
+Then upgrade the DB:
+
+```bash
+mysql_upgrade -p
+```
+
+Restart the container.
+
+
+
+
+
+
+
+docker exec -it qc4metabolomics-qc_process-1 bash
+
+
+* qc4metabolomics-qc_shiny-1
+* qc4metabolomics-qc_process-1
+* qc4metabolomics-mariadb-1
+* qc4metabolomics-ms_converter-1
 

@@ -226,7 +226,7 @@ for(ii in seq_along(file_tbl_l)){
     
     
     
-    file_stds_tbl <- file_stds_tbl %>% mutate(out = future_map2(path, stds, function(a,b) {
+    file_stds_tbl <- file_stds_tbl %>% mutate(out = map2(path, stds, function(a,b) {
       
       print(a)
                                     																				raw <- a %>% 

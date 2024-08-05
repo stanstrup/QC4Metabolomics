@@ -9,9 +9,6 @@ library(MetabolomiQCsR)
 
 setwd("Modules/Contaminants")
 
-source("get_settings.R", local = TRUE)
-
-
 
 # DB connect --------------------------------------------------------------
 pool <- dbPool_MetabolomiQCs(30)

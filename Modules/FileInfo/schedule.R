@@ -1,6 +1,5 @@
 # Libraries ---------------------------------------------------------------
 library(stringr)
-library(ini)
 library(dplyr)
 library(magrittr)
 library(DBI)
@@ -9,7 +8,6 @@ library(pool) # devtools::install_github("rstudio/pool")
 library(tools)
  
 library(MetabolomiQCsR)
-setwd("Modules/File_info")
+setwd("Modules/FileInfo")
 
-source("get_settings.R", local = TRUE)
 source("parse_files.R", local = TRUE)

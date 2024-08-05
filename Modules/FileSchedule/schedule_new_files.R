@@ -1,7 +1,7 @@
 # Establish connection to get new files -----------------------------------------------
 pool <- dbPool_MetabolomiQCs(30)
 
-log_source = "File_schedule"
+log_source = "FileSchedule"
 
 
 # Get new files -----------------------------------------------------------
@@ -22,8 +22,18 @@ if(nrow(new_files)==0){
 }
 
 
+enabled_modules <- get_QC4Metabolomics_settings() %>% 
+                    filter(grepl("^QC4METABOLOMICS_.*_enabled$|QC4METABOLOMICS_.*_file_schedule$",name)) %>%
+                    mutate(value = as.logical(value)) %>%
+                    mutate(module = gsub("^QC4METABOLOMICS_module_(.*?)_.*$","\\1",name)) %>%
+                    mutate(parameter = gsub("^QC4METABOLOMICS_module_.*?_(.*)$","\\1",name)) %>% 
+                    pivot_wider(id_cols = module, names_from = "parameter", values_from = "value") %>% 
+                    filter(file_schedule == TRUE & enabled == TRUE) %>% 
+                    pull(module)
+
+
  new_files %<>% 
-                  cbind(tibble(module = list(MetabolomiQCsR.env$module_File_schedule$enabled_modules))) %>% 
+                  cbind(tibble(module = list(enabled_modules))) %>% 
                   unnest(module) %>% 
                   as_tibble %>% 
                   mutate(priority = 1L)

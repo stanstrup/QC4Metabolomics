@@ -1,16 +1,31 @@
-check_if_ms1 <- function(path){
-  
-  #print(path)
-  
-  raw <- readMSData(paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",path), mode = "onDisk", msLevel. = 1:2)
-  
-  if(  nrow(fData(raw))>0  &&   nrow(filter(fData(raw), msLevel==1))>10  && !all(sapply(mz(raw), length)==0)   ){ # at least 10 scans to be meaningful
-    return(TRUE)
-  }else{
-    return(FALSE)
-  }
-  
+
+get_raw_long <- function(raw){
+  tibble(int     = as.list(intensity(raw)),
+         mz      = as.list(mz(raw)),
+         scan    = as.numeric(scanIndex(raw)),
+         scan_rt = rtime(raw)
+  ) %>% 
+    unnest(c(int, mz))
 }
+
+
+extract_intervals <- function(raw, lower, upper){
+  
+  raw_long <- get_raw_long(raw)
+  
+  raw_long_distinct <- distinct(raw_long, scan, scan_rt)
+  
+  # map through the contaminants/rows
+  EICs <- pmap(list(raw_long_distinct, lower, upper), ~get_1_EIC(raw_long, ..1, ..2, ..3))
+
+}
+
+
+
+
+
+
+
 
 
 # Establish connection to get new files -----------------------------------------------
@@ -48,7 +63,7 @@ file_tbl <-  paste0("
                     ON file_schedule.file_md5=files.file_md5
                     INNER JOIN file_info 
                     ON file_schedule.file_md5=file_info.file_md5
-                    WHERE (file_schedule.module = 'TrackCmp' AND file_schedule.priority > 0)
+                    WHERE (file_schedule.module = 'module_TrackCmp' AND file_schedule.priority > 0)
                     ORDER BY file_schedule.priority ASC, file_info.time_run DESC
                     "
                     ) %>% 
@@ -117,7 +132,7 @@ file_tbl_l <- file_tbl_l[1:pmin(10,length(file_tbl_l))] # to avoid doing to many
 
 
 for(ii in seq_along(file_tbl_l)){
-  print("Starting next batch of files")
+    print("Starting next batch of files")
     
     
     # Joined data appropiately ------------------------------------------------
@@ -151,6 +166,26 @@ for(ii in seq_along(file_tbl_l)){
     
     # remove from current queue
     file_stds_tbl %<>% filter(!to_ignore)
+    
+    
+    
+    
+    
+    
+    
+    check_if_ms1 <- function(path){
+      
+      #print(path)
+      
+      raw <- readMSData(paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",path), mode = "onDisk", msLevel. = 1:2)
+      
+      if(  nrow(fData(raw))>0  &&   nrow(filter(fData(raw), msLevel==1))>10 && !all(sapply(mz(raw), length)==0) ){ # at least 10 scans to be meaningful
+        return(TRUE)
+        }else{
+        return(FALSE)
+        }
+      
+    }
     
     
     # ignore files with no MS1
@@ -219,46 +254,59 @@ for(ii in seq_along(file_tbl_l)){
     # Find peaks --------------------------------------------------------------
     findPeaks_l <- lift_dl(findPeaks) # trick to make findPeaks accept a list of arguments.
     
-findPeaks_settings <- 
-  list(method      = Sys.getenv("QC4METABOLOMICS_module_TrackCmp_findPeaks_method") %>% as.character,
-  snthr            = Sys.getenv("QC4METABOLOMICS_module_TrackCmp_findPeaks_snthr") %>% as.numeric,
-  ppm              = Sys.getenv("QC4METABOLOMICS_module_TrackCmp_findPeaks_ppm") %>% as.numeric,
-  peakwidth        = Sys.getenv("QC4METABOLOMICS_module_TrackCmp_findPeaks_peakwidth") %>% str_split(",") %>% unlist %>% as.numeric,
-  scanrange        = if(Sys.getenv("QC4METABOLOMICS_module_TrackCmp_findPeaks_scanrange")=="NULL"){NULL}else{Sys.getenv("QC4METABOLOMICS_module_TrackCmp_findPeaks_scanrange") %>% str_split(",") %>% unlist %>% as.numeric},
-  prefilter        = Sys.getenv("QC4METABOLOMICS_module_TrackCmp_findPeaks_prefilter") %>% str_split(",") %>% unlist %>% as.numeric,
-  integrate        = Sys.getenv("QC4METABOLOMICS_module_TrackCmp_findPeaks_integrate") %>% as.integer,
-  verbose.columns  = Sys.getenv("QC4METABOLOMICS_module_TrackCmp_findPeaks_verbose_columns") %>% as.logical,
-  fitgauss         = Sys.getenv("QC4METABOLOMICS_module_TrackCmp_findPeaks_fitgauss") %>% as.logical
-)
-
     
     
-    file_stds_tbl <- file_stds_tbl %>% mutate(out = map2(path, stds, function(a,b) {
+    file_stds_tbl <- file_stds_tbl %>% mutate(out = future_map2(path, stds, function(a,b) {
       
-      print(a)
-                                    																				raw <- a %>% 
+
+                                                                            raw <- a %>% 
                                           																				  as.character %>% 
                                           																				  paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",.) %>% 
-                                          																				  normalizePath %>% 
-                                          																					xcmsRaw(profparam = list(step=as.numeric(Sys.getenv("QC4METABOLOMICS_module_TrackCmp_xcmsRaw_profparam"))))
+                                          																				  normalizePath %>%
+                                                                                    readMSData(mode = "onDisk", msLevel. = 1:2)
+      
+      
+                                    # 																				raw <- a %>% 
+                                    #       																				  as.character %>% 
+                                    #       																				  paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",.) %>% 
+                                    #       																				  normalizePath %>% 
+                                    #       																					xcmsRaw(profparam = MetabolomiQCsR.env$TrackCmp$xcmsRaw$profparam)
                                     																				
                                     																				ROI <- tbl2ROI(tbl    = b,
                                           																							   raw    = raw,
-                                          																							   ppm    = as.numeric(Sys.getenv("QC4METABOLOMICS_module_TrackCmp_ROI_ppm")),
-                                          																							   rt_tol = as.numeric(Sys.getenv("QC4METABOLOMICS_module_TrackCmp_std_match_rt_tol"))
+                                          																							   ppm    = MetabolomiQCsR.env$TrackCmp$ROI$ppm,
+                                          																							   rt_tol = MetabolomiQCsR.env$TrackCmp$std_match$rt_tol
                                           																							   )
+                                    																				
+                                    																				
+                                    																				settings <- CentWaveParam(
+                                    																				                snthresh= MetabolomiQCsR.env$TrackCmp$findPeaks$snthr,
+                                    																				                ppm= MetabolomiQCsR.env$TrackCmp$findPeaks$ppm,
+                                    																				                peakwidth= MetabolomiQCsR.env$TrackCmp$findPeaks$peakwidth,
+                                    																				                prefilter = MetabolomiQCsR.env$TrackCmp$findPeaks$prefilter,
+                                    																				                integrate = MetabolomiQCsR.env$TrackCmp$findPeaks$integrate,
+                                    																				                verboseColumns = MetabolomiQCsR.env$TrackCmp$findPeaks$verbose.columns,
+                                    																				                fitgauss  = MetabolomiQCsR.env$TrackCmp$findPeaks$fitgauss,
+                                    																				                roiList  = ROI, 
+                                    																				                mzdiff=0, 
+                                    																				                mzCenterFun = "apex"
+                                    																				              )
+                                    																				
 
-                                    																				peaks <- findPeaks_l(findPeaks_settings, object = raw, ROI.list = ROI, mzdiff=0, mzCenterFun = "apex")
-                                    																				  
-                                    																				peaks <- peaks %>% as.data.frame %>%
+                                    																				
+                                    																				peaks <- findChromPeaks(raw, settings) %>%
+                                    																						      as.data.frame %>%
                                     																				          as_tibble
-                # 
-                                    																				EIC <- get_EICs(raw, tibble(mz_lower = b$mz - as.numeric(Sys.getenv("QC4METABOLOMICS_module_TrackCmp_findPeaks_ppm")) * b$mz * 1E-6,
-                                    																												            mz_upper = b$mz + as.numeric(Sys.getenv("QC4METABOLOMICS_module_TrackCmp_findPeaks_ppm")) * b$mz * 1E-6
-                                    																												            )
-                                    																								        )
-                                    # 																				
-                                    # 																				# function to convert scan to rt
+                                    																				
+                                    																				
+                                    																				 
+                                                                            EIC <- extract_intervals(raw, 
+                                                                                              lower = b$mz - MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * b$mz * 1E-6,
+                                                                                              upper = b$mz + MetabolomiQCsR.env$TrackCmp$findPeaks$ppm * b$mz * 1E-6
+                                                                                              )
+                                    																				
+                                    																				
+                                     																				# function to convert scan to rt
                                     																				scan2rt_fun <- approxfun(seq_along(raw@scantime),raw@scantime)
                 
                                     																				tibble(ROI = list(ROI), peaks = list(peaks), EIC = list(EIC), scan2rt_fun = list(scan2rt_fun)) %>%
@@ -284,9 +332,10 @@ findPeaks_settings <-
     
     
     
+    
     file_stds_tbl %<>% mutate(peaks =     map2(stds, peaks, ~ closest_match(   .x, .y, 
-                                                                               as.numeric(Sys.getenv("QC4METABOLOMICS_module_TrackCmp_std_match_rt_tol")),
-                                                                               as.numeric(Sys.getenv("QC4METABOLOMICS_module_TrackCmp_std_match_ppm"))
+                                                                               MetabolomiQCsR.env$TrackCmp$std_match$rt_tol,
+                                                                               MetabolomiQCsR.env$TrackCmp$std_match$ppm
                                                                               ) %>% 
                                                                 tibble(row = .) %>% 
                                                                 bind_cols(.x) %>% 

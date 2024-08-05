@@ -1,9 +1,8 @@
 log_source <- "ICMeter"
 
 # Getting all data sequentially -------------------------------------------
-token <- ic_token(MetabolomiQCsR.env$ICMeter$user,MetabolomiQCsR.env$ICMeter$pass)
+token <- ic_token(Sys.getenv("QC4METABOLOMICS_module_ICMeter_user"),Sys.getenv("QC4METABOLOMICS_module_ICMeter_password"))
 boxes <- ic_boxes(token)
-
 
 
 offset <- days(0)

@@ -1,6 +1,5 @@
 # Libraries ---------------------------------------------------------------
 # library(stringr)
-library(ini)
 library(xcms)
 library(DBI)
 # library(RMySQL)
@@ -16,5 +15,4 @@ library(Spectra)
 library(MetabolomiQCsR)
 setwd("Modules/Contaminants")
 
-source("get_settings.R", local = TRUE)
 source("process_files.R", local = TRUE)

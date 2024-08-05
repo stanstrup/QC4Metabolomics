@@ -39,7 +39,7 @@ while( N_todo(pool) != 0 ){
     # 20 newest files
     file_tbl <- "SELECT * FROM files WHERE file_md5 NOT IN (SELECT file_md5 FROM file_info) AND file_md5 NOT IN (SELECT file_md5 FROM files_ignore)" %>% 
                 dbGetQuery(pool,.) %>% as_tibble %>% 
-                mutate(file_date = path %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.info %>% extract2("ctime")) %>% 
+                mutate(file_date = path %>% paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",.) %>% file.info %>% extract2("ctime")) %>% 
                 arrange(desc(file_date)) %>% 
                 select(-file_date) %>% 
                 slice(1:20)
@@ -56,17 +56,20 @@ while( N_todo(pool) != 0 ){
                 mutate(filename = sub("\\.[^.]*$", "", path)) %>% #remove extension
                 mutate(filename = basename(filename)) %>%
         
-                mutate(info = map(filename, ~ parse_filenames(.x, MetabolomiQCsR.env$module_File_info$mask))) %>%
+                mutate(info = map(filename, ~ parse_filenames(.x, as.character(Sys.getenv("QC4METABOLOMICS_module_FileInfo_mask"))))) %>%
                 select(-filename) %>% 
                 unnest(info)
+    
+    
+    
         
     
     
 
     # invalid info (NAs) -----------------------------------------------------
     # lets check if the coersion caused invalid names in required fields
-    if(MetabolomiQCsR.env$module_File_info$mode_from_other_field)  bad <- file_tbl %>% select(project, sample_id, instrument) %>% {rowSums(is.na(.)) > 0}
-    if(!MetabolomiQCsR.env$module_File_info$mode_from_other_field) bad <- file_tbl %>% select(project, mode, sample_id, instrument) %>% {rowSums(is.na(.)) > 0}
+    if(as.logical(Sys.getenv("QC4METABOLOMICS_module_FileInfo_mode_from_other_field")))  bad <- file_tbl %>% select(project, sample_id, instrument) %>% {rowSums(is.na(.)) > 0}
+    if(!as.logical(Sys.getenv("QC4METABOLOMICS_module_FileInfo_mode_from_other_field"))) bad <- file_tbl %>% select(project, mode, sample_id, instrument) %>% {rowSums(is.na(.)) > 0}
     
     file_tbl %<>% mutate(FLAG = ifelse(bad,TRUE,FALSE))
     
@@ -124,19 +127,19 @@ while( N_todo(pool) != 0 ){
     }
     
     
-                
+            
     # get mode from other field. Steno work-around
-    if(MetabolomiQCsR.env$module_File_info$mode_from_other_field){
+    if(as.logical(Sys.getenv("QC4METABOLOMICS_module_FileInfo_mode_from_other_field"))){
        
       file_tbl %<>% mutate(mode = ifelse(
-                                         grepl(MetabolomiQCsR.env$module_File_info$mode_from_other_field_pos_trigger, file_tbl %>% extract2(MetabolomiQCsR.env$module_File_info$mode_from_other_field_which) ),
+                                         grepl(as.character(Sys.getenv("QC4METABOLOMICS_module_FileInfo_mode_from_other_field_pos_trigger")), file_tbl %>% extract2(as.character(Sys.getenv("QC4METABOLOMICS_module_FileInfo_mode_from_other_field_which"))) ),
                                          "pos",
                                          "unknown"
                                         )
                           )
         
       file_tbl %<>% mutate(mode = ifelse(
-                                         grepl(MetabolomiQCsR.env$module_File_info$mode_from_other_field_neg_trigger, file_tbl %>% extract2(MetabolomiQCsR.env$module_File_info$mode_from_other_field_which) ),
+                                         grepl(as.character(Sys.getenv("QC4METABOLOMICS_module_FileInfo_mode_from_other_field_neg_trigger")), file_tbl %>% extract2(as.character(Sys.getenv("QC4METABOLOMICS_module_FileInfo_mode_from_other_field_which"))) ),
                                          "neg",
                                          mode
                                     )
@@ -213,7 +216,7 @@ while( N_todo(pool) != 0 ){
     # Get run time from the XML data ------------------------------------------
     file2time <- function(file, by_lines = 100L, max_rounds = 10L ) {
       
-      path <- paste0(MetabolomiQCsR.env$general$base,"/",file) %>% 
+      path <- paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",file) %>% 
                   normalizePath
       
       round <- 1L

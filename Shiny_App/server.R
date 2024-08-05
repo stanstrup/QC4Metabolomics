@@ -1,5 +1,17 @@
 shinyServer(function(input, output, session) {
 
+  
+  db_tables <- paste0("SELECT table_name
+        FROM information_schema.tables
+        WHERE table_type='BASE TABLE'
+        AND table_schema = '",Sys.getenv("MYSQL_DATABASE"),"'"
+       ) %>%  
+  dbGetQuery(pool,.) 
+  
+  validate(need(nrow(db_tables)>0, "No tables in the DB. Probably not done initializing."))
+
+  
+  
 	# Get available instrument
 	global_instruments_available <-    reactive({    "
 													 SELECT DISTINCT instrument

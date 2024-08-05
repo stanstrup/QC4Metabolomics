@@ -15,11 +15,11 @@ dbPool_MetabolomiQCs <- function(idleTimeout = 1){
   
   pool <- dbPool(
                   drv = MySQL(),
-                  dbname = MetabolomiQCsR.env$db$db,
-                  host = MetabolomiQCsR.env$db$host,
-                  username = MetabolomiQCsR.env$db$user,
-                  password = MetabolomiQCsR.env$db$password,
-                  port = MetabolomiQCsR.env$db$port,
+                  dbname = Sys.getenv("MYSQL_DATABASE"),
+                  host = Sys.getenv("MYSQL_HOST"),
+                  username = Sys.getenv("MYSQL_USER"),
+                  password = Sys.getenv("MYSQL_PASSWORD"),
+                  port = as.numeric(Sys.getenv("MYSQL_PORT")),
                   idleTimeout = idleTimeout*60*1000
                 )
   
@@ -116,7 +116,7 @@ rem_dead_files <- function(file_md5, path, pool = NULL, log_source){
     
     
     file_tbl <- tibble(file_md5 = file_md5, path = path) %>% 
-                mutate(file_exists = path %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.exists)
+                mutate(file_exists = path %>% as.character %>% paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",.) %>% file.exists)
     
         
     if(any(!file_tbl$file_exists)){

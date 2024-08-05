@@ -5,25 +5,26 @@ log_source = "Files"
 
 # Get extension pattern ---------------------------------------------------
 search_pat <- 
-                MetabolomiQCsR.env$module_Files$include_ext %>% 
+                as.character(Sys.getenv("QC4METABOLOMICS_module_Files_include_ext")) %>% 
                     strsplit(";",fixed=TRUE) %>% 
                     extract2(1) %>% 
                     paste("\\",.,"$", collapse="|", sep="")
     
     
 
+
 # Get all files -----------------------------------------------------------
-if(MetabolomiQCsR.env$module_Files$files_from_txt){
+if(as.logical(Sys.getenv("QC4METABOLOMICS_module_Files_files_from_txt"))){
     
-    if(!file.exists(MetabolomiQCsR.env$module_Files$files_txt_path)){quit(save="no")}
+    if(!file.exists(as.character(Sys.getenv("QC4METABOLOMICS_module_Files_files_txt_path")))){quit(save="no")}
     
-    files <- MetabolomiQCsR.env$module_Files$files_txt_path %>% 
+    files <- as.character(Sys.getenv("QC4METABOLOMICS_module_Files_files_txt_path")) %>% 
                 readLines() %>% 
                 grep(x=., pattern = search_pat, value = TRUE) %>% 
-                gsub(paste0("^",MetabolomiQCsR.env$general$base), "", .)
+                gsub(paste0("^",Sys.getenv("QC4METABOLOMICS_base")), "", .)
     
 }else{
-files <- list.files(path= MetabolomiQCsR.env$general$base,
+files <- list.files(path= Sys.getenv("QC4METABOLOMICS_base"),
                     pattern = search_pat,
                     recursive = TRUE,
                     full.names = FALSE) # important for portability
@@ -32,8 +33,9 @@ files <- list.files(path= MetabolomiQCsR.env$general$base,
 
 # Apply include and exclude filters ---------------------------------------
 # include
+as.character(Sys.getenv("QC4METABOLOMICS_module_Files_include_path"))
 include_path <- 
-                MetabolomiQCsR.env$module_Files$include_path %>% 
+                as.character(Sys.getenv("QC4METABOLOMICS_module_Files_include_path")) %>% 
                     strsplit(";",fixed=TRUE) %>% 
                     extract2(1) %>% 
                     paste(collapse="*", sep="") %>% 
@@ -44,9 +46,9 @@ files <- files[  grepl(files, pattern = include_path)   ]
 
 
 # exclude
-if( str_trim(MetabolomiQCsR.env$module_Files$exclude_path) != "" ){ # we don't need to do this with include_path since empty will match anything
+if( str_trim(as.character(Sys.getenv("QC4METABOLOMICS_module_Files_exclude_path"))) != "" ){ # we don't need to do this with include_path since empty will match anything
     exclude_path <- 
-                    MetabolomiQCsR.env$module_Files$exclude_path %>% 
+                    as.character(Sys.getenv("QC4METABOLOMICS_module_Files_exclude_path")) %>% 
                         strsplit(";",fixed=TRUE) %>% 
                         extract2(1) %>% 
                         paste(collapse="|", sep="")
@@ -100,13 +102,26 @@ files_already_in_db <- files %>%
                         gsub("'","''",.) %>% 
                         tibble(files = .) %>%
                         mutate(n = (1:nrow(.) %/% 1000)) %>% 
-                        nest(-n) %>% 
+                        nest(data = -n) %>% 
                         mutate(out = map(data, q_fun)) %>% 
-                        select(out) %>% unnest %>% pull(out)
+                        select(out) %>% unnest(cols = out) %>% pull(out)
 
 
 # Only paths not already in files
 files <- files[!(files %in% files_already_in_db)]
+
+
+
+if(length(files)==0 | all(is.na(files))){
+    write_to_log("No new files to add to queue", source = log_source, cat = "info", pool = pool)
+    
+    # close connections
+    poolClose(pool)
+    rm(pool, files_already_in_db)
+    
+    # If no files found quit the process. Else do rest of script
+    quit(save="no")
+}
 
 
 
@@ -127,9 +142,9 @@ ignored_files <- files %>%
                     gsub("'","''",.) %>% 
                     tibble(files = .) %>%
                     mutate(n = (1:nrow(.) %/% 1000)) %>% 
-                    nest(-n) %>% 
+                    nest(data = -n) %>% 
                     mutate(out = map(data, q_fun)) %>% 
-                    select(out) %>% unnest %>% pull(out)
+                    select(out) %>% unnest(out) %>% pull(out)
             
 
 
@@ -139,10 +154,8 @@ files <- files[!ignored_files]
 
 
 
-
-
 # Remove non-existing files -----------------------------------------------
-file_exists <- file.exists(paste0(MetabolomiQCsR.env$general$base,"/",files))
+file_exists <- file.exists(paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",files))
 
 files <- files[file_exists]
 
@@ -170,7 +183,7 @@ poolClose(pool)
 
 
 # Get creation time
-order <- files %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.info %>% extract2("ctime") %>% order(decreasing = TRUE)
+order <- files %>% as.character %>% paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",.) %>% file.info %>% extract2("ctime") %>% order(decreasing = TRUE)
 files <- files[order]
 
 
@@ -181,7 +194,7 @@ for(i in seq_along(files_l)){
     
     # Get md5 of all files
     files_tab <- tibble(path = files_l[[i]]) %>% 
-                 mutate(file_md5 = path %>% as.character %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% normalizePath %>% md5sum %>% as.vector )
+                 mutate(file_md5 = path %>% as.character %>% paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",.) %>% normalizePath %>% md5sum %>% as.vector )
     
     
     # Establish connection again
@@ -233,7 +246,7 @@ for(i in seq_along(files_l)){
     if(any(duplicated(files_tab$file_md5))){
      
         files_tab %<>% 
-        mutate(file_date = path %>% paste0(MetabolomiQCsR.env$general$base,"/",.) %>% file.info %>% extract2("ctime")) %>% 
+        mutate(file_date = path %>% paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",.) %>% file.info %>% extract2("ctime")) %>% 
         arrange(file_date) %>% 
         select(-file_date)
         

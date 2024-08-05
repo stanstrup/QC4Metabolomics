@@ -4,8 +4,6 @@ library(RMySQL)
 library(MetabolomiQCsR)
 library(pool) # devtools::install_github("rstudio/pool")
 library(magrittr)
-library(rlist)
-library(ini)
 library(dplyr)
 library(tidyr)
 library(purrr)
@@ -13,19 +11,17 @@ library(purrr)
 
 # Get settings ------------------------------------------------------------
 
-ini <- MetabolomiQCsR.env$general$settings_file %>% read.ini
-
-
 # List modules with database tables
-module_table  <- ini %>% 
-                 list.match("module_.*") %>% 
-                 list.stack(fill = TRUE, idcol="module") %>% 
-                 as_tibble %>% 
-                 transmute(enabled = as.logical(enabled), 
-                           init_db_priority = as.integer(init_db_priority), 
-                           module = module %>% gsub("module_", "", .) %>% as.character
-                           ) %>% 
-                 filter(enabled, !is.na(init_db_priority))
+module_table <- get_QC4Metabolomics_settings() %>% 
+                      filter(grepl("^QC4METABOLOMICS_module_.*?_init_db_priority$|^QC4METABOLOMICS_module_.*?_enabled$",name)) %>%
+                      mutate(module = gsub("^QC4METABOLOMICS_module_(.*?)_.*$","\\1",name)) %>%
+                      mutate(parameter = gsub("^QC4METABOLOMICS_module_.*?_(.*)$","\\1",name)) %>% 
+                      pivot_wider(id_cols = module, names_from = "parameter", values_from = "value") %>% 
+                      select(enabled, init_db_priority, module) %>% 
+                      mutate(enabled  = as.logical(enabled)) %>%
+                      mutate(init_db_priority = as.integer(init_db_priority )) %>%
+                      filter(enabled, !is.na(init_db_priority))
+
                 
 
 # Add create/drop/create factor
@@ -50,10 +46,6 @@ module_table %<>% rowwise %>%
                          ) %>% 
                   ungroup
 
-
-
-# cleanup
-rm(ini)
 
 
 

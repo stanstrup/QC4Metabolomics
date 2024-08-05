@@ -88,7 +88,7 @@ file_tbl <-  paste0("
                     ON file_schedule.file_md5=files.file_md5
                     INNER JOIN file_info 
                     ON file_schedule.file_md5=file_info.file_md5
-                    WHERE (file_schedule.module = 'module_Contaminants' AND file_schedule.priority > 0)
+                    WHERE (file_schedule.module = 'Contaminants' AND file_schedule.priority > 0)
                     ORDER BY file_schedule.priority ASC, file_info.time_run DESC
                     "
                     ) %>% 
@@ -108,7 +108,7 @@ file_tbl %<>% filter(dead_files)
 
 # Get contaminants table --------------------------------------------------
 data_cont <- dbReadTable(pool, "cont_cmp") %>% as_tibble %>% 
-             mutate(mz_lower = mz-((MetabolomiQCsR.env$Contaminants$EIC_ppm )/1E6)*mz, mz_upper = mz+((MetabolomiQCsR.env$Contaminants$EIC_ppm )/1E6)*mz)
+             mutate(mz_lower = mz-((as.numeric(Sys.getenv("QC4METABOLOMICS_module_Contaminants_EIC_ppm")) )/1E6)*mz, mz_upper = mz+((as.numeric(Sys.getenv("QC4METABOLOMICS_module_Contaminants_EIC_ppm")) )/1E6)*mz)
 
 
 
@@ -151,7 +151,7 @@ for(ii in seq_along(file_tbl_std_l)){
   
   
     file_tbl_std_l[[ii]] <- file_tbl_std_l[[ii]] %>%
-                              mutate(raw = map(path, ~Spectra(paste0(MetabolomiQCsR.env$general$base,"/",..1))))
+                              mutate(raw = map(path, ~Spectra(paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",..1))))
   
   
 
@@ -278,12 +278,12 @@ for(ii in seq_along(file_tbl_std_l)){
         sql_data_non_missing <- data_all %>% 
             filter(!(path %in% files_with_no_cont)) %>% 
             distinct(file_md5) %>% 
-            mutate(module = "module_Contaminants", priority = -1L)
+            mutate(module = "Contaminants", priority = -1L)
         
         sql_data_missing <- data_all %>%
             filter(path %in% files_with_no_cont) %>% 
             distinct(file_md5) %>% 
-            mutate(module = "module_Contaminants", priority = -1L)
+            mutate(module = "Contaminants", priority = -1L)
         
         
         if(res & length(files_with_no_cont)!=0) sql_data  <- bind_rows(sql_data_non_missing, sql_data_missing)

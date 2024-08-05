@@ -2,7 +2,9 @@
   "bioconductor.version": "3.19",
   "external.libraries": [],
   "ignored.packages": [
-    "MetabolomiQCsR"
+    "MetabolomiQCsR",
+    "roxygen2",
+    "brew"
   ],
   "package.dependency.fields": [
     "Imports",

@@ -45,3 +45,9 @@ int_range <- "SELECT MAX(cont_data.value) AS max,  MIN(cont_data.value) AS min
               WHERE cont_data.stat IN ('EIC_median', 'EIC_max', 'EIC_mean')
              " %>% 
              dbGetQuery(pool,.) 
+
+if(any(is.na(int_range))){
+ int_range[is.na(int_range)] <- 0
+}
+
+

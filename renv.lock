@@ -551,18 +551,18 @@
     },
     "ProtGenerics": {
       "Package": "ProtGenerics",
-      "Version": "1.37.0",
+      "Version": "1.37.1",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "ProtGenerics",
       "RemoteUsername": "rformassspectrometry",
       "RemoteRef": "HEAD",
-      "RemoteSha": "063f61bdaf11cc0b5e583f3c3d05eca29827bb90",
+      "RemoteSha": "2b4022c03c86e85bd9edf3a3a8dcdf03da853e3d",
       "Requirements": [
         "methods"
       ],
-      "Hash": "bbf0406098454f40242637e87df65100"
+      "Hash": "6f9e8339d51a503137ce64d52e4628c5"
     },
     "QFeatures": {
       "Package": "QFeatures",
@@ -612,6 +612,18 @@
         "R"
       ],
       "Hash": "45f0398006e83a5b10b72a90663d8d8c"
+    },
+    "RCurl": {
+      "Package": "RCurl",
+      "Version": "1.98-1.16",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "bitops",
+        "methods"
+      ],
+      "Hash": "ddbdf53d15b47be4407ede6914f56fbb"
     },
     "RMySQL": {
       "Package": "RMySQL",
@@ -721,14 +733,14 @@
     },
     "Spectra": {
       "Package": "Spectra",
-      "Version": "1.15.3",
+      "Version": "1.15.7",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "Spectra",
       "RemoteUsername": "rformassspectrometry",
       "RemoteRef": "HEAD",
-      "RemoteSha": "4a7522e713a7913d6981ce665ac7acf37a21fb71",
+      "RemoteSha": "69da6d6e80e9280ef92870a25b1bac32db639220",
       "Requirements": [
         "BiocGenerics",
         "BiocParallel",
@@ -746,7 +758,7 @@
         "tools",
         "utils"
       ],
-      "Hash": "6e5ef85413540187d2ce5ce165b9e620"
+      "Hash": "663301938321faa675cb2f50a8be233d"
     },
     "SummarizedExperiment": {
       "Package": "SummarizedExperiment",
@@ -940,6 +952,13 @@
         "utils"
       ],
       "Hash": "9fe98599ca456d6552421db0d6772d8f"
+    },
+    "bitops": {
+      "Package": "bitops",
+      "Version": "1.0-8",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "da69e6b6f8feebec0827205aad3fdbd8"
     },
     "blob": {
       "Package": "blob",
@@ -1697,13 +1716,6 @@
       ],
       "Hash": "937de352e1a3de642a40b0f98ccfc326"
     },
-    "ini": {
-      "Package": "ini",
-      "Version": "0.3.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "6154ec2223172bce8162d4153cda21f7"
-    },
     "isoband": {
       "Package": "isoband",
       "Version": "0.2.7",
@@ -2398,20 +2410,6 @@
       ],
       "Hash": "3eec01f8b1dee337674b2e34ab1f9bc1"
     },
-    "rlist": {
-      "Package": "rlist",
-      "Version": "0.4.6.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "XML",
-        "data.table",
-        "jsonlite",
-        "yaml"
-      ],
-      "Hash": "290c8ea0700d2e7258082d0025386e68"
-    },
     "rmarkdown": {
       "Package": "rmarkdown",
       "Version": "2.27",
@@ -2491,7 +2489,7 @@
     },
     "shiny": {
       "Package": "shiny",
-      "Version": "1.9.0",
+      "Version": "1.9.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -2520,7 +2518,7 @@
         "withr",
         "xtable"
       ],
-      "Hash": "01666113b04d504390d60736f39bd0d0"
+      "Hash": "6a293995a66e12c48d13aa1f957d09c7"
     },
     "shinyjs": {
       "Package": "shinyjs",

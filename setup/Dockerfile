@@ -89,7 +89,7 @@ RUN apt-get update && \
 #RUN R -e "BiocManager::install('remotes')"
 #RUN R -e "BiocManager::install('bnosac/cronR')"
 WORKDIR /srv/shiny-server/QC4Metabolomics/
-RUN R -e "library(cronR);cmd <- cron_rscript('/srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.sh', cmd = '/bin/bash', rscript_log = '/var/log/QC_cron.log');cron_add(cmd, frequency = '*/5 * * * *', id = 'QC_processing', description = 'Process files every 5 minute', ask = FALSE)"
+RUN R -e "library(cronR);cmd <- cron_rscript('/srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.sh', cmd = '/bin/bash', rscript_log = '/var/log/QC_cron.log');cron_add(cmd, frequency = '*/1 * * * *', id = 'QC_processing', description = 'Process files every 1 minute', ask = FALSE)"
 
 RUN mkdir /setup
 COPY ./setup/cron_with_env.sh /setup/cron_with_env.sh

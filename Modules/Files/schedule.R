@@ -1,6 +1,5 @@
 # Libraries ---------------------------------------------------------------
 library(stringr)
-library(ini)
 library(dplyr)
 library(magrittr)
 library(DBI)
@@ -13,5 +12,4 @@ library(tidyr)
 library(MetabolomiQCsR)
 setwd("Modules/Files")
 
-source("get_settings.R", local = TRUE)
 source("find_new_files.R", local = TRUE)

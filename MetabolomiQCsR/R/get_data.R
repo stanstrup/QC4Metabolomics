@@ -1,4 +1,80 @@
-globalVariables("MetabolomiQCsR.env")
+#' Get table with QC4metabolomics settings
+#'
+#' @param modules character strong. Get settings only for selected modules.
+#'
+#' @return tbl A \code{\link{tibble}} containing the columns: 
+#' \itemize{
+#'   \item \strong{name:} name of the setting
+#'   \item \strong{value:} value of the settin
+#'   \item \strong{module:} which module the setting belongs to.
+#' }
+#' 
+#' @export
+#'
+#' @importFrom tibble tibble
+#' @importFrom dplyr filter mutate if_else select %>%
+#'
+
+get_QC4Metabolomics_settings <- function(modules=NULL) {
+  
+  
+  module_tbl <- Sys.getenv() %>% 
+                    {tibble(name = names(.), value = .)  } %>% 
+                    filter(grepl("^QC4METABOLOMICS_.*$",name)) %>%
+                    mutate(module = gsub("^QC4METABOLOMICS_module_(.*?)_.*$","\\1",name)) %>%
+                    mutate(is_module = grepl("QC4METABOLOMICS_module",name)) %>% 
+                    mutate(module = if_else(is_module, module, NA)) %>% 
+                    select(name, value, module)
+  
+  if(!is.null(modules)){
+    module_tbl <-  module_tbl %>% filter(module %in% modules)
+  }
+  
+  return(module_tbl)
+  
+}
+
+
+
+#' Set QC4metabolomics settings form env file
+#'
+#' @param file character string with the filename of the env file
+#'
+
+#' 
+#' @export
+#'
+#' @importFrom purrr map
+#' @importFrom dplyr %>%
+#'
+
+set_QC4Metabolomics_settings_from_file <- function(file) {
+  
+  if (missing(file)) {
+    stop("Please provide a filename for the env_file")
+  }
+  
+  
+  env_file <- readLines(file)
+  
+  grep("QC4METABOLOMICS_", env_file, value = TRUE) %>% 
+    strsplit("=") %>% 
+    map(~setNames(..1[2], ..1[1])) %>%
+    unlist() %>% 
+    as.list() %>% 
+    do.call("Sys.setenv",.)
+  
+}
+
+
+
+
+
+
+
+
+
+
 
 
 #' Get list of known contaminants
@@ -25,13 +101,11 @@ globalVariables("MetabolomiQCsR.env")
 #' @export
 #'
 #' @importFrom tibble tibble
-#' @importFrom dplyr filter mutate as_tibble left_join %>%
+#' @importFrom dplyr filter mutate as_tibble left_join %>% pull
 #' @importFrom purrr map_chr map
 #' @importFrom readr read_tsv
 #' @importFrom magrittr extract2
 #' @importFrom httr GET content
-#' @importFrom utils globalVariables suppressForeignCheck
-#' @importFrom ini read.ini
 #' 
 
 get_cont_list <- function(polarity = c("positive", "negative", "unknown"), type = "URL") {
@@ -40,14 +114,13 @@ get_cont_list <- function(polarity = c("positive", "negative", "unknown"), type 
     . <- loc <- NULL
 
     # get settings
-    ini <- read.ini(MetabolomiQCsR.env$general$settings_file)
-    
     loc <- list()
-    loc$positive      <- ini$module_Contaminants$cont_list_loc_positive  %>% as.character
-    loc$unknown       <- ini$module_Contaminants$cont_list_loc_unknown   %>% as.character
-    loc$negative      <- ini$module_Contaminants$cont_list_loc_negative  %>% as.character
+    loc$positive      <- get_QC4Metabolomics_settings() %>% filter(module=="Contaminants") %>% filter(grepl("cont_list_loc_positive",name)) %>% pull(value)
+    loc$unknown       <- get_QC4Metabolomics_settings() %>% filter(module=="Contaminants") %>% filter(grepl("cont_list_loc_unknown",name)) %>% pull(value)
+    loc$negative      <- get_QC4Metabolomics_settings() %>% filter(module=="Contaminants") %>% filter(grepl("cont_list_loc_negative",name)) %>% pull(value)
     
     
+
     polarity_un <- unique(polarity)
     
     if(type=="URL"){
@@ -65,3 +138,4 @@ get_cont_list <- function(polarity = c("positive", "negative", "unknown"), type 
     
     return(out)
 }
+

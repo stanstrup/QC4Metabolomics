@@ -17,10 +17,13 @@
 
 get_QC4Metabolomics_settings <- function(modules=NULL) {
   
+
+  
+  
   
   module_tbl <- Sys.getenv() %>% 
                     {tibble(name = names(.), value = .)  } %>% 
-                    filter(grepl("^QC4METABOLOMICS_.*$",name)) %>%
+                    filter(grepl("^QC4METABOLOMICS_.*$",name) | grepl("MYSQL_DATABASE|MYSQL_HOST|MYSQL_USER|MYSQL_PASSWORD|MYSQL_PORT",name)) %>%
                     mutate(module = gsub("^QC4METABOLOMICS_module_(.*?)_.*$","\\1",name)) %>%
                     mutate(is_module = grepl("QC4METABOLOMICS_module",name)) %>% 
                     mutate(module = if_else(is_module, module, NA)) %>% 
@@ -57,7 +60,7 @@ set_QC4Metabolomics_settings_from_file <- function(file) {
   
   env_file <- readLines(file)
   
-  grep("QC4METABOLOMICS_", env_file, value = TRUE) %>% 
+  grep("QC4METABOLOMICS_|MYSQL_DATABASE|MYSQL_HOST|MYSQL_USER|MYSQL_PASSWORD|MYSQL_PORT", env_file, value = TRUE) %>% 
     strsplit("=") %>% 
     map(~setNames(..1[2], ..1[1])) %>%
     unlist() %>% 

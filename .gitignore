@@ -34,3 +34,4 @@ docker-compose.yml
 tracked_stds.xlsx
 docker-compose_full.yml
 demo/db/*
+settings_remote.env

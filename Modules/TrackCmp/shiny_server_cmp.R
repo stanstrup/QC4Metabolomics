@@ -137,7 +137,7 @@ output$std_cmp_tbl <- renderDataTable({
                                         datatable(colnames=c("Compound ID", "Compound Name", "Instrument", "Mode", "m/z", "RT 1", "RT 2", "Enabled?", "Changed"),
                                                   rownames = FALSE, 
                                                   selection = "single",
-                                                  options=list(columnDefs = list(list(visible=FALSE, targets=c(7))))
+                                                 # options=list(columnDefs = list(list(visible=FALSE, targets=c(7))))
                                                   ) %>% 
                                         formatRound(columns=c('cmp_mz'), digits=4) %>% 
                                         formatRound(columns=c('cmp_rt1'), digits=2)

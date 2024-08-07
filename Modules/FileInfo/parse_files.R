@@ -18,7 +18,7 @@ log_source = "File_info"
 
 # Funs --------------------------------------------------------------------
 N_todo <- function(pool) {
-                        "SELECT COUNT(*) FROM files WHERE file_md5 NOT IN (SELECT file_md5 FROM file_info) AND file_md5 NOT IN (SELECT file_md5 FROM files_ignore)" %>%
+                        "SELECT COUNT(*) FROM files WHERE file_md5 NOT IN (SELECT file_md5 FROM file_info)" %>%
                         dbGetQuery(pool,.) %>%
                         as.numeric
 }
@@ -37,12 +37,12 @@ while( N_todo(pool) != 0 ){
     
     # Get new files -----------------------------------------------------------
     # 20 newest files
-    file_tbl <- "SELECT * FROM files WHERE file_md5 NOT IN (SELECT file_md5 FROM file_info) AND file_md5 NOT IN (SELECT file_md5 FROM files_ignore)" %>% 
+    file_tbl <- "SELECT * FROM files WHERE file_md5 NOT IN (SELECT file_md5 FROM file_info)" %>% 
                 dbGetQuery(pool,.) %>% as_tibble %>% 
                 mutate(file_date = path %>% paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",.) %>% file.info %>% extract2("ctime")) %>% 
                 arrange(desc(file_date)) %>% 
                 select(-file_date) %>% 
-                slice(1:20)
+                slice(1:200)
     
     
     # Parse filenames ---------------------------------------------------------

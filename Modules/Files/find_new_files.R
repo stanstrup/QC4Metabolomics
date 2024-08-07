@@ -33,7 +33,6 @@ files <- list.files(path= Sys.getenv("QC4METABOLOMICS_base"),
 
 # Apply include and exclude filters ---------------------------------------
 # include
-as.character(Sys.getenv("QC4METABOLOMICS_module_Files_include_path"))
 include_path <- 
                 as.character(Sys.getenv("QC4METABOLOMICS_module_Files_include_path")) %>% 
                     strsplit(";",fixed=TRUE) %>% 

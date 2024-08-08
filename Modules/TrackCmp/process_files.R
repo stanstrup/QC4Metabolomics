@@ -120,7 +120,7 @@ for(ii in seq_along(file_tbl_l)){
   print("Starting next batch of files")
     
     
-    # Joined data appropiately ------------------------------------------------
+    # Joined data appropriately ------------------------------------------------
   file_stds_tbl <- left_join(file_tbl_l[[ii]], std_compounds, by = c("instrument", "mode"), relationship = "many-to-many") %>% 
                    nest(stds = c(cmp_id, cmp_name, mz, rt, cmp_rt2, enabled, updated_at)) %>% 
                    mutate(stds = pmap(list(stds, instrument, mode), ~mutate(..1, instrument=..2, mode = ..3)))

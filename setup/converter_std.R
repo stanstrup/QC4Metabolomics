@@ -18,9 +18,7 @@ file_exist <-  file.exists(files)
 files <- files[file_exist]
 
 
-
-
-outdir <- paste0(dirname(files), Sys.getenv("msconvert_outdir_prefix"))
+outdir <- paste0(dirname(files), Sys.getenv("QC4METABOLOMICS_msconvert_outdir_prefix"))
 
 
 # remove files that have already been converted
@@ -40,7 +38,7 @@ if(length(files)!=0){
   
   sapply(unique(outdir), function(x) dir.create(x, recursive = TRUE, showWarnings = FALSE))
   
-  cmd <- paste0('wine msconvert "',files,'" ', gsub("\\\\","",Sys.getenv("msconvert_args")), ' --outdir "',outdir,'" && echo "',files_out,'" >> "',basedir,'"/mzML_filelist.txt')
+  cmd <- paste0('wine msconvert "',files,'" ', gsub("\\\\","",Sys.getenv("QC4METABOLOMICS_msconvert_args")), ' --outdir "',outdir,'" && echo "',files_out,'" >> "',basedir,'"/mzML_filelist.txt')
   
   sapply(cmd, possibly(system, "FAILED TO CONVERT"))
   

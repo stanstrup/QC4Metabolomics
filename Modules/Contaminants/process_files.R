@@ -47,6 +47,9 @@ extract_intervals <- function(raw, lower, upper, min_intensity = 1.2){
 
 check_if_ms1 <- function(raw){
 
+  if(class(raw)!="Spectra") return(FALSE)
+  
+  
   if(  length(raw)>0  &&   sum(msLevel(raw)==1)>10   ){ # at least 10 scans to be meaningful
     return(TRUE)
   }else{
@@ -148,10 +151,10 @@ file_tbl_std_l <- file_tbl_std_l[1:min(length(file_tbl_std_l),10)] # to avoid do
 for(ii in seq_along(file_tbl_std_l)){
     print("Starting next batch of files")
     
-  
+    Spectra_possibly <- possibly(Spectra, NA)
   
     file_tbl_std_l[[ii]] <- file_tbl_std_l[[ii]] %>%
-                              mutate(raw = map(path, ~Spectra(paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",..1))))
+                              mutate(raw = map(path, ~Spectra_possibly(paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",..1))))
   
   
 

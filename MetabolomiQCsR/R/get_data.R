@@ -63,7 +63,8 @@ set_QC4Metabolomics_settings_from_file <- function(file) {
   grep("QC4METABOLOMICS_|MYSQL_DATABASE|MYSQL_HOST|MYSQL_USER|MYSQL_PASSWORD|MYSQL_PORT", env_file, value = TRUE) %>% 
     strsplit("=") %>% 
     map(~setNames(..1[2], ..1[1])) %>%
-    unlist() %>% 
+    unlist() %>%
+    {ifelse(is.na(.),"",.)} %>% 
     as.list() %>% 
     do.call("Sys.setenv",.)
   

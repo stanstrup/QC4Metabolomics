@@ -113,7 +113,7 @@ std_compounds <- "SELECT * from std_compounds WHERE enabled=1" %>%
 
 # loop through subsets of the files untill all files are in the DB --------
 file_tbl_l <- split(file_tbl, ceiling(1:nrow(file_tbl)/10))
-file_tbl_l <- file_tbl_l[1:pmin(10,length(file_tbl_l))] # to avoid doing to many. # memory leak
+file_tbl_l <- file_tbl_l[1:pmin(10,length(file_tbl_l))] # to avoid doing to many we only do at max 10 groups. # memory leak
 
 
 for(ii in seq_along(file_tbl_l)){
@@ -121,7 +121,7 @@ for(ii in seq_along(file_tbl_l)){
     
     
     # Joined data appropiately ------------------------------------------------
-  file_stds_tbl <- left_join(file_tbl_l[[ii]], std_compounds, by = c("instrument", "mode")) %>% 
+  file_stds_tbl <- left_join(file_tbl_l[[ii]], std_compounds, by = c("instrument", "mode"), relationship = "many-to-many") %>% 
                    nest(stds = c(cmp_id, cmp_name, mz, rt, cmp_rt2, enabled, updated_at)) %>% 
                    mutate(stds = pmap(list(stds, instrument, mode), ~mutate(..1, instrument=..2, mode = ..3)))
     
@@ -132,30 +132,41 @@ for(ii in seq_along(file_tbl_l)){
     to_ignore <- map_lgl(file_stds_tbl$stds, ~all(is.na(..1$mz)))
     
     
-    # Update schedule
-        sql_data <- file_stds_tbl %>% filter(to_ignore) %>% distinct(file_md5, module) %>% mutate(priority = -1L)
-        
-        con <- poolCheckout(pool)
-        dbBegin(con)
-        
-        res_pri <- vector("logical", nrow(sql_data))
-        for(i in 1:nrow(sql_data)){
-            sql_query <- paste0("UPDATE file_schedule SET priority='", sql_data$priority[i],"' WHERE (file_md5='",sql_data$file_md5[i],"' AND module='",sql_data$module[i],"')")
-            dbSendQuery(con,sql_query)
-            res_pri[i] <- dbCommit(con)
-        }
-        
-        poolReturn(con)
-        write_to_log(paste0("priority updated for ",sum(res_pri)," files."), cat = "info", source = log_source, pool = pool)
+    if(any(to_ignore)){
+      
+      # Update schedule
+          sql_data <- file_stds_tbl %>% filter(to_ignore) %>% distinct(file_md5, module) %>% mutate(priority = -1L)
+          
+          con <- poolCheckout(pool)
+          dbBegin(con)
+          
+          res_pri <- vector("logical", nrow(sql_data))
+          for(i in 1:nrow(sql_data)){
+              sql_query <- paste0("UPDATE file_schedule SET priority='", sql_data$priority[i],"' WHERE (file_md5='",sql_data$file_md5[i],"' AND module='",sql_data$module[i],"')")
+              dbSendQuery(con,sql_query)
+              res_pri[i] <- dbCommit(con)
+          }
+          
+          poolReturn(con)
+          write_to_log(paste0("priority updated for ",sum(res_pri)," files."), cat = "info", source = log_source, pool = pool)
+      
+      
+      # remove from current queue
+      file_stds_tbl %<>% filter(!to_ignore)
+      
+    }
     
     
-    # remove from current queue
-    file_stds_tbl %<>% filter(!to_ignore)
     
+    
+
+# Check if valid MS1 files ------------------------------------------------
+check_if_ms1_possibly <- possibly(check_if_ms1, FALSE)
     
     # ignore files with no MS1
+    # this also checks if they are valid files
     file_stds_tbl <- file_stds_tbl %>% 
-            mutate(has_ms1 = map_lgl(path, check_if_ms1))
+            mutate(has_ms1 = map_lgl(path, check_if_ms1_possibly))
     
     
     
@@ -207,11 +218,7 @@ for(ii in seq_along(file_tbl_l)){
     }
     
     
-    
 
-    
-    
-    
     # Do nothing if nothing left
     if(nrow(file_stds_tbl)==0) next
     

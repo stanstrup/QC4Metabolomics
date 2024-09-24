@@ -40,9 +40,13 @@ timeplot_plotly <- function(x, y) {
 
 
 # Constants -----------------------------------------------------------------
-int_range <- "SELECT MAX(cont_data.value) AS max,  MIN(cont_data.value) AS min
-              FROM cont_data
-              WHERE cont_data.stat IN ('EIC_median', 'EIC_max', 'EIC_mean')
+int_range <- "
+				SELECT MAX(MAX) AS max, MIN(min) AS min FROM (
+				SELECT stat, MAX(value) AS max, MIN(value) AS min
+				FROM cont_data
+				WHERE cont_data.stat IN ('EIC_median', 'EIC_max', 'EIC_mean')
+				GROUP BY stat
+				) s;
              " %>% 
              dbGetQuery(pool,.) 
 

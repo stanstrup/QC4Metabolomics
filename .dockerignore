@@ -11,3 +11,6 @@ docker-compose.yml
 docker-compose_demo.yml
 MetabolomiQCs.conf
 demo
+presentations
+
+MetabolomiQCsR/vignettes

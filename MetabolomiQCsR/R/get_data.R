@@ -17,9 +17,9 @@
 
 get_QC4Metabolomics_settings <- function(modules=NULL) {
   
+    # make build check happy
+    . <- module <- name <- value <- is_module <- NULL
 
-  
-  
   
   module_tbl <- Sys.getenv() %>% 
                     {tibble(name = names(.), value = .)  } %>% 
@@ -52,7 +52,11 @@ get_QC4Metabolomics_settings <- function(modules=NULL) {
 #'
 
 set_QC4Metabolomics_settings_from_file <- function(file) {
-  
+
+    # make build check happy
+    . <- NULL
+
+    
   if (missing(file)) {
     stop("Please provide a filename for the env_file")
   }
@@ -115,7 +119,7 @@ set_QC4Metabolomics_settings_from_file <- function(file) {
 get_cont_list <- function(polarity = c("positive", "negative", "unknown"), type = "URL") {
 
     # make build check happy
-    . <- loc <- NULL
+    . <- loc <- module <- name <- value <- NULL
 
     # get settings
     loc <- list()

@@ -7,15 +7,15 @@
 getEIC_C_wrap(xraw_values, range_tbl)
 }
 \arguments{
-\item{range_tbl}{data.frame/\code{\link{tibble}} with columns for the lower and upper ("mz_lower","mz_upper") m/z boundaries of EIC slice(s).}
-
-\item{tbl}{A \code{\link{tibble}} containing the columns: 
+\item{xraw_values}{A data.frame/\code{\link{tibble}} containing the columns: 
 \itemize{
   \item \strong{scan:} scan number
   \item \strong{scan_rt:} Retention time of scan
   \item \strong{intensity:} The intensity of the observation
-  \item \strong{mz:} the mz of the observation
+  \item \strong{mz:} the m/z of the observation
 }}
+
+\item{range_tbl}{data.frame/\code{\link{tibble}} with columns for the lower and upper ("mz_lower","mz_upper") m/z boundaries of EIC slice(s).}
 }
 \value{
 tbl A \code{\link{tibble}} containing the columns: 

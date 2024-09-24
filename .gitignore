@@ -21,6 +21,7 @@ MetabolomiQCsR/vignettes/.build.timestamp
 MetabolomiQCsR/vignettes/*.R
 MetabolomiQCsR/vignettes/*.html
 MetabolomiQCsR/inst/doc/*
+MetabolomiQCsR/docs
 MetabolomiQCsR/MetabolomiQCsR.pdf
 renv/sandbox/
 renv/cellar/
@@ -35,3 +36,5 @@ tracked_stds.xlsx
 docker-compose_full.yml
 demo/db/*
 settings_remote.env
+MetabolomiQCsR_*.tar.gz
+.env.R

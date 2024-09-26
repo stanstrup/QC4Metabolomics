@@ -1,18 +1,14 @@
 input_css <- "
-  #select ~ .selectize-control .selectize-input {
     max-height: 100px;
     overflow-y: auto;
-}
 "
                                 
 tabPanel("Compound stats",
                             fluidPage(
 
-                                        tags$style(input_css),
-
                                         fluidRow(
                                                     column(4,
-                                                            uiOutput(ns("std_stats_project_select_ui")),
+                                                            uiOutput(ns("std_stats_project_select_ui"), style = input_css),
                                                             actionButton(ns("std_stats_resetButton"), "Reset filters")
                                                            ),
                                                     column(1,uiOutput(ns("std_stats_mode_select_ui"))),

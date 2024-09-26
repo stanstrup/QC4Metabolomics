@@ -19,21 +19,19 @@ function logifySlider (sliderId, sci = false) {
 }"
 
 input_css <- "
-  #select ~ .selectize-control .selectize-input {
     max-height: 100px;
     overflow-y: auto;
-}
 "
 
 tabPanel("Contaminations",
-                            fluidPage(  tags$style(input_css),
+                            fluidPage(  
                                         tags$head(tags$script(HTML(JS.logify))),
                                         tags$head(tags$script(HTML('Shiny.addCustomMessageHandler("jsCode", function(message) { eval(message.value); });'))),
                                         tags$style(type='text/css', ".selectize-dropdown-content {max-height: 400px; }"),
                                         
                                         fluidRow(
                                                     column(4,
-                                                            uiOutput(ns("project_select_ui")),
+                                                            uiOutput(ns("project_select_ui"), style = input_css)),
                                                             actionButton(ns("resetButton"), "Reset filters")
                                                            ),
                                                     column(1,uiOutput(ns("mode_select_ui"))),

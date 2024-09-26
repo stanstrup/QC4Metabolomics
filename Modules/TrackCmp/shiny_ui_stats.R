@@ -1,6 +1,15 @@
+input_css <- "
+  #select ~ .selectize-control .selectize-input {
+    max-height: 100px;
+    overflow-y: auto;
+}
+"
+                                
 tabPanel("Compound stats",
                             fluidPage(
-                                
+
+                                        tags$style(input_css),
+
                                         fluidRow(
                                                     column(4,
                                                             uiOutput(ns("std_stats_project_select_ui")),

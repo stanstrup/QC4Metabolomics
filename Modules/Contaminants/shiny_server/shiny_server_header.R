@@ -41,16 +41,23 @@ project_available <- reactive({
 
 
 # build the ui
+input_css <- "
+  #select ~ .selectize-control .selectize-input {
+    max-height: 100px;
+    overflow-y: auto;
+}
+"
+
 output$project_select_ui <- renderUI({
                                                  ns <- session$ns
                                                  
-                                                 selectizeInput(ns("project_select_input"), 
+                                                 selectInput(ns("project_select_input"), 
                                                                label = "Project", 
                                                                choices  = project_available(),
                                                                selected = project_available(),
                                                                multiple = TRUE,
                                                                width="100%",
-                                                               options = list(maxOptions = 10)
+                                                               tags$style(input_css)
                                                              )
 
 })

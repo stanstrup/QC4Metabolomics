@@ -86,7 +86,7 @@ output$std_stats_project_select_ui <- renderUI({
                                                                selected = std_stats_project_available(),
                                                                multiple = TRUE,
                                                                width="100%",
-                                                               options = list(maxItems = 10)
+                                                               options = list(maxOptions = 10)
                                                              )
 
 })

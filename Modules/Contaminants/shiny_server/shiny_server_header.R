@@ -44,13 +44,13 @@ project_available <- reactive({
 output$project_select_ui <- renderUI({
                                                  ns <- session$ns
                                                  
-                                                 selectInput(ns("project_select_input"), 
+                                                 selectizeInput(ns("project_select_input"), 
                                                                label = "Project", 
                                                                choices  = project_available(),
                                                                selected = project_available(),
                                                                multiple = TRUE,
                                                                width="100%",
-                                                               options = list(maxItems = 10)
+                                                               options = list(maxOptions = 10)
                                                              )
 
 })

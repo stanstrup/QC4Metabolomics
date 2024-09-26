@@ -31,7 +31,7 @@ tabPanel("Contaminations",
                                         
                                         fluidRow(
                                                     column(4,
-                                                            uiOutput(ns("project_select_ui"), style = input_css)),
+                                                            uiOutput(ns("project_select_ui"), style = input_css),
                                                             actionButton(ns("resetButton"), "Reset filters")
                                                            ),
                                                     column(1,uiOutput(ns("mode_select_ui"))),

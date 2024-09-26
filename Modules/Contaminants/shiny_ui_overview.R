@@ -19,8 +19,10 @@ function logifySlider (sliderId, sci = false) {
 }"
 
 input_css <- "
-    max-height: 100px;
+ .pro-select-parent .selectize-input {
+    max-height: 10em;
     overflow-y: auto;
+ }
 "
 
 tabPanel("Contaminations",
@@ -31,7 +33,7 @@ tabPanel("Contaminations",
                                         
                                         fluidRow(
                                                     column(4,
-                                                            uiOutput(ns("project_select_ui"), style = input_css),
+                                                            uiOutput(ns("project_select_ui"), class="pro-select-parent"),
                                                             actionButton(ns("resetButton"), "Reset filters")
                                                            ),
                                                     column(1,uiOutput(ns("mode_select_ui"))),

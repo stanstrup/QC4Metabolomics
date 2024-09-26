@@ -1,6 +1,6 @@
 input_css <- "
  .pro-select-parent .selectize-input {
-    max-height: 100px;
+    max-height: 10em;
     overflow-y: auto;
  }
 "

@@ -27,6 +27,9 @@ RUN apt-get update && \
 	htop \
 	nano \
 	\
+	# to read in access files (waters samples lists)
+	mdbtools \
+	\
     && rm -rf /var/lib/apt
 
 RUN sudo R CMD javareconf

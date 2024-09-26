@@ -80,11 +80,13 @@ std_stats_project_available <- reactive({
 output$std_stats_project_select_ui <- renderUI({
                                                  ns <- session$ns
                                                  
-                                                 selectInput(ns("std_stats_project_select_input"), 
+                                                 selectizeInput(ns("std_stats_project_select_input"), 
                                                                label = "Project", 
                                                                choices  = std_stats_project_available(),
                                                                selected = std_stats_project_available(),
-                                                               multiple = TRUE
+                                                               multiple = TRUE,
+                                                               width="100%",
+                                                               options = list(maxItems = 10)
                                                              )
 
 })

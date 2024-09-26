@@ -2,11 +2,11 @@ tabPanel("Compound stats",
                             fluidPage(
                                 
                                         fluidRow(
-                                                    column(2,
+                                                    column(4,
                                                             uiOutput(ns("std_stats_project_select_ui")),
                                                             actionButton(ns("std_stats_resetButton"), "Reset filters")
                                                            ),
-                                                    column(2,uiOutput(ns("std_stats_mode_select_ui"))),
+                                                    column(1,uiOutput(ns("std_stats_mode_select_ui"))),
                                                     column(2,
                                                                textInput(ns("std_stats_sample_id"), "Sample ID", ""),
                                                                checkboxInput(ns("std_stats_sample_id_inv"), label = "Inverse", value = FALSE),

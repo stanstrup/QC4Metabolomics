@@ -18,7 +18,7 @@ services:
       - "12345:3306"
     restart: always
     env_file: "settings_demo.env"
-    command: 'mariadbd --innodb-flush-method=fsync'
+    command: 'mariadbd --skip_ssl --innodb-flush-method=fsync'
     
     
   qc_process:
@@ -86,3 +86,18 @@ services:
     env_file: "settings_demo.env"
       # remember to escape quotes
     command: '/setup/cron_with_env.sh'
+
+
+  db-backup:
+    container_name: db-backup
+    image: tiredofit/db-backup
+    networks:
+            frontend:
+                ipv4_address: 172.20.0.6
+    volumes:
+      - ./backups:/backup
+    env_file: "settings_demo.env"
+    depends_on:
+        - mariadb
+    restart: always
+    

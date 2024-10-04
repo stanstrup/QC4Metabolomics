@@ -1,0 +1,31 @@
+url: https://github.com/stanstrup/QC4Metabolomics
+template:
+  bootstrap: 5
+  bootswatch: sandstone
+  theme: breeze-dark
+
+navbar:
+  structure:
+    left: [setup, reference, articles, news]
+    right: [search, github]
+  components:
+    setup:
+      text: Demo
+      href: articles/demo.html
+
+
+
+articles:
+- title: Getting started
+  navbar: Getting started
+  contents:
+  - articles/demo
+  - articles/file_move
+  - articles/installing_docker_on_redhat
+
+- title: Maintainance
+  navbar: Maintainance
+  contents:
+  - articles/update_database
+  - articles/connect_to_db_from_R
+  - articles/roubleshooting

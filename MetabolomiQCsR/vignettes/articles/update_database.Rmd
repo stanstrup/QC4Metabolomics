@@ -1,0 +1,26 @@
+---
+title: "Upgrading the database version"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Upgrading the database version}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+If you upgrade to a new version of the system it might include a newer version of the database software, MariaDB. If so you might need to manually update the database, thought it should happen automatically for most updates.
+
+
+While the containers are running login to the database container:
+
+```bash
+docker exec -it qc4metabolomics-mariadb-1 bash
+```
+
+Then upgrade the DB:
+
+```bash
+mysql_upgrade -p
+```
+
+Restart the containers. Now warnings/errors should disappear.
+

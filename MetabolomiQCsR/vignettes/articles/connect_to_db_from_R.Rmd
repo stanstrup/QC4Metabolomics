@@ -1,0 +1,85 @@
+---
+title: "Connect to DB in R"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Connect to DB in R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Find the correct address and port
+
+Internally (inside the docker network) the database runs on port 3306. On the host it is accessible at 12345 (unless you changed it in the docker compose file). If you are working on the host directly you can access on this port.\
+If the server is remote you need to SSH into the server first. For example you can forward the servers port 12345 to port 5555. You can now access the database locally on port 5555.
+
+``` bash
+ssh -L 5555:ADDRESS:12345 USERNAME@ADDRESS
+```
+\
+
+## Making the settings for the database
+
+Start by making a copy of `settings_demo.env`. Call it for example `settings_remote.env`. Now you want to edit the settings to connect to the server. The relevant parameters are:
+
+``` ini
+# database connection
+
+MYSQL_ROOT_PASSWORD=mysql_password 
+MYSQL_DATABASE=qc_db 
+MYSQL_USER=qc_db_user 
+MYSQL_PASSWORD=qc_db_pw 
+MYSQL_HOST=localhost 
+MYSQL_PORT=5555
+```
+
+\
+If you have local access to the MS files and want the paths to match you can set your local path to the base folder equivalent of what the server is seeing.
+
+``` ini
+# without trailing slash
+QC4METABOLOMICS_base=I:/SCIENCE-NEXS-NyMetabolomics/Projects
+```
+\
+
+## Connect to the database
+
+First you read the settings:
+
+```{r, eval = FALSE}
+set_QC4Metabolomics_settings_from_file("settings_remote.env")
+```
+
+\
+You can now connect and pull data or modify it as with any other database.
+
+```{r, eval=FALSE}
+
+library(MetabolomiQCsR)
+library(dplyr)
+library(DBI)
+
+pool <- dbPool_MetabolomiQCs(30)
+
+
+files <-  paste0("
+                    SELECT * FROM files
+                    "
+                    ) %>% 
+            dbGetQuery(pool,.) %>% 
+            distinct() %>% 
+            as_tibbl
+```
+
+\
+The tables in the database are:
+
+-   cont_cmp
+-   cont_data
+-   file_info
+-   file_schedule
+-   files
+-   files_ignore
+-   log
+-   std_compounds
+-   std_stat_data
+-   std_stat_types

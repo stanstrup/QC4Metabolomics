@@ -1,0 +1,54 @@
+---
+title: "Installing Docker on RedHat"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Installing Docker on RedHat}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+RedHat uses Podman instead of docker.
+But you can use regular docker if you install it manually.
+Instructions can be found here: https://www.cyberciti.biz/faq/install-use-setup-docker-on-rhel7-centos7-linux/
+
+
+## Installing Docker
+
+Here is a short summary.\
+
+```bash
+sudo yum remove docker docker-common docker-selinux docker-engine-selinux && docker-engine docker-ce
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo yum install docker-ce
+sudo systemctl enable docker.service
+sudo systemctl start docker.service
+```
+
+
+## Install Docker compose
+
+```bash
+sudo yum install epel-release
+sudo yum install -y python-pip
+sudo pip install docker-compose
+```
+
+## git-lfs
+
+```bash
+sudo yum install docker git git-lfs
+```
+
+## Other issues
+### Getting through firewall on linux
+
+This might be needed:
+```bash
+systemctl enable firewalld
+systemctl start firewalld
+
+sudo firewall-cmd --add-port=80/tcp --permanent
+sudo firewall-cmd --reload
+sudo systemctl restart docker.service
+```

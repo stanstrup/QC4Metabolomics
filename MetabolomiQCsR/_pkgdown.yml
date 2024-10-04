@@ -28,4 +28,4 @@ articles:
   contents:
   - articles/update_database
   - articles/connect_to_db_from_R
-  - articles/roubleshooting
+  - articles/troubleshooting

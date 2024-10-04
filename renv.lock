@@ -1977,6 +1977,18 @@
       ],
       "Hash": "d413e0fef796c9401a4419485f709ca1"
     },
+    "pak": {
+      "Package": "pak",
+      "Version": "0.8.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "tools",
+        "utils"
+      ],
+      "Hash": "019d4d5634410800a96b69737fb2dbac"
+    },
     "pcaMethods": {
       "Package": "pcaMethods",
       "Version": "1.96.0",

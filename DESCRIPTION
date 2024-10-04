@@ -4,5 +4,6 @@ Depends:
     tidyverse,
     pkgdown,
     remotes,
-    r-lib/askpass
+    r-lib/askpass,
+    jeroen/sys
 

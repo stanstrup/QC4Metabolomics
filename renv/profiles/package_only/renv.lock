@@ -1339,9 +1339,14 @@
     "sys": {
       "Package": "sys",
       "Version": "3.4.3",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "de342ebfebdbf40477d0758d05426646"
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "jeroen",
+      "RemoteRepo": "sys",
+      "RemoteRef": "master",
+      "RemoteSha": "d2353a15e3987c93724e5c86ff7bed26b7267a3e",
+      "Hash": "6c5dd11d8e6df43b6542a9fa20b7a746"
     },
     "systemfonts": {
       "Package": "systemfonts",

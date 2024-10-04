@@ -36,9 +36,8 @@ jobs:
         with:
           profile: '"package_only"'
       - name: Build site
-        run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
+        run: pkgdown::build_site_github_pages("MetabolomiQCsR", new_process = FALSE, install = FALSE)
         shell: Rscript {0}
-        working-directory: './MetabolomiQCsR'
 
       - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'

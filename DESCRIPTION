@@ -1,0 +1,8 @@
+Type: project
+Description: MetabolomiQCsR
+Depends:
+    tidyverse,
+    pkgdown,
+    remotes,
+    r-lib/askpass
+

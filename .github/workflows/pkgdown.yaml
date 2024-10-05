@@ -33,8 +33,6 @@ jobs:
           use-public-rspm: true
 
       - uses: r-lib/actions/setup-renv@v2
-        with:
-          profile: '"package_only"'
 
       - name: Install MetabolomiQCsR package
         run: remotes::install_local("MetabolomiQCsR")

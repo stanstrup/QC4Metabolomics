@@ -33,7 +33,7 @@ jobs:
           use-public-rspm: true
 
       - name: Install r-cran-igraph
-        run: sudo apt-get install -y r-cran-igraph
+        run: sudo apt-get install -y r-cran-igraph libglpk-dev
   
       - uses: r-lib/actions/setup-renv@v2
 

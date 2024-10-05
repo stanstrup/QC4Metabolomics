@@ -32,6 +32,9 @@ jobs:
         with:
           use-public-rspm: true
 
+      - name: Install r-cran-igraph
+        run: sudo apt-get install -y r-cran-igraph
+  
       - uses: r-lib/actions/setup-renv@v2
 
       - name: Install MetabolomiQCsR package

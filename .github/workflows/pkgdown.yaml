@@ -32,20 +32,19 @@ jobs:
         with:
           use-public-rspm: true
 
-      # - name: R Build and Checks
-      #   uses: Swechhya/R-actions@v1.2
-      #   with:
-      #     action: 'build'
-      #     #action: 'all' # also checks
-      #     needsBioc: true
-      #     buildSubDirectory: './MetabolomiQCsR/'
-
-
       - uses: r-lib/actions/setup-renv@v2
         with:
           profile: '"package_only"'
           
-          
+      - name: R Build and Checks
+        uses: Swechhya/R-actions@v1.2
+        with:
+          action: 'build'
+          #action: 'all' # also checks
+          needsBioc: true
+          buildSubDirectory: './MetabolomiQCsR/'
+
+
       - name: Build site
         run: pkgdown::build_site_github_pages("MetabolomiQCsR", new_process = FALSE, install = FALSE)
         shell: Rscript {0}

@@ -626,7 +626,7 @@
     },
     "RMySQL": {
       "Package": "RMySQL",
-      "Version": "0.10.28",
+      "Version": "0.10.29",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -634,7 +634,7 @@
         "R",
         "methods"
       ],
-      "Hash": "cf7200fb42fb58d1c95c998d0eb6c798"
+      "Hash": "5da07d3a30916f38bebd773a125ae08a"
     },
     "RSQLite": {
       "Package": "RSQLite",
@@ -732,13 +732,13 @@
     },
     "Spectra": {
       "Package": "Spectra",
-      "Version": "1.15.7",
+      "Version": "1.15.11",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "Spectra",
       "RemoteUsername": "rformassspectrometry",
-      "RemoteSha": "69da6d6e80e9280ef92870a25b1bac32db639220",
+      "RemoteSha": "1efb9093dfcbdc1b21af0acfe62df924547e347c",
       "Requirements": [
         "BiocGenerics",
         "BiocParallel",
@@ -756,7 +756,7 @@
         "tools",
         "utils"
       ],
-      "Hash": "663301938321faa675cb2f50a8be233d"
+      "Hash": "6810cc8f6a08782499e47f90d433c9c9"
     },
     "SummarizedExperiment": {
       "Package": "SummarizedExperiment",
@@ -1113,10 +1113,10 @@
     },
     "commonmark": {
       "Package": "commonmark",
-      "Version": "1.9.1",
+      "Version": "1.9.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "5d8225445acb167abf7797de48b2ee3c"
+      "Hash": "14eb0596f987c71535d07c3aff814742"
     },
     "cpp11": {
       "Package": "cpp11",
@@ -1782,7 +1782,7 @@
     },
     "limma": {
       "Package": "limma",
-      "Version": "3.60.5",
+      "Version": "3.60.6",
       "Source": "Bioconductor",
       "Repository": "Bioconductor 3.19",
       "Requirements": [
@@ -1794,7 +1794,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "b5f07b413e5f19c4ae223bb7c60a7637"
+      "Hash": "0eccf07d5db97b84a912922e1d29e130"
     },
     "lubridate": {
       "Package": "lubridate",
@@ -2128,7 +2128,7 @@
       "RemoteHost": "api.github.com",
       "RemoteRepo": "pool",
       "RemoteUsername": "rstudio",
-      "RemoteSha": "7ac5df4faf62323b6e28d36a3ab1576613bcdbc0",
+      "RemoteSha": "f3b0cfa965c2238f427d16c4b4046e4599a783e5",
       "Requirements": [
         "DBI",
         "R",
@@ -2137,7 +2137,7 @@
         "methods",
         "rlang"
       ],
-      "Hash": "f37730e59097cf7645dee99d0678db46"
+      "Hash": "40b833cbce33f14f9677f94aca87e642"
     },
     "preprocessCore": {
       "Package": "preprocessCore",
@@ -2301,13 +2301,13 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "1.0.9",
+      "Version": "1.0.10",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "utils"
       ],
-      "Hash": "ef233f0e9064fc88c898b340c9add5c2"
+      "Hash": "d0387d5687ec933dd7587efd4cfa2d85"
     },
     "reshape2": {
       "Package": "reshape2",
@@ -2537,10 +2537,10 @@
     },
     "sys": {
       "Package": "sys",
-      "Version": "3.4.2",
+      "Version": "3.4.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "3a1be13d68d47a8cd0bfd74739ca1555"
+      "Hash": "de342ebfebdbf40477d0758d05426646"
     },
     "systemfonts": {
       "Package": "systemfonts",

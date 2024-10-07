@@ -56,6 +56,9 @@ if( str_trim(as.character(Sys.getenv("QC4METABOLOMICS_module_Files_exclude_path"
 }
 
 
+# normalize paths ---------------------------------------------------------
+
+files <- normalizePath(files)
 
 
 # Establish db connection -------------------------------------------------

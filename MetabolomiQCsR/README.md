@@ -1,6 +1,8 @@
 # QC4metabolomics
 QC systems for metabolomics studies
 
+Documentation can be found here: https://stanstrup.github.io/QC4Metabolomics/
+
 
 ## Prerequisites
 

@@ -1816,14 +1816,10 @@
     "massageR": {
       "Package": "massageR",
       "Version": "0.7.2",
-      "Source": "GitLab",
-      "RemoteType": "gitlab",
-      "RemoteHost": "gitlab.com",
-      "RemoteUsername": "R_packages",
-      "RemoteRepo": "massageR",
-      "RemoteSubdir": "",
-      "RemoteRef": "master",
-      "RemoteSha": "8a0c62b8f848fbcca65404d5315ca8cf5e9db72d",
+      "Source": "git",
+      "RemoteType": "git",
+      "RemoteUrl": "https://gitlab.com/R_packages/massageR",
+      "RemoteRef": "",
       "Requirements": [
         "R",
         "dplyr",
@@ -1834,7 +1830,7 @@
         "reshape2",
         "rlang"
       ],
-      "Hash": "ee24fc5e170b81a7eaf32f2a1d0c8017"
+      "Hash": "03eb543f829b18dce86b4b83242c65b9"
     },
     "matrixStats": {
       "Package": "matrixStats",
@@ -2119,13 +2115,10 @@
     "pool": {
       "Package": "pool",
       "Version": "1.0.3.9000",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteUsername": "rstudio",
-      "RemoteRepo": "pool",
-      "RemoteRef": "main",
-      "RemoteSha": "f3b0cfa965c2238f427d16c4b4046e4599a783e5",
+      "Source": "git",
+      "RemoteType": "git",
+      "RemoteUrl": "https://github.com/rstudio/pool",
+      "RemoteRef": "",
       "Requirements": [
         "DBI",
         "R",
@@ -2134,7 +2127,7 @@
         "methods",
         "rlang"
       ],
-      "Hash": "67d149c026bf00c897bacd4e42969f08"
+      "Hash": "2460749649e071c05dda69e4760c03aa"
     },
     "preprocessCore": {
       "Package": "preprocessCore",

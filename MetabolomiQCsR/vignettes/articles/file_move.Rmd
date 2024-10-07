@@ -10,38 +10,36 @@ vignette: >
 
 ## Purpose
 
-This is a help script that is not part of the system as such. The purpose is to solve the situation where the LC-MS instrument computer is not reachable by the QC system but they can both access a shared network drive. This windows batch script can be used to copy the .raw folders to the network drive and is written to wait for the analysis to finish.\
+These (`file_mover`) are helper scripts that are not part of the system as such. The purpose is to solve the situation where the LC-MS instrument computer is not reachable by the QC system but they can both access a shared network drive. This windows batch script can be used to copy the .raw folders to the network drive and is written to wait for the analysis to finish.\
 
 **These scripts are written for Waters' .raw folder and should not be used directly for anything else.**\
+**I advise against using this script if you are not able to double-check what it is doing yourself and make sure you have backups before you try it.**
 \
 
 
-What the scripts are meant to do:
+What the script is meant to do:
 
 * Monitor when a run is done.
 * Will check if the filename (really a folder name) has the expected number of delimiters.
-* If the filename is in the right format the file will be move to the given location.
-  **This script was written for the metabolomics group at NEXS and there are therefore specific parsing of the filename to decide the destination folder.** 
-  * The first string before the first delimiter is used as the project name and a project folder is create such that the file 
+* If the filename is in the right format the file will be *moved* (that is deleted from the original location!) to the given location.\
+**THIS IS POTENTIALLY DESTRUCTIVE. BACKUP BEFORE TESTING!!!**\
+**This script was written for the metabolomics group at NEXS and there are therefore specific parsing of the filename to decide the destination folder.** 
+* The first string before the first delimiter is used as the project name and a project folder is create such that the file 
     `%infolder%\test-pro_pos_test-sample-metstd.raw` will be moved to 
     `%outfolder%\test-pro.raw\Data\test-pro_pos_test-sample-metstd.raw`
 * *Optionally* symlinks can be made from the original location to the destination folder. This way you can still access the file as if it was still in the original place even if it is actually access in the destination location. So you can  open the file normally in the instrument software that expect the file to exist at the original location.
-* *Optionally* the above mentioned symlinks can be cleared my running a script.
-
-
-
-
+* *Optionally* the above mentioned symlinks can be cleared by running a script (`file_mover/clear_symlink_folders.bat`).
 
 
 
 ## Usage
-* Copy the content of `file_mover` to the instrument computer where the files are located.
+* Copy the content of the `file_mover` folder to the instrument computer where the .raw "files" are located.
 
 * Edit the top part of `win_waters_mover.bat` to point to the right folders and the settings you want.
 
   * `infolder` and `outfolder` are the source and destination folders respectively.
-  * Like the QC system the file move expect to be able to parse information from the file name. So `delim` sets the character that separates the information.
-  * `expect_delims` stats how many delimiters to expect in a filename. This is used to only parse files with the expected filename convention.
+  * Like the QC system the file move expects to be able to parse information from the file name. So `delim` sets the character that separates the information.
+  * `expect_delims` states how many delimiters to expect in a filename. This is used to only parse files with the expected filename convention.
   * If `symlinkback` is TRUE a symbolic link will be made in the original location pointing to the destination location.
 
 * *If you use symlinks* you need to:

@@ -77,12 +77,12 @@
 <div class="section level2">
 <h2 id="purpose">Purpose<a class="anchor" aria-label="anchor" href="#purpose"></a>
 </h2>
-<p>This is a help script (<code>file_mover/win_waters_mover</code>) that
-is not part of the system as such. The purpose is to solve the situation
-where the LC-MS instrument computer is not reachable by the QC system
-but they can both access a shared network drive. This windows batch
-script can be used to copy the .raw folders to the network drive and is
-written to wait for the analysis to finish.<br></p>
+<p>These (<code>file_mover</code>) are helper scripts that are not part
+of the system as such. The purpose is to solve the situation where the
+LC-MS instrument computer is not reachable by the QC system but they can
+both access a shared network drive. This windows batch script can be
+used to copy the .raw folders to the network drive and is written to
+wait for the analysis to finish.<br></p>
 <p><strong>These scripts are written for Waters’ .raw folder and should
 not be used directly for anything else.</strong><br><strong>I advise against using this script if you are not able to
 double-check what it is doing yourself and make sure you have backups
@@ -123,7 +123,7 @@ running a script
 </h2>
 <ul>
 <li><p>Copy the content of the <code>file_mover</code> folder to the
-instrument computer where the files are located.</p></li>
+instrument computer where the .raw “files” are located.</p></li>
 <li>
 <p>Edit the top part of <code>win_waters_mover.bat</code> to point
 to the right folders and the settings you want.</p>
@@ -131,11 +131,11 @@ to the right folders and the settings you want.</p>
 <li>
 <code>infolder</code> and <code>outfolder</code> are the source and
 destination folders respectively.</li>
-<li>Like the QC system the file move expect to be able to parse
+<li>Like the QC system the file move expects to be able to parse
 information from the file name. So <code>delim</code> sets the character
 that separates the information.</li>
 <li>
-<code>expect_delims</code> stats how many delimiters to expect in a
+<code>expect_delims</code> states how many delimiters to expect in a
 filename. This is used to only parse files with the expected filename
 convention.</li>
 <li>If <code>symlinkback</code> is TRUE a symbolic link will be made in

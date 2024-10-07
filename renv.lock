@@ -552,16 +552,14 @@
     "ProtGenerics": {
       "Package": "ProtGenerics",
       "Version": "1.37.1",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "ProtGenerics",
-      "RemoteUsername": "rformassspectrometry",
-      "RemoteSha": "2b4022c03c86e85bd9edf3a3a8dcdf03da853e3d",
+      "Source": "git",
+      "RemoteType": "git",
+      "RemoteUrl": "https://github.com/rformassspectrometry/ProtGenerics",
+      "RemoteRef": "",
       "Requirements": [
         "methods"
       ],
-      "Hash": "6f9e8339d51a503137ce64d52e4628c5"
+      "Hash": "e8ab7bf0b0837270a1a430cc555d053e"
     },
     "QFeatures": {
       "Package": "QFeatures",
@@ -733,12 +731,10 @@
     "Spectra": {
       "Package": "Spectra",
       "Version": "1.15.11",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "Spectra",
-      "RemoteUsername": "rformassspectrometry",
-      "RemoteSha": "1efb9093dfcbdc1b21af0acfe62df924547e347c",
+      "Source": "git",
+      "RemoteType": "git",
+      "RemoteUrl": "https://github.com/rformassspectrometry/Spectra",
+      "RemoteRef": "",
       "Requirements": [
         "BiocGenerics",
         "BiocParallel",
@@ -756,7 +752,7 @@
         "tools",
         "utils"
       ],
-      "Hash": "6810cc8f6a08782499e47f90d433c9c9"
+      "Hash": "d97fe47278e007079173434316337afe"
     },
     "SummarizedExperiment": {
       "Package": "SummarizedExperiment",
@@ -1596,12 +1592,10 @@
     "httr2": {
       "Package": "httr2",
       "Version": "1.0.5.9000",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "httr2",
-      "RemoteUsername": "r-lib",
-      "RemoteSha": "5380f2107ea5a8e47def600e28009b5be1b8928a",
+      "Source": "git",
+      "RemoteType": "git",
+      "RemoteUrl": "https://github.com/r-lib/httr2",
+      "RemoteRef": "",
       "Requirements": [
         "R",
         "R6",
@@ -1616,7 +1610,7 @@
         "vctrs",
         "withr"
       ],
-      "Hash": "fdb068f7f8160bb91009c8fea8c61151"
+      "Hash": "85e887864cfb877ce8f7d94d02e8f9c1"
     },
     "igraph": {
       "Package": "igraph",
@@ -1825,8 +1819,10 @@
       "Source": "GitLab",
       "RemoteType": "gitlab",
       "RemoteHost": "gitlab.com",
-      "RemoteRepo": "massageR",
       "RemoteUsername": "R_packages",
+      "RemoteRepo": "massageR",
+      "RemoteSubdir": "",
+      "RemoteRef": "master",
       "RemoteSha": "8a0c62b8f848fbcca65404d5315ca8cf5e9db72d",
       "Requirements": [
         "R",
@@ -1838,7 +1834,7 @@
         "reshape2",
         "rlang"
       ],
-      "Hash": "d19c017f37ce55f26f3bd620953ee666"
+      "Hash": "ee24fc5e170b81a7eaf32f2a1d0c8017"
     },
     "matrixStats": {
       "Package": "matrixStats",
@@ -2126,8 +2122,9 @@
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "pool",
       "RemoteUsername": "rstudio",
+      "RemoteRepo": "pool",
+      "RemoteRef": "main",
       "RemoteSha": "f3b0cfa965c2238f427d16c4b4046e4599a783e5",
       "Requirements": [
         "DBI",
@@ -2137,7 +2134,7 @@
         "methods",
         "rlang"
       ],
-      "Hash": "40b833cbce33f14f9677f94aca87e642"
+      "Hash": "67d149c026bf00c897bacd4e42969f08"
     },
     "preprocessCore": {
       "Package": "preprocessCore",

@@ -32,8 +32,13 @@ jobs:
         with:
           use-public-rspm: true
 
-      - name: Install r-cran-igraph, its depedency for building and rsync for deploying
-        run: sudo apt-get install -y r-cran-igraph libglpk-dev rsync
+      - name: Install igraph dependencies for building and rsync for deploying
+        run: sudo apt-get install -y libglpk-dev libnetcdf-dev rsync
+  
+      # - uses: awalsh128/cache-apt-pkgs-action@latest
+      #   with:
+      #     packages: libglpk-dev libnetcdf-dev rsync
+      #     version: 1.0
   
       - uses: r-lib/actions/setup-renv@v2
 
@@ -55,3 +60,4 @@ jobs:
           clean: false
           branch: gh-pages
           folder: MetabolomiQCsR/docs
+          token: ${{ secrets.QC4METABOLOMICS_TOKEN }}

@@ -38,7 +38,7 @@ jobs:
       - uses: r-lib/actions/setup-renv@v2
 
       - name: Install MetabolomiQCsR package
-        run: remotes::install_github("stanstrup/QC4Metabolomics")
+        run: remotes::install_github("stanstrup/QC4Metabolomics", subdir = "MetabolomiQCsR")
         shell: Rscript {0}
 
       - name: Build site

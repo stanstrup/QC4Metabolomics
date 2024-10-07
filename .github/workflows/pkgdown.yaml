@@ -37,11 +37,11 @@ jobs:
   
       - uses: r-lib/actions/setup-renv@v2
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
 
       - name: Install MetabolomiQCsR package
-        run: remotes::install_local("QC4Metabolomics")
+        run: remotes::install_local("MetabolomiQCsR")
         shell: Rscript {0}
 
       - name: Build site

@@ -37,6 +37,9 @@ jobs:
   
       - uses: r-lib/actions/setup-renv@v2
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: Install MetabolomiQCsR package
         run: remotes::install_local("stanstrup/QC4Metabolomics")
         shell: Rscript {0}

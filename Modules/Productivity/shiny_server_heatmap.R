@@ -70,7 +70,7 @@ project_available <- reactive({
                ")"
         ) %>% 
         dbGetQuery(pool,.) %>% 
-        as.matrix %>% as.character
+        as.matrix %>% as.character %>% sort
 })
 
 

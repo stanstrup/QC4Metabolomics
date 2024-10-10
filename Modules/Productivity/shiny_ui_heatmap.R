@@ -1,9 +1,17 @@
+input_css <- "
+ .pro-select-parent .selectize-input {
+    max-height: 10em;
+    overflow-y: auto;
+ }
+"
+
 tabPanel("Productivity",
                             fluidPage(
+										tags$style(type='text/css', input_css),
                                 
                                         fluidRow(
                                                     column(2,
-                                                            uiOutput(ns("project_select_ui")),
+                                                            uiOutput(ns("project_select_ui"), class="pro-select-parent"),
                                                             actionButton(ns("resetButton"), "Reset filters")
                                                            ),
                                                     column(2,uiOutput(ns("mode_select_ui"))),

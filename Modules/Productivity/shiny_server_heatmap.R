@@ -82,7 +82,8 @@ output$project_select_ui <- renderUI({
                                                                label = "Project", 
                                                                choices  = project_available(),
                                                                selected = project_available(),
-                                                               multiple = TRUE
+                                                               multiple = TRUE,
+                                                               width="100%"
                                                              )
 
 })

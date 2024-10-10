@@ -10,11 +10,11 @@ tabPanel("Productivity",
 										tags$style(type='text/css', input_css),
                                 
                                         fluidRow(
-                                                    column(2,
+                                                    column(4,
                                                             uiOutput(ns("project_select_ui"), class="pro-select-parent"),
                                                             actionButton(ns("resetButton"), "Reset filters")
                                                            ),
-                                                    column(2,uiOutput(ns("mode_select_ui"))),
+                                                    column(1,uiOutput(ns("mode_select_ui"))),
                                                     column(2,
                                                                textInput(ns("sample_id"), "Sample ID", ""),
                                                                checkboxInput(ns("sample_id_inv"), label = "Inverse", value = FALSE),

@@ -60,7 +60,7 @@ RUN R -e "BiocManager::install('bnosac/cronR')"
 
 # Always use newest version of the package without having to do a renv snapshot
 COPY ./MetabolomiQCsR /srv/shiny-server/QC4Metabolomics/MetabolomiQCsR/
-RUN R -e "remotes::install_local('MetabolomiQCsR', build_vignettes = FALSE)"
+RUN R -e 'install.packages("MetabolomiQCsR", repos = NULL, type = "source")'
 ###############################################################################
 
 

@@ -18,7 +18,7 @@ shinyServer(function(input, output, session) {
 													 FROM file_info
 													" %>% 
 													dbGetQuery(pool,.) %>% 
-													as.matrix %>% as.character
+													as.matrix %>% as.character %>% sort
 											   })
 
 

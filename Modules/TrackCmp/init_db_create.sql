@@ -39,4 +39,7 @@ FOREIGN KEY(stat_id)  REFERENCES std_stat_types(stat_id),
 FOREIGN KEY(cmp_id)   REFERENCES std_compounds(cmp_id),
 value DOUBLE NULL,
 PRIMARY KEY(file_md5, stat_id, cmp_id)
-)
+);
+
+CREATE INDEX `file_md5_index`  ON `std_stat_data` (file_md5);
+

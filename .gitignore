@@ -39,3 +39,4 @@ settings_remote.env
 MetabolomiQCsR_*.tar.gz
 .env.R
 run_actions_locally.bat
+.env

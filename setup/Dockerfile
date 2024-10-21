@@ -46,8 +46,7 @@ RUN mkdir /data
 # Copy rev files
 # We copy only the core app without modules so that we can faster rebuild if changes are made in modules
 COPY ./renv /srv/shiny-server/QC4Metabolomics/renv/
-COPY ./.Rprofile /srv/shiny-server/QC4Metabolomics/.Rprofile
-COPY ./renv.lock /srv/shiny-server/QC4Metabolomics/renv.lock
+COPY ./.Rprofile renv.lock .env /srv/shiny-server/QC4Metabolomics
 
 
 # Make renv install all remaining packages

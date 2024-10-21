@@ -41,7 +41,7 @@ These are the settings you need:
 
 | Compound name | Instrument | Mode | m/z      | RT1  |
 |---------------|------------|------|----------|------|
-| L-Tryptophan  | Sold       | pos  | 205.0972 | 2.55 |
+| L-Tryptophan  | Sold       | pos  | 188.0706 | 2.55 |
 | L-Tryptophan  | Sold       | neg  | 203.0826 | 2.55 |
 
 \

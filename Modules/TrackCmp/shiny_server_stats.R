@@ -6,6 +6,7 @@ require(dplyr)
 require(ggthemes)
 require(scales)
 require(zoo)
+require(glue)
 require(lubridate)
 
 # functions ---------------------------------------------------------------
@@ -164,63 +165,60 @@ std_stats_sample_id_reactive <- reactive(input$std_stats_sample_id) %>%
 
 
 # Get the files in selected range
-files_tbl_selected <- reactive({
+std_data_selected <- reactive({
 
-                                    project_select <- input$std_stats_project_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
-                                    mode_select    <- input$std_stats_mode_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
-                                    REGEXP <- std_stats_sample_id_reactive() %>% ifelse(.=="",".*",.)
-                                    REGEXP_inv <- input$std_stats_sample_id_inv %>% ifelse("NOT ", "")
-                                    instrument_select <- global_instruments_input() %>% paste(collapse="','") %>% paste0("('",.,"')")
-                                    
-
-                                    paste0(
-                                    "SELECT * FROM file_info ",
-                                    "WHERE ",
-                                    "(sample_id ",REGEXP_inv,"REGEXP ","'",REGEXP,"') AND ",
-                                    "(DATE(time_run) BETWEEN '",input$file_date_range_input[1],"' AND '",input$file_date_range_input[2],"') AND ",
-                                    "(project in ",project_select,") AND ",
-                                    "(mode in ",mode_select,") AND",
-                                    "(instrument in ",instrument_select,")"
-                                    ) %>% 
-                                    dbGetQuery(pool,.) %>% as_tibble
-                               })
-
-
-
-# Get all the data available for the selected files
-std_data_selected <-  reactive({
+  validate(
+    need(input$std_stats_project_select_input, "No project(s) selected or not retrived yet. Please check your query."),
+    need(input$std_stats_mode_select_input, "No mode(s) selected or not retrived yet. Please check your query."),
+    need(!is.null(input$std_stats_sample_id_inv), "No reverse search selection received yet. Hold on."),
+    need(!is.null(input$std_stats_sample_id), "No search string received yet. Hold on."),
+    need(global_instruments_input(), "Haven't retrieved list of instruments yet. Hold on.")
+  )
+  
+    project_select <- input$std_stats_project_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
+    mode_select    <- input$std_stats_mode_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
+    REGEXP <- std_stats_sample_id_reactive() %>% ifelse(.=="",".*",.)
+    REGEXP_inv <- input$std_stats_sample_id_inv %>% ifelse("NOT ", "")
+    instrument_select <- global_instruments_input() %>% paste(collapse="','") %>% paste0("('",.,"')")
     
-                                      validate(
-                                                need(nrow(files_tbl_selected()) != 0, "No data selected. Please check your query.")
-                                                )
-    
-    
-                                     files_tbl_selected() %>% 
-                                     extract2("file_md5") %>% 
-                                     paste(collapse="','") %>% 
-                                     paste0("'",.,"'") %>% 
-                                     paste0("
-                                             SELECT std_stat_data.*, std_compounds.cmp_name, std_compounds.cmp_rt1, std_compounds.updated_at, file_info.time_run, files.path
-                                             FROM std_stat_data
-                                             LEFT JOIN std_compounds USING(cmp_id)
-                                             LEFT JOIN file_info USING(file_md5)
-                                             LEFT JOIN files USING(file_md5)
-                                             WHERE std_stat_data.file_md5 in (",.,")
-                                            ") %>% 
-                                     dbGetQuery(pool,.) %>% 
-                                     as_tibble %>% 
-                                    mutate(across(c(updated_at, time_run), ~as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S"))) %>% 
-                                    mutate(time_run = with_tz(time_run, Sys.timezone(location = TRUE))) %>% # time zone fix
-                                    mutate(filename = sub('\\..*$', '', basename(path)))
-                                })
+    out <- glue("
+      SELECT file_info.mode, file_info.time_run, files.path, std_stat_data.*, std_stat_types.stat_name, std_compounds.cmp_name, std_compounds.cmp_mz, std_compounds.cmp_rt1, std_compounds.updated_at
+      FROM file_info CROSS JOIN std_stat_types
+      
+      LEFT JOIN files ON (file_info.file_md5 = files.file_md5)
+      LEFT JOIN std_stat_data ON (file_info.file_md5 = std_stat_data.file_md5) AND (std_stat_types.stat_id = std_stat_data.stat_id)
+      LEFT JOIN std_compounds ON (std_compounds.cmp_id = std_stat_data.cmp_id)
+      
+      WHERE (file_info.sample_id {REGEXP_inv} REGEXP '{REGEXP}')
+      AND (DATE(file_info.time_run) BETWEEN '{input$file_date_range_input[1]}' AND '{input$file_date_range_input[2]}')
+      AND (file_info.project in {project_select})
+      AND (file_info.mode in {mode_select})
+      AND (file_info.instrument in {instrument_select})
+      AND std_stat_types.stat_name in ('TF', 'ASF', 'datapoints', 'into', 'sn', 'rt_dev', 'mz_dev_ppm', 'FWHM')
+      ;
+      "
+      ) %>% 
+       dbGetQuery(pool,.) %>% 
+       as_tibble %>% 
+      mutate(across(c(updated_at, time_run), ~as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S"))) %>% 
+      mutate(time_run = with_tz(time_run, Sys.timezone(location = TRUE))) %>% # time zone fix
+      mutate(filename = sub('\\..*$', '', basename(path)))
+
+
+  validate(
+    need(nrow(out) != 0, "No data selected. Please check your query.")
+  )
+  
+  out
+  
+})
 
 
 
 
 # PLOT: Retention time deviation------------------------------------------------
 output$std_stats_rtplot <- renderPlotly({
-     if(!(nrow(std_data_selected())>0)) return(NULL)
-    
+  
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("rt_dev")) %>%
                                 ggplot(aes(x=time_run, y=value, group=cmp_name, color=cmp_name)) %>% 
@@ -239,8 +237,7 @@ output$std_stats_rtplot <- renderPlotly({
 
 # PLOT: mz deviation ------------------------------------------------
 output$std_stats_mzplot <- renderPlotly({
-     if(!(nrow(std_data_selected())>0)) return(NULL)
-    
+
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("mz_dev_ppm")) %>% 
             
@@ -261,8 +258,7 @@ output$std_stats_mzplot <- renderPlotly({
 
 # PLOT: Full Width at Half Maximum (FWHM) ---------------------------------
 output$std_stats_fwhmplot <- renderPlotly({
-     if(!(nrow(std_data_selected())>0)) return(NULL)
-    
+
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("FWHM")) %>% 
             
@@ -284,8 +280,7 @@ output$std_stats_fwhmplot <- renderPlotly({
 
 # PLOT: Tailing Factor -----------------------------------
 output$std_stats_TFplot <- renderPlotly({
-     if(!(nrow(std_data_selected())>0)) return(NULL)
-    
+
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("TF")) %>% 
             
@@ -305,8 +300,7 @@ output$std_stats_TFplot <- renderPlotly({
 
 # PLOT: Asymmetry Factor ---------------------------------
 output$std_stats_AFplot <- renderPlotly({
-     if(!(nrow(std_data_selected())>0)) return(NULL)
-    
+
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("ASF")) %>% 
             
@@ -326,8 +320,7 @@ output$std_stats_AFplot <- renderPlotly({
 
 # PLOT: # data points ---------------------------------
 output$std_stats_DPplot <- renderPlotly({
-     if(!(nrow(std_data_selected())>0)) return(NULL)
-    
+
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("datapoints")) %>% 
             
@@ -347,8 +340,7 @@ output$std_stats_DPplot <- renderPlotly({
 
 # PLOT: # area ---------------------------------
 output$std_stats_areaplot <- renderPlotly({
-     if(!(nrow(std_data_selected())>0)) return(NULL)
-    
+
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("into")) %>% 
             
@@ -369,9 +361,8 @@ output$std_stats_areaplot <- renderPlotly({
 
 # PLOT: # Area STD ---------------------------------
 output$std_stats_areastdplot <- renderPlotly({
-     if(!(nrow(std_data_selected())>0)) return(NULL)
-    
-    p <- std_data_selected() %>% 
+
+      p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("into")) %>% 
                                 arrange(time_run) %>% 
                                 group_by(cmp_name) %>% 
@@ -398,8 +389,7 @@ output$std_stats_areastdplot <- renderPlotly({
 
 # PLOT: # S/N ---------------------------------
 output$std_stats_SNplot <- renderPlotly({
-     if(!(nrow(std_data_selected())>0)) return(NULL)
-    
+
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("sn")) %>% 
             

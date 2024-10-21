@@ -169,7 +169,7 @@ for(ii in seq_along(file_tbl_std_l)){
         file_tbl_std_l[[ii]] %>% 
             filter(!has_ms1) %>% 
             slice(1) %>% select(path) %>%
-            paste0(sum(file_tbl_std_l[[ii]]$has_ms1), " files did not contain any MS1 data or two few scans to be meaningful. First was: ",.,". They will be ignored.") %>% 
+            paste0(sum(file_tbl_std_l[[ii]]$has_ms1), " files did not contain any MS1 data or too few scans to be meaningful. First was: ",.,". They will be ignored.") %>% 
             write_to_log(cat = "warning", source = log_source, pool = pool)
         
       # Move to ignore list

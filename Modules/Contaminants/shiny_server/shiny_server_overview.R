@@ -110,14 +110,19 @@ heatmap_data_selected <-  reactive({
     
     c_ord <- data_wide %>% select(ion_id, mode) %>% mutate(c_ord = NA)
     
-    if(length(pos_idx)>0){ 
+    if(length(pos_idx)>1){ 
     c_ord_pos <- hclustfun(distfun(t(scale(t(data_wide_mat[pos_idx,]))))) %>% extract2("order") %>% order
         c_ord$c_ord[pos_idx] <- c_ord_pos
+    }else{
+       c_ord$c_ord[pos_idx] <- 1
     }
     
-    if(length(neg_idx)>0){
+    
+    if(length(neg_idx)>1){
     c_ord_neg <- hclustfun(distfun(data_wide_mat[neg_idx,])) %>% extract2("order") %>% order
         c_ord$c_ord[neg_idx] <- c_ord_neg
+    }else{
+       c_ord$c_ord[neg_idx] <- 1
     }
     
     

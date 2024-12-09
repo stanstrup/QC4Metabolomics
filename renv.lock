@@ -2052,7 +2052,7 @@
       "RemoteType": "gitlab",
       "RemoteHost": "gitlab.com",
       "RemoteRepo": "massageR",
-      "RemoteUsername": "R_packages",
+      "RemoteUsername": "stanstrup_R_packages",
       "RemoteSha": "8a0c62b8f848fbcca65404d5315ca8cf5e9db72d",
       "Requirements": [
         "R",
@@ -2064,7 +2064,7 @@
         "reshape2",
         "rlang"
       ],
-      "Hash": "d19c017f37ce55f26f3bd620953ee666"
+      "Hash": "0092d7f1d25f3242e7c536f813a7d49f"
     },
     "matrixStats": {
       "Package": "matrixStats",

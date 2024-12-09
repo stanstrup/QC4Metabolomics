@@ -155,23 +155,53 @@ heatmap_data_selected <-  reactive({
     
     metric_name <- input$int_type %>% as.character %>% switch(EIC_max = "max", EIC_median = "median", EIC_mean = "mean")
     
+
+    # create rank (order of files) and "fill" until next file in same mode
+    fill_data <- fill_data %>% 
+                    filter(!is.na(stat)) %>% # nothing found
+                    distinct(ion_id, mode, c_ord, name, time_run, stat, value, anno, notes, x_text) %>% # some files are there twice with different md5
+                    
+                    dplyr::mutate(rank = dense_rank(time_run)) %>% 
+                    
+                    group_by(mode, ion_id, stat) %>% 
+                    dplyr::arrange(mode, ion_id, stat, time_run) %>% 
+                    
+                    dplyr::mutate(x_end = lead(rank, 1)) %>% 
+                    ungroup %>% 
+                    dplyr::mutate(x_end = if_else(is.na(x_end),max(rank),x_end) )
     
     
-    range_weeks <- difftime(max(fill_data$time_run),min(fill_data$time_run), units = "weeks") %>% as.numeric
+    # use negative numbers for negative mode so we can assign labels differently for pos and neg
+    fill_data <- fill_data %>% mutate(c_ord = if_else(mode == "neg", -c_ord, c_ord))
     
-    if(range_weeks>=20) date_breaks <- "1 month"
-    if(range_weeks<20) date_breaks <- "1 week"
-    if(range_weeks<2) date_breaks <- "1 day"
-    if(range_weeks<1/5) date_breaks <- "1 hour"
+    y_labels <- fill_data %>% distinct(c_ord, x_text)
     
     
-    p <- ggplot(data=fill_data, aes(x=time_run, y = reorder(x_text, c_ord), fill=log10(value))) + 
-         geom_tile() +
+    # get data breaks
+    x_breaks <- fill_data %>% 
+                    distinct(rank, time_run) %>% 
+                    arrange(rank) %>% 
+                    slice(round(seq.int(min(rank), max(rank), length.out = 10), 0)) %>% 
+                    mutate(time_run = format(time_run, format='%Y-%m-%d %H:%M'))
+    
+    
+    
+    
+    p <- ggplot(data=fill_data, aes(xmin = rank, 
+                                    xmax = x_end, 
+                                    ymin = c_ord-0.5, 
+                                    ymax = c_ord+0.5, 
+                                    fill=log10(value)
+                                    )
+                ) + 
+         geom_rect() +
          scale_fill_gradientn(colours = color_scale, na.value = "white") +
-         scale_x_datetime(labels = date_format("%Y-%m-%d", tz = tz(fill_data$time_run)), date_breaks=date_breaks) +
+         scale_y_continuous(breaks = y_labels$c_ord, labels = y_labels$x_text) +
+         scale_x_continuous(breaks = x_breaks$rank, labels = x_breaks$time_run) +
          theme_classic() +
          theme(axis.text.x = element_text(angle=30, hjust = 1)) +
-         facet_grid(mode ~ ., scales="free", space="free", labeller = labeller(mode=setNames(paste0("\n", str_to_title(unique(fill_data$mode)), "\n"), unique(fill_data$mode)))) +
+         facet_grid(mode~. , scales="free_y", space="free", labeller = labeller(mode=setNames(paste0("\n", str_to_title(unique(fill_data$mode)), "\n"), unique(fill_data$mode)))) +
+      
          theme(panel.background=element_rect(fill="lightgrey", colour="lightgrey")) +
          labs(x = "Run time", y = "Contaminant") +
          ggtitle("Level of known contaminants over time") +

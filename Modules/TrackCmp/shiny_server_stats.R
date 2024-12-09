@@ -189,7 +189,7 @@ std_data_selected <- reactive({
       LEFT JOIN std_stat_data ON (file_info.file_md5 = std_stat_data.file_md5) AND (std_stat_types.stat_id = std_stat_data.stat_id)
       LEFT JOIN std_compounds ON (std_compounds.cmp_id = std_stat_data.cmp_id)
       
-      WHERE (file_info.sample_id {REGEXP_inv} REGEXP '{REGEXP}')
+      WHERE (file_info.sample_id '{REGEXP_inv}' REGEXP '{REGEXP}')
       AND (DATE(file_info.time_run) BETWEEN '{input$file_date_range_input[1]}' AND '{input$file_date_range_input[2]}')
       AND (file_info.project in {project_select})
       AND (file_info.mode in {mode_select})

@@ -196,12 +196,12 @@ heatmap_data_selected <-  reactive({
                 ) + 
          geom_rect() +
          scale_fill_gradientn(colours = color_scale, na.value = "white") +
-         scale_y_continuous(breaks = y_labels$c_ord, labels = y_labels$x_text) +
+         scale_y_continuous(breaks = y_labels$c_ord, labels = y_labels$x_text, expand = c(0,0)) +
          scale_x_continuous(breaks = x_breaks$rank, labels = x_breaks$time_run) +
          theme_classic() +
          theme(axis.text.x = element_text(angle=30, hjust = 1)) +
          facet_grid(mode~. , scales="free_y", space="free", labeller = labeller(mode=setNames(paste0("\n", str_to_title(unique(fill_data$mode)), "\n"), unique(fill_data$mode)))) +
-      
+        
          theme(panel.background=element_rect(fill="lightgrey", colour="lightgrey")) +
          labs(x = "Run time", y = "Contaminant") +
          ggtitle("Level of known contaminants over time") +

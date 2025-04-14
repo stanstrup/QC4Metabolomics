@@ -24,6 +24,7 @@ RUN apt-get update && \
 	\
 	git \
 	# for easier debugging
+	libgit2-dev \
 	htop \
 	nano \
 	\
@@ -46,7 +47,7 @@ RUN mkdir /data
 # Copy rev files
 # We copy only the core app without modules so that we can faster rebuild if changes are made in modules
 COPY ./renv /srv/shiny-server/QC4Metabolomics/renv/
-COPY ./.Rprofile renv.lock .env /srv/shiny-server/QC4Metabolomics
+COPY ./.Rprofile renv.lock .env* /srv/shiny-server/QC4Metabolomics
 
 
 # Make renv install all remaining packages

@@ -34,6 +34,8 @@ jobs:
 
       - name: Install igraph dependencies for building and rsync for deploying
         run: sudo apt-get install -y libglpk-dev libnetcdf-dev rsync 
+
+
       - name: Package dependencies
         run: sudo apt-get install -y libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev libpng-dev libx11-dev pandoc 
         

@@ -6499,8 +6499,8 @@
     },
     "preprocessCore": {
       "Package": "preprocessCore",
-      "Version": "1.66.0",
-      "Source": "Bioconductor",
+      "Version": "1.69.0",
+      "Source": "GitHub",
       "Title": "A collection of pre-processing functions",
       "Author": "Ben Bolstad <bmb@bmbolstad.com>",
       "Maintainer": "Ben Bolstad <bmb@bmbolstad.com>",
@@ -6513,11 +6513,12 @@
       "Collate": "normalize.quantiles.R quantile_extensions.R rma.background.correct.R rcModel.R colSummarize.R subColSummarize.R plmr.R plmd.R",
       "LazyLoad": "yes",
       "biocViews": "Infrastructure",
-      "git_url": "https://git.bioconductor.org/packages/preprocessCore",
-      "git_branch": "RELEASE_3_19",
-      "git_last_commit": "3d14c98",
-      "git_last_commit_date": "2024-04-30",
-      "Repository": "Bioconductor 3.19",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "preprocessCore",
+      "RemoteUsername": "bmbolstad",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "d2e67f1e83f4427266d996cee24f3e23ac55b9a2",
       "NeedsCompilation": "yes"
     },
     "prettyunits": {

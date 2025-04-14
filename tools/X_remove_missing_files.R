@@ -18,10 +18,14 @@ pool <- dbPool_MetabolomiQCs(30)
 
 
 
-file_tbl <- "SELECT * FROM files" %>% 
+file_tbl <- "SELECT  path, file_md5
+             FROM    files
+             UNION ALL
+             SELECT  path, file_md5
+             FROM    files_ignore" %>% 
                 dbGetQuery(pool,.) %>% 
-                as_tibble %>% 
-                mutate(path = paste0(MetabolomiQCsR.env$general$base,"/",path))
+                as_tibble %>%
+                mutate(path = paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",path))
 
 file_tbl %<>% mutate(file_found = file_exists(path))
 

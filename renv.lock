@@ -2410,8 +2410,8 @@
     },
     "affyio": {
       "Package": "affyio",
-      "Version": "1.74.0",
-      "Source": "Bioconductor",
+      "Version": "1.77.3",
+      "Source": "GitHub",
       "Title": "Tools for parsing Affymetrix data files",
       "Author": "Ben Bolstad <bmb@bmbolstad.com>",
       "Maintainer": "Ben Bolstad <bmb@bmbolstad.com>",
@@ -2419,7 +2419,6 @@
         "R (>= 2.6.0)"
       ],
       "Imports": [
-        "zlibbioc",
         "methods"
       ],
       "Description": "Routines for parsing Affymetrix data files based upon file format information. Primary focus is on accessing the CEL and CDF file formats.",
@@ -2427,11 +2426,12 @@
       "URL": "https://github.com/bmbolstad/affyio",
       "biocViews": "Microarray, DataImport, Infrastructure",
       "LazyLoad": "yes",
-      "git_url": "https://git.bioconductor.org/packages/affyio",
-      "git_branch": "RELEASE_3_19",
-      "git_last_commit": "1d0948e",
-      "git_last_commit_date": "2024-04-30",
-      "Repository": "Bioconductor 3.19",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "affyio",
+      "RemoteUsername": "bmbolstad",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "dff48aa4bdecdcd1a0d4aa9bf3ce45c62b50d3ad",
       "NeedsCompilation": "yes"
     },
     "aplot": {

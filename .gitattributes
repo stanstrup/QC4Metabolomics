@@ -12,3 +12,8 @@ packrat/src/*/* filter=lfs diff=lfs merge=lfs -text
 
 # TO make github not consider it an HTML repo
 MetabolomiQCsR/inst/doc/* linguist-documentation
+
+*.png filter=lfs diff=lfs merge=lfs -text
+*.pptx filter=lfs diff=lfs merge=lfs -text
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.pdf filter=lfs diff=lfs merge=lfs -text

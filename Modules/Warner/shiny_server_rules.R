@@ -165,6 +165,7 @@ output$warner_tbl <- renderDataTable({
   
                                         warner_tbl_read() %>% 
                                         mutate(enabled = as.logical(enabled)) %>% 
+                                        mutate(use_abs_value = as.logical(use_abs_value)) %>% 
                                         select(rule_id, rule_name, instrument, stat_name, operator, value, use_abs_value, enabled, updated_at) %>% 
                                         datatable(colnames=c("Rule ID", "Rule Name", "Instrument", "Statistic", "Operator", "Value", "Use absolute value?", "Enabled?", "Changed"),
                                                   rownames = FALSE, 

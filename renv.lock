@@ -6666,8 +6666,8 @@
     },
     "ps": {
       "Package": "ps",
-      "Version": "1.9.1",
-      "Source": "Repository",
+      "Version": "1.9.1.9000",
+      "Source": "GitHub",
       "Title": "List, Query, Manipulate System Processes",
       "Authors@R": "c( person(\"Jay\", \"Loden\", role = \"aut\"), person(\"Dave\", \"Daeschler\", role = \"aut\"), person(\"Giampaolo\", \"Rodola'\", role = \"aut\"), person(\"Gábor\", \"Csárdi\", , \"csardi.gabor@gmail.com\", role = c(\"aut\", \"cre\")), person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\")) )",
       "Description": "List, query and manipulate all system processes, on 'Windows', 'Linux' and 'macOS'.",
@@ -6697,11 +6697,18 @@
       "Config/Needs/website": "tidyverse/tidytemplate",
       "Config/testthat/edition": "3",
       "Encoding": "UTF-8",
+      "Roxygen": "list(markdown = TRUE)",
       "RoxygenNote": "7.3.2",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "ps",
+      "RemoteUsername": "r-lib",
+      "RemotePkgRef": "r-lib/ps",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "8730d4ad118d609e28ca2a1ca46f992bf90193c6",
       "NeedsCompilation": "yes",
       "Author": "Jay Loden [aut], Dave Daeschler [aut], Giampaolo Rodola' [aut], Gábor Csárdi [aut, cre], Posit Software, PBC [cph, fnd]",
-      "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
-      "Repository": "CRAN"
+      "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>"
     },
     "purrr": {
       "Package": "purrr",

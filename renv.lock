@@ -2369,7 +2369,7 @@
     "affy": {
       "Package": "affy",
       "Version": "1.84.0",
-      "Source": "URL",
+      "Source": "Bioconductor",
       "Title": "Methods for Affymetrix Oligonucleotide Arrays",
       "Author": "Rafael A. Irizarry <rafa@ds.dfci.harvard.edu>, Laurent Gautier <lgautier@gmail.com>, Benjamin Milo Bolstad <bmb@bmbolstad.com>, and Crispin Miller <cmiller@picr.man.ac.uk> with contributions from Magnus Astrand <Magnus.Astrand@astrazeneca.com>, Leslie M. Cope <cope@mts.jhu.edu>, Robert Gentleman, Jeff Gentry, Conrad Halling <challing@agilixcorp.com>, Wolfgang Huber, James MacDonald <jmacdon@u.washington.edu>, Benjamin I. P. Rubinstein, Christopher Workman <workman@cbs.dtu.dk>, John Zhang",
       "Maintainer": "Robert D. Shear <rshear@ds.dfci.harvard.edu>",
@@ -2410,9 +2410,7 @@
       "git_last_commit": "1174adf",
       "git_last_commit_date": "2024-10-29",
       "Repository": "Bioconductor 3.20",
-      "NeedsCompilation": "yes",
-      "RemoteType": "url",
-      "RemoteUrl": "https://bioconductor.org/packages/release/bioc/src/contrib/affy_1.84.0.tar.gz"
+      "NeedsCompilation": "yes"
     },
     "affyio": {
       "Package": "affyio",

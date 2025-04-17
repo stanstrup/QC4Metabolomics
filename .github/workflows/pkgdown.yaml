@@ -51,9 +51,9 @@ jobs:
               libjpeg-dev
         
         
-      - name: Set Bioconductor mirror
-        run: |
-          echo 'options(BioC_mirror = "https://mirrors.dotsrc.org/bioconductor")' >> .Rprofile        
+      # - name: Set Bioconductor mirror
+      #   run: |
+      #     echo 'options(BioC_mirror = "https://mirrors.dotsrc.org/bioconductor")' >> .Rprofile        
   
       # - uses: awalsh128/cache-apt-pkgs-action@latest
       #   with:

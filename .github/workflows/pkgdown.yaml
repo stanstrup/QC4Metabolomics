@@ -21,6 +21,7 @@ jobs:
       group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      BIOC_MIRROR: https://mirrors.dotsrc.org/bioconductor
     permissions:
       contents: write
     steps:

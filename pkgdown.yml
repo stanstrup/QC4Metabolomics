@@ -1,0 +1,14 @@
+pandoc: 3.1.11
+pkgdown: 2.1.1
+pkgdown_sha: ~
+articles:
+  articles/connect_to_db_from_R: connect_to_db_from_R.html
+  articles/demo: demo.html
+  articles/file_move: file_move.html
+  articles/installing_docker_on_redhat: installing_docker_on_redhat.html
+  articles/troubleshooting: troubleshooting.html
+  articles/update_database: update_database.html
+last_built: 2025-04-17T20:09Z
+urls:
+  reference: https://github.com/stanstrup/QC4Metabolomics/reference
+  article: https://github.com/stanstrup/QC4Metabolomics/articles

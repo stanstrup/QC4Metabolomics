@@ -1,4 +1,7 @@
 # Functions ---------------------------------------------------------------
+dbSendQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbSendQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
+dbGetQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbGetQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
+
 # Check for new data every 10 s
 warner_tbl_read <- reactivePoll(10*1000, # every 10 s
                                  session=session,
@@ -8,9 +11,9 @@ warner_tbl_read <- reactivePoll(10*1000, # every 10 s
                                             # update after delete is clicked
                                             input$warner_delete
                                             # check same number of entries (new/deleted rows).
-                                            a <- "SELECT COUNT(*) FROM warner_rules"      %>% dbGetQuery(pool, .) %>% as.numeric 
+                                            a <- "SELECT COUNT(*) FROM warner_rules"      %>% dbGetQuery_sel_no_warn(pool, .) %>% as.numeric 
                                             #  Also check if updates.
-                                            b <- "SELECT MAX(updated_at) FROM warner_rules" %>% {suppressWarnings(dbGetQuery(pool,.))}
+                                            b <- "SELECT MAX(updated_at) FROM warner_rules" %>% {suppressWarnings(dbGetQuery_sel_no_warn(pool,.))}
                                             return(list(a,b))
                                            },
                                  function(){
@@ -28,7 +31,7 @@ warner_tbl_read <- reactivePoll(10*1000, # every 10 s
                                             FROM warner_rules
                                             JOIN warner_stat_types ON warner_rules.stat_id = warner_stat_types.stat_id
                                             ORDER BY warner_rules.rule_id;" %>% 
-                                            {suppressWarnings(dbGetQuery(pool,.))}
+                                            {suppressWarnings(dbGetQuery_sel_no_warn(pool,.))}
                                            }
                                 )
 
@@ -57,7 +60,7 @@ output$warner_stat_ui <- renderUI({
         ns <- session$ns
 
         stat_type_choices <- "SELECT * FROM warner_stat_types;" %>% 
-          {suppressWarnings(dbGetQuery(pool,.))} %>% 
+          {dbGetQuery_sel_no_warn(pool,.)} %>% 
           {setNames(.$stat_id, .$stat_name)}
         
         selectInput(   ns("warner_stat"),     "Statistic", choices = stat_type_choices)
@@ -100,8 +103,8 @@ observeEvent(input$warner_delete,
                 dbBegin(con)
                 sql1 <- paste0("DELETE FROM warner_rules WHERE rule_id=",input$warner_rule_id)
                 sql2 <- paste0("DELETE FROM warner_log   WHERE rule_id=",input$warner_rule_id)
-                res <- dbSendQuery(con,sql1)
-                res <- dbSendQuery(con,sql2)
+                res <- dbSendQuery_sel_no_warn(con,sql1)
+                res <- dbSendQuery_sel_no_warn(con,sql2)
                 res <- dbCommit(con)
                 poolReturn(con)
                 
@@ -147,7 +150,7 @@ observeEvent(   input$warner_submit,
                             sql <- sqlAppendTable(con, "warner_rules", data) # insert
                     }
                     
-                res <- dbSendQuery(con,sql)
+                res <- dbSendQuery_sel_no_warn(con,sql)
                 res <- dbCommit(con)
                 poolReturn(con)
                 

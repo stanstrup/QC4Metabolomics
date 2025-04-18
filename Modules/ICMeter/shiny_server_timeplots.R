@@ -9,6 +9,8 @@ require(zoo)
 require(lubridate)
 require(viridis)
 
+dbGetQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbGetQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
+
 
 # functions ---------------------------------------------------------------
 plotmargin_fix <- function(p){
@@ -30,7 +32,7 @@ date_range <-         reactive({
                                      MAX(time) AS max
                                      FROM ic_data
                                     " %>% 
-                                    dbGetQuery(pool,.) %>% 
+                                    dbGetQuery_sel_no_warn(pool,.) %>% 
                                     {setNames(as.POSIXct(as.character(.),format= "%Y-%m-%d %H:%M:%S"), names(.))}
                                     
                                })
@@ -69,7 +71,7 @@ data_selected <-      reactive({
                                                     "WHERE ",
                                                     "(DATE(time) BETWEEN '",input$file_date_range_input[1],"' AND '",input$file_date_range_input[2],"')"
                                                     ) %>% 
-                                           dbGetQuery(pool,.) %>% as_tibble
+                                           dbGetQuery_sel_no_warn(pool,.) %>% as_tibble
     
                                     Encoding(out$metric) <- "UTF-8"
                                     

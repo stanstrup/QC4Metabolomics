@@ -1,3 +1,5 @@
+dbGetQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbGetQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
+
 # Build data range selector -----------------------------------------------
 # Get time range available in the db
 files_date_range <-    reactive({   default_time_range(min_weeks=6*4, min_samples = 500, pool = pool)  })
@@ -35,7 +37,7 @@ project_available <- reactive({
                .,
                ")"
         ) %>% 
-        dbGetQuery(pool,.) %>% 
+        dbGetQuery_sel_no_warn(pool,.) %>% 
         as.matrix %>% as.character %>% sort
 })
 
@@ -61,7 +63,7 @@ mode_available <-    reactive({    "
                                                  SELECT DISTINCT mode
                                                  FROM file_info
                                                 " %>% 
-                                                dbGetQuery(pool,.) %>% 
+                                                dbGetQuery_sel_no_warn(pool,.) %>% 
                                                 as.matrix %>% as.character
                                            })
 
@@ -148,7 +150,7 @@ files_tbl_selected <- reactive({
                                     "(mode in ",mode_select,") AND ",
                                     "(instrument in ",instrument_select,")"                                    
                                     ) %>% 
-                                    dbGetQuery(pool,.) %>% as_tibble %>% 
+                                    dbGetQuery_sel_no_warn(pool,.) %>% as_tibble %>% 
                                     mutate(across(time_run, ~as.POSIXct(., tz="UTC")))
                                })
 

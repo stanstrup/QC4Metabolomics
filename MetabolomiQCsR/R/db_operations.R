@@ -187,6 +187,8 @@ rem_dead_files <- function(file_md5, path, pool = NULL, log_source){
 
 default_time_range <- function(min_weeks=2, min_samples = 200, pool = NULL){
 
+	dbGetQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbGetQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
+
     # make check happy
     . <- NULL
 
@@ -195,7 +197,7 @@ default_time_range <- function(min_weeks=2, min_samples = 200, pool = NULL){
     if(is.null(pool)) dbPool_MetabolomiQCs(5)
     
     max <- "SELECT MAX(time_run) FROM file_info" %>% 
-            dbGetQuery(pool,.) %>% 
+            dbGetQuery_sel_no_warn(pool,.) %>% 
             as.character %>% 
             as.POSIXct(format= "%Y-%m-%d %H:%M:%S")
     
@@ -203,7 +205,7 @@ default_time_range <- function(min_weeks=2, min_samples = 200, pool = NULL){
     
     N <- {max-weeks(2)} %>% strftime("%Y-%m-%d %H:%M:%S") %>% 
           paste0("SELECT COUNT(time_run) FROM file_info WHERE time_run > '",.,"'") %>% 
-          dbGetQuery(pool,.) %>% as.numeric
+          dbGetQuery_sel_no_warn(pool,.) %>% as.numeric
     
     
     if(N>200){
@@ -213,7 +215,7 @@ default_time_range <- function(min_weeks=2, min_samples = 200, pool = NULL){
     }else{
         
         min <- paste0("SELECT time_run FROM file_info ORDER BY time_run DESC LIMIT ",N-1, ",1") %>% 
-            dbGetQuery(pool,.) %>% 
+            dbGetQuery_sel_no_warn(pool,.) %>% 
             as.character %>% 
             as.POSIXct(format= "%Y-%m-%d %H:%M:%S")
         

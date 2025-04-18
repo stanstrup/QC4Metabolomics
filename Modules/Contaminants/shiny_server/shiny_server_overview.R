@@ -1,3 +1,6 @@
+dbGetQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbGetQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
+
+
 # Build UI for intensity selection ----------------------------------------
 output$int_cutoff_ui <- renderUI({
         ns <- session$ns
@@ -57,7 +60,7 @@ heatmap_data_selected <-  reactive({
                                                         FROM cont_data
                                                         WHERE (cont_data.stat = '",metric,"') AND (value > ",cut_off,")
                                                        ") %>% 
-                                                dbGetQuery(pool,.) %>% 
+                                                dbGetQuery_sel_no_warn(pool,.) %>% 
                                                 extract2("ion_id") %>% 
                                                 paste(collapse="','") %>% paste0("('",.,"')")
 
@@ -71,7 +74,7 @@ heatmap_data_selected <-  reactive({
                                              ion_id IN ", ion_id_str,") AND (
                                              file_md5 IN ",md5_str,")"
                                             ) %>% 
-                                    dbGetQuery(pool,.) %>% 
+                                    dbGetQuery_sel_no_warn(pool,.) %>% 
                                     as_tibble %>% 
                                     mutate(across(time_run, ~as.POSIXct(., tz="UTC"))) %>% 
                                     mutate(time_run = with_tz(time_run, Sys.timezone(location = TRUE))) # time zone fix

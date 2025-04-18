@@ -1,3 +1,6 @@
+dbGetQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbGetQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
+
+
 # Build UI for file screening --------------------------------------------------
 output$file_select_ui <- renderUI({
         ns <- session$ns
@@ -37,7 +40,7 @@ file_screening_selected <-  reactive({
                                              file_md5 = '", input$file_select,"')"
 
                                             ) %>% 
-                                    dbGetQuery(pool,.) %>% 
+                                    dbGetQuery_sel_no_warn(pool,.) %>% 
                                     as_tibble %>% 
                                     mutate(across(time_run, ~as.POSIXct(., tz="UTC")))
                                 

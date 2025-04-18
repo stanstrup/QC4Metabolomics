@@ -9,10 +9,14 @@ require(zoo)
 require(glue)
 require(lubridate)
 
+dbGetQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbGetQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
+
 # functions ---------------------------------------------------------------
+geom_point_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(geom_point, pattern = "unknown aesthetics: text")
+
 std_stats_plot_common <- function(p){ p+
                                       geom_line() +
-                                      geom_point(aes(text = paste("Filename:", filename))) +
+                                      geom_point_sel_no_warn(aes(text = paste("Filename:", filename))) +
                                       theme_gdocs() +
                                       theme(axis.title=element_text(face="bold", size = 16), title=element_text(face="bold", size = 18)) +
                                       labs(group="", color="")
@@ -71,7 +75,7 @@ std_stats_project_available <- reactive({
                .,
                ")"
         ) %>% 
-        dbGetQuery(pool,.) %>% 
+        dbGetQuery_sel_no_warn(pool,.) %>% 
         as.matrix %>% as.character %>% sort
 })
 
@@ -98,7 +102,7 @@ std_stats_mode_available <-    reactive({    "
                                                  SELECT DISTINCT mode
                                                  FROM file_info
                                                 " %>% 
-                                                dbGetQuery(pool,.) %>% 
+                                                dbGetQuery_sel_no_warn(pool,.) %>% 
                                                 as.matrix %>% as.character
                                            })
 
@@ -186,7 +190,7 @@ std_data_selected <- reactive({
       FROM file_info CROSS JOIN std_stat_types
       
       LEFT JOIN files ON (file_info.file_md5 = files.file_md5)
-      LEFT JOIN std_stat_data ON (file_info.file_md5 = std_stat_data.file_md5) AND (std_stat_types.stat_id = std_stat_data.stat_id)
+      INNER JOIN std_stat_data ON (file_info.file_md5 = std_stat_data.file_md5) AND (std_stat_types.stat_id = std_stat_data.stat_id)
       LEFT JOIN std_compounds ON (std_compounds.cmp_id = std_stat_data.cmp_id)
       
       WHERE (file_info.sample_id {REGEXP_inv} REGEXP '{REGEXP}')
@@ -198,7 +202,7 @@ std_data_selected <- reactive({
       ;
       "
       ) %>% 
-       dbGetQuery(pool,.) %>% 
+       dbGetQuery_sel_no_warn(pool,.) %>% 
        as_tibble %>% 
       mutate(across(c(updated_at, time_run), ~as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S"))) %>% 
       mutate(time_run = with_tz(time_run, Sys.timezone(location = TRUE))) %>% # time zone fix
@@ -218,7 +222,7 @@ std_data_selected <- reactive({
 
 # PLOT: Retention time deviation------------------------------------------------
 output$std_stats_rtplot <- renderPlotly({
-  
+
     p <- std_data_selected() %>% 
                                 filter(stat_id == stat_name2id("rt_dev")) %>%
                                 ggplot(aes(x=time_run, y=value, group=cmp_name, color=cmp_name)) %>% 

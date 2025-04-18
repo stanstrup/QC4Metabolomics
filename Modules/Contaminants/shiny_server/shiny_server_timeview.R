@@ -1,3 +1,5 @@
+dbGetQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbGetQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
+
 
 # Build UI for time view --------------------------------------------------
 all_ions <- reactive({
@@ -10,7 +12,7 @@ all_ions <- reactive({
                                "WHERE (cont_cmp.mode IN ",mode_select,")"
                                     
                                ) %>% 
-                        dbGetQuery(pool,.) %>% 
+                        dbGetQuery_sel_no_warn(pool,.) %>% 
                         as_tibble 
                         
     })
@@ -71,7 +73,7 @@ time_data_selected <-  reactive({
                                              file_md5 IN ",md5_str,")"," AND (
                                              cont_cmp.mode = '", mode,"')"
                                             ) %>% 
-                                    dbGetQuery(pool,.) %>% 
+                                    dbGetQuery_sel_no_warn(pool,.) %>% 
                                     as_tibble %>% 
                                     mutate(across(time_run, ~as.POSIXct(., tz="UTC"))) %>% 
                                     mutate(time_run = with_tz(time_run, Sys.timezone(location = TRUE))) # time zone fix

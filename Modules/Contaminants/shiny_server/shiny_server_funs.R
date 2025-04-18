@@ -1,4 +1,6 @@
 # Functions ---------------------------------------------------------------
+dbGetQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbGetQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
+
 
 plotmargin_fix <- function(p){
                                             p$x$layout$margin$l <- p$x$layout$margin$l + 30 # avoid cut axis titles
@@ -48,7 +50,7 @@ int_range <- "
 				GROUP BY stat
 				) s;
              " %>% 
-             dbGetQuery(pool,.) 
+             dbGetQuery_sel_no_warn(pool,.) 
 
 if(any(is.na(int_range))){
  int_range[is.na(int_range)] <- 0

@@ -1,4 +1,7 @@
 # Functions ---------------------------------------------------------------
+dbSendQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbSendQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
+dbGetQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbGetQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
+
 # Check for new data every 10 s
 std_cmp_tbl_read <- reactivePoll(10*1000, # every 10 s
                                  session=session,
@@ -8,14 +11,14 @@ std_cmp_tbl_read <- reactivePoll(10*1000, # every 10 s
                                             # update after delete is clicked
                                             input$std_cmp_delete
                                             # check same number of entries (new/deleted rows).
-                                            a <- "SELECT COUNT(*) FROM std_compounds"      %>% dbGetQuery(pool, .) %>% as.numeric 
+                                            a <- "SELECT COUNT(*) FROM std_compounds"      %>% dbGetQuery_sel_no_warn(pool, .) %>% as.numeric 
                                             #  Also check if updates.
-                                            b <- "SELECT MAX(updated_at) FROM std_compounds" %>% {suppressWarnings(dbGetQuery(pool,.))}
+                                            b <- "SELECT MAX(updated_at) FROM std_compounds" %>% {suppressWarnings(dbGetQuery_sel_no_warn(pool,.))}
                                             return(list(a,b))
                                            },
                                  function(){
                                             "SELECT * FROM std_compounds ORDER BY cmp_id" %>% 
-                                            {suppressWarnings(dbGetQuery(pool,.))} %>% 
+                                            {suppressWarnings(dbGetQuery_sel_no_warn(pool,.))} %>% 
                                             select(cmp_id, cmp_name, instrument, mode, cmp_mz, cmp_rt1, cmp_rt2, enabled, updated_at)
                                            }
                                 )
@@ -73,8 +76,8 @@ observeEvent(input$std_cmp_delete,
                 dbBegin(con)
                 sql1 <- paste0("DELETE FROM std_stat_data WHERE cmp_id=",input$std_cmp_id)
                 sql2 <- paste0("DELETE FROM std_compounds WHERE cmp_id=",input$std_cmp_id)
-                res <- dbSendQuery(con,sql1)
-                res <- dbSendQuery(con,sql2)
+                res <- dbSendQuery_sel_no_warn(con,sql1)
+                res <- dbSendQuery_sel_no_warn(con,sql2)
                 res <- dbCommit(con)
                 poolReturn(con)
                 
@@ -116,7 +119,7 @@ observeEvent(   input$std_cmp_submit,
                             sql <- sqlAppendTable(con, "std_compounds", data) # insert
                     }
                     
-                res <- dbSendQuery(con,sql)
+                res <- dbSendQuery_sel_no_warn(con,sql)
                 res <- dbCommit(con)
                 poolReturn(con)
                 

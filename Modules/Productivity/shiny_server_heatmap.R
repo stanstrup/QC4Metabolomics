@@ -9,7 +9,7 @@ require(zoo)
 require(lubridate)
 require(viridis)
 
-
+dbGetQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbGetQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
 
 # functions ---------------------------------------------------------------
 plotmargin_fix <- function(p){
@@ -31,7 +31,7 @@ files_date_range <-    reactive({
                                      MAX(time_run) AS max
                                      FROM file_info
                                     " %>% 
-                                    dbGetQuery(pool,.) %>% 
+                                    dbGetQuery_sel_no_warn(pool,.) %>% 
                                     {setNames(as.POSIXct(as.character(.),format= "%Y-%m-%d %H:%M:%S"), names(.))}
                                     
                                })
@@ -69,7 +69,7 @@ project_available <- reactive({
                .,
                ")"
         ) %>% 
-        dbGetQuery(pool,.) %>% 
+        dbGetQuery_sel_no_warn(pool,.) %>% 
         as.matrix %>% as.character %>% sort
 })
 
@@ -95,7 +95,7 @@ mode_available <-    reactive({    "
                                                  SELECT DISTINCT mode
                                                  FROM file_info
                                                 " %>% 
-                                                dbGetQuery(pool,.) %>% 
+                                                dbGetQuery_sel_no_warn(pool,.) %>% 
                                                 as.matrix %>% as.character
                                            })
 
@@ -179,7 +179,7 @@ files_tbl_selected <- reactive({
                                     "(mode in ",mode_select,") AND",
                                     "(instrument in ",instrument_select,")"
                                     ) %>% 
-                                    dbGetQuery(pool,.) %>% as_tibble
+                                    dbGetQuery_sel_no_warn(pool,.) %>% as_tibble
                                })
 
 
@@ -200,7 +200,7 @@ std_data_selected <-  reactive({
                                              "SELECT time_run, project FROM file_info",
                                              " WHERE file_md5 in (",.,")
                                             ") %>% 
-                                     dbGetQuery(pool,.) %>% 
+                                     dbGetQuery_sel_no_warn(pool,.) %>% 
                                      as_tibble %>% 
                                     mutate(across(time_run, ~as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S")))
                                 })

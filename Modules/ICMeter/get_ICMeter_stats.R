@@ -1,5 +1,7 @@
 log_source <- "ICMeter"
 
+dbSendQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbSendQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
+
 # Getting all data sequentially -------------------------------------------
 token <- ic_token(Sys.getenv("QC4METABOLOMICS_module_ICMeter_user"),Sys.getenv("QC4METABOLOMICS_module_ICMeter_password"))
 boxes <- ic_boxes(token)
@@ -70,7 +72,7 @@ for(device in boxes$name){
         
         sql_query@.Data <- paste0(sql_query@.Data, "\n  ","ON DUPLICATE KEY UPDATE value = values(value)") 
         
-        res <- dbSendQuery(con,sql_query)
+        res <- dbSendQuery_sel_no_warn(con,sql_query)
         
         res <- dbCommit(con)
         

@@ -8,6 +8,7 @@ library(dplyr)
 library(tidyr)
 library(purrr)
 
+dbSendQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbSendQuery, pattern = "unrecognized MySQL field type 7 in column 12 imported as character")
 
 # Get settings ------------------------------------------------------------
 
@@ -77,7 +78,7 @@ sql_fun <-   . %>%
              sapply(.,function(x){ 
                                     if(gsub("[[:space:]]", "", x)=="") return(TRUE)
                                     
-                                    dbSendQuery(con, x) 
+                                    dbSendQuery_sel_no_warn(con, x) 
                                     dbCommit(con)
                                  }
                     ) %>% 
@@ -123,7 +124,7 @@ module_table %>% filter(sql_fun == "create") %>%
                  sapply(.,function(x){ 
                                         if(gsub("[[:space:]]", "", x)=="") return(TRUE)
                                         
-                                        dbSendQuery(con, x) 
+                                        dbSendQuery_sel_no_warn(con, x) 
                                         dbCommit(con)
                                      }
                         ) %>% 

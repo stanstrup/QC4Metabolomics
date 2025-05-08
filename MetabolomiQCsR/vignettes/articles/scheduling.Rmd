@@ -1,0 +1,35 @@
+---
+title: "How are tasks scheduled?"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{How are tasks scheduled?}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+When a new file is detected a cascade of tasks are started. This document explains what happens under the hood. Refer to "Running your own system" for more explanation of how new files are detected.
+
+# A new file has been added. Now what?
+
+The processing queue is a multi-step process that works the following way:
+
+1.  Every 1 minute, given that no processing is already running, the system starts all processing operations defined by all enabled modules in prioritized order (`_process_order` defined in the settings in your .env file). By default the following will happen:
+
+2.  The module "Files" finds any new files (defined in a text file or a monitored folder; refer to "Running your own system" for details), calculates the MD5 checksum of the files and adds them to the database. This is done 20 files at a time to avoid losing all results if an unforeseen error in a few files causes the processing to fail. This runs until all new files have been added to the database. This takes approximately the time it takes to read the raw files for MD5 checksum calculation; typically a few seconds per file with files ofa similar size as in the demo.
+
+3.  The module "FileInfo" parses the filenames and extracts the true analysis date/time. This is done for the newest files first in batches of up to 200 files for the same reason of robustness as above.
+
+4.  The module "FileSchedule" schedules the files for processing by all active modules that have file processing enabled (`_schedule` in the .env file). Currently the three modules that processes files are "TrackCmp", "Contaminants" and the new "Warner". "TrackCmp" runs first.
+
+5.  The module "TrackCmp" processes files. The files are first sorted by date and the newest files processed first, to make sure that the most current data is presented first. A possible backlog (if for example old files are added manually) of files are then processed.\
+    To reduce overhead while keeping memory usage predictable, 10 files are processed together (meaning in the same call to the peak-picker) and a maximum of 10 batches are processed before the system again checks (step 1) for possible new files that will then be prioritized.
+
+6.  The module "Contaminants" runs. Similarly to "TrackCmp", "Contaminants" analyses files in batches of 10 and writes intensity values for all known contaminants to the database.
+    
+7.  The module "Warner" runs. This is fast and considers all files at once. Any file violation a rule will be mentioned in the generated email. A file will only be warned about once.
+
+\
+\
+
+If you update settings in any of the modules (for example add more compounds to track) the new settings are only applied going forward. If you want to re-process the files already processed the processing queue for those files need to be reset in the database (currently manually).
+

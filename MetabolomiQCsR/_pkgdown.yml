@@ -20,9 +20,10 @@ articles:
   navbar: Getting started
   contents:
   - articles/demo
-  #- articles/setup_own_system
+  - articles/setup_own_system
   - articles/file_move
   - articles/installing_docker_on_redhat
+  - articles/scheduling
 
 - title: Maintainance
   navbar: Maintainance

@@ -1,0 +1,185 @@
+---
+title: "Running your own system"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Running your own system}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Prepare files with your new configuration
+
+1.  First install and run the [demo](demo.html) and make sure everything is working.
+2.  Make copies of `docker-compose_demo.yml` and `settings_demo.env` and rename the copies to remove `_demo` from the filenames.
+
+## Choose what processes QC4metabolomics should run and correct paths
+
+Open your newly created `docker-compose.yml` in a text editor and modify to fit your system.\
+The system consists of different "machines" that take care of different parts of QC4Metabolomics:
+
+- mariadb (required): runs the database that keep all the data.
+- qc_process (required): This runs the background processing of the files that extracts the data.
+- qc_shiny (required): This runs the web interface that show you the data.
+- ms_converter (optional): This is an automatic converter that takes the raw vendor data and converts it into mzML files.
+- db-backup (optional): Automatic backup of the database
+    
+First thing you do is replace every instance of `settings_demo.env` with `settings.env` in your new `docker-compose.yml`.\
+Next you need to change several locations:
+
+- under `mariadb` --> `volumes` --> change `source` to the location to where the database files will be kept.
+- under `qc_process` --> `volumes` --> change `source` to the location of your data (where your mzML files live).
+- under `qc_shiny` --> `volumes` --> change `source` to the location of your data (where your mzML files live).
+- under `ms_converter` --> `volumes` --> change `source` to the location of your data (where your mzML files live).
+- under `db-backup` --> `volumes` --> change `source` to the location where you want your database backups to be saved.
+
+If you do not want to use `ms_converter` or `db-backup` you can remove those sections entirely.
+
+
+## General settings
+
+
+Now we can change settings in `settings.env` to fit your specific needs.\
+
+The first setting is the time zone that can be adjusted so that analysis times are displayed in the local time.
+
+```ini
+TZ=Europe/Copenhagen
+```
+
+## General module settings
+
+Next you will find that all modules modules have the sections:
+
+```ini
+QC4METABOLOMICS_module_MODULENAME_enabled
+QC4METABOLOMICS_module_MODULENAME_shiny_enabled
+QC4METABOLOMICS_module_MODULENAME_schedule
+QC4METABOLOMICS_module_MODULENAME_file_schedule
+```
+
+Normally you'd only need to change `QC4METABOLOMICS_module_MODULENAME_enabled` that decides if the module is loaded at all.\
+
+Some modules also have the setting `QC4METABOLOMICS_module_MODULENAME_init_db_priority` that decides in which order the module's tables are created in the database when the database is first created. Should not be touched.\
+`QC4METABOLOMICS_module_MODULENAME_process_order` controls in which order background processesing runs. Probably no need to change these.
+
+You can enable/disable parts of a module using these settings:
+
+- `QC4METABOLOMICS_module_MODULENAME_shiny_enabled` enables/disables the interface for the module.
+- `QC4METABOLOMICS_module_MODULENAME_schedule` enables/disables the scheduled run on background processing.
+- `QC4METABOLOMICS_module_MODULENAME_file_schedule` chooses if this modules will be scheduled to work on individual files.
+
+
+## Specific module settings
+
+### Files
+
+- `QC4METABOLOMICS_module_Files_include_ext`: When determining which files to include choose only files matching these extension (OR). Cannot be empty. Separated by `;`.
+- `QC4METABOLOMICS_module_Files_include_path`: To be included, the full path must include this string (AND). Can be empty.
+- `QC4METABOLOMICS_module_Files_exclude_path`: To be included, the full path must *NOT* include this string (OR). Can be empty.
+- `QC4METABOLOMICS_module_Files_files_from_txt`: Chooses whether or not files are found by traversing a folder or by reading a text file that includes the exact paths. We recommend that you use a text file that is updated as your analysis progresses as a deep folder structure with thousands of files will become slow to traverse. Refer also to "Moving raw files automatically" for a help script that moves files and creates this index file.
+- `QC4METABOLOMICS_module_Files_files_txt_path`: The path to the text file that contains the path to the data files. The paths should be relative to the data path as seen from inside the docker image. that means that if you files are in `d:\folder\mzML_files` and you mounted `d:\folder\mzML_files` to `/data` in the docker compose file then the paths would look like: `/data/project name/mzML files/project name_date_instrument_sequence no_mode_sample name.mzML`. Refer also to "Moving raw files automatically" for a help script that moves files and creates this index file.
+
+### FileInfo
+
+- `QC4METABOLOMICS_module_FileInfo_mask`: This is very important. This is the pattern of your file name. Required information in the file name is `instrument`, `project`, `mode` (if not using below workaround) and `sample_id`. Other fields can be specified but are not used.\
+   Example: `%project%_%date%_%instrument%_%batch_seq_nr%_%mode%_%sample_id%`
+- `QC4METABOLOMICS_module_FileInfo_mode_from_other_field`: If the mode is part of another "field" and not specified separately, this setting can be enabled and the mode extracted.
+- `QC4METABOLOMICS_module_FileInfo_mode_from_other_field_which`: This is the field name the mode should be deduced from.
+- `QC4METABOLOMICS_module_FileInfo_mode_from_other_field_pos_trigger`: What string from the field name above should trigger the mode being set to "pos"?
+- `QC4METABOLOMICS_module_FileInfo_mode_from_other_field_neg_trigger`:  What string from the field name above should trigger the mode being set to "neg"?
+
+
+### TrackCmp
+
+- `QC4METABOLOMICS_module_TrackCmp_ROI_ppm`: When subsetting the raw data how large a deviation from the target m/z is allowed? This needs to be quite large since the deviation at the tails of peaks is usually larger than expected. Only scans inside this window is used. The centwave ppm setting will limit appropriately the peak selected.
+- `QC4METABOLOMICS_module_TrackCmp_findPeaks_method`: selected peak picking method. Only `centWave` supported ATM.
+- `QC4METABOLOMICS_module_TrackCmp_findPeaks_snthr`: The signal to noise threshold for a peak to be picked.
+- `QC4METABOLOMICS_module_TrackCmp_findPeaks_ppm`:  The ppm tolerance for peak detection.
+- `QC4METABOLOMICS_module_TrackCmp_findPeaks_peakwidth`: The allowed peak with range in seconds. Should be two numbers separated by comma.
+- `QC4METABOLOMICS_module_TrackCmp_findPeaks_scanrange`: The scan range to consider. Can be `NULL` to analyze the whole file.
+- `QC4METABOLOMICS_module_TrackCmp_findPeaks_prefilter`: The prefilter settings for centWave. Refer to the CentWave for details.  Should be two numbers separated by comma. The first number says how many scans need to be above the intensity given by the second number for a peak to be picked.
+- `QC4METABOLOMICS_module_TrackCmp_findPeaks_integrate`: Integration method 1 or 2. Refer to the Centwave documentation.
+- `QC4METABOLOMICS_module_TrackCmp_findPeaks_verbose_columns`: Whether extra columns should be returned or not. Do not touch.
+- `QC4METABOLOMICS_module_TrackCmp_findPeaks_fitgauss`:  Whether a gaussian curve should be fitted to the peak.
+- `QC4METABOLOMICS_module_TrackCmp_xcmsRaw_profparam=`: Profiling parameter for peak picking. Set to 0 to disable use of a profile matrix. Do not touch.
+- `QC4METABOLOMICS_module_TrackCmp_std_match_ppm`: The ppm tolerance for matching the defined compounds to track.
+- `QC4METABOLOMICS_module_TrackCmp_std_match_rt_tol`: The retention time tolerance, in seconds, for matching the defined compounds to track.
+
+
+
+### Contaminants
+
+- `QC4METABOLOMICS_module_Contaminants_cont_list_type`: "URL" or "local". Only URL supported at the moment.
+- `QC4METABOLOMICS_module_Contaminants_cont_list_loc_positive`:The URL/path to the positive mode contaminant list. The file should be a tsv-file (tab delimited) containing the columns `compound_ID`, `ion_ID`, `mode`, `mz`, `anno`, `origin`.
+- `QC4METABOLOMICS_module_Contaminants_cont_list_loc_unknown`: The URL/path to the contaminant list for files where the mode is unknown.
+- `QC4METABOLOMICS_module_Contaminants_cont_list_loc_negative`: The URL/path to the negative mode contaminant 
+- `QC4METABOLOMICS_module_Contaminants_EIC_ppm`: The ppm tolerance for a mass peak to be included in the extracted ion chromatogram the contaminant examination is based on. Should we wide to include low intensity peaks.
+
+### ICMeter
+
+- `QC4METABOLOMICS_module_ICMeter_user`: The username for the ICMeter system.
+- `QC4METABOLOMICS_module_ICMeter_password`: The password for the ICMeter system.
+
+### Warner
+
+- `QC4METABOLOMICS_module_Warner_email_from`: The email address that will appear as the sender.
+- `QC4METABOLOMICS_module_Warner_email_to`: The recepient of the warning emails.
+- `QC4METABOLOMICS_module_Warner_email_user=YOUR_USER`: The username for the SMTP (outgoing) e-mail server. See "running the demo" for more information.
+- `QC4METABOLOMICS_module_Warner_email_password=YOUR_PASSWORD`: The password for the SMTP (outgoing) e-mail server. 
+- `QC4METABOLOMICS_module_Warner_email_host`: The SMTP server host address.
+- `QC4METABOLOMICS_module_Warner_email_port`: The SMTP server port number.
+- `QC4METABOLOMICS_module_Warner_email_use_ssl`: If to use SSL encryption with the mail server.
+
+
+
+
+## Settings for additional tools
+
+### MS convert
+
+The docker container ms_converter takes a text file named `raw_filelist.txt` in the mounted folder, converts the files to mzML and writes the new path to `mzML_filelist.txt` in the mounted folder.
+It runs every minute to check for new files not yet converted.
+
+- `QC4METABOLOMICS_msconvert_args`: settings msconvert from ProteoWizard uses to convert the data. the default is `--filter \"scanEvent 1\" --mzML --zlib --64`, which takes only the first scanEvent (what Waters calls functions), outputs to mzML, compresses using zlib and saves the values with 64 bit precision. Quotes should be escaped with `\`.
+- `QC4METABOLOMICS_msconvert_outdir_prefix`: The output folder relative to the source files. the default, `/../mzML`, steps one folder back, makes a new mzML folder and puts the converted files there.
+
+
+
+## Internal settings for advanced users
+These settings do not need to be changed but can be.
+
+- `QC4METABOLOMICS_base`: the data folder **internal** to the docker images.
+- `MYSQL_ROOT_PASSWORD`: The root database password.
+- `MYSQL_DATABASE`: The name of the database.
+- `MYSQL_USER`: The database user.
+- `MYSQL_PASSWORD`: The database user's password.
+- `MYSQL_HOST`: The database host name. Needs to match with the container name in docker-compose.yml.
+- `MYSQL_PORT`: The database port number.
+- `MARIADB_AUTO_UPGRADE`: Whether the database automatically upgrades.
+
+
+
+## DB backup
+
+This container automatically backs up the database regularly.
+
+- `TIMEZONE`: The time zone for correctly dating the backup. Use a TZ identifier from the [official list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+- `CONTAINER_NAME`: The database container name. Needs to match with the container name in docker-compose.yml.
+- `CONTAINER_ENABLE_MONITORING`: ??? The documentation is unclear but this should nto be changed.
+
+- `BACKUP_JOB_CONCURRENCY`: Number of concurrent backups (if used with more than one database)
+- `DEFAULT_CHECKSUM`: Whether to create checksums
+- `DEFAULT_BACKUP_INTERVAL`: Minutes between backups. 1440 minutes = 24 h.
+- `DEFAULT_BACKUP_BEGIN`: Whether to make a backup at lunch
+- `DEFAULT_CLEANUP_TIME`: Number of hours to keep the backups
+- `DEFAULT_COMPRESSION`: Compression method used. Use either Gzip `GZ`, Bzip2 `BZ`, XZip `XZ`, ZSTD `ZSTD` or none `NONE`.
+
+- `DB01_TYPE`: Type of database
+- `DB01_HOST`: The database host name. Needs to match with the container name in docker-compose.yml.
+- `DB01_NAME`: The name of the database.
+- `DB01_USER`: The database user.
+- `DB01_PASS`: The database user's password.
+
+
+For more details refer to the [image's documentation](https://github.com/tiredofit/docker-db-backup).
+

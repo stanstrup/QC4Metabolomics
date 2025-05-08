@@ -1,15 +1,11 @@
 networks:
   frontend:
-    ipam:
-      config:
-        - subnet: 172.20.0.0/24
 
 services:
   mariadb:
     image: "mariadb"
     networks:
-            frontend:
-                ipv4_address: 172.20.0.2
+      - frontend
     volumes:
       - type: bind
         source: demo\db
@@ -23,16 +19,12 @@ services:
     
   qc_process:
     networks:
-            frontend:
-                ipv4_address: 172.20.0.3
+      - frontend
     build:
       context: .
       dockerfile: ./setup/Dockerfile
       target: process
     volumes:
-        - type: bind
-          source: demo\config
-          target: /config
         - type: bind
           source: demo\data
           target: /data   
@@ -45,8 +37,7 @@ services:
     
   qc_shiny:
     networks:
-            frontend:
-                ipv4_address: 172.20.0.4
+      - frontend
     build:
       context: .
       dockerfile: ./setup/Dockerfile
@@ -54,9 +45,6 @@ services:
     ports:
       - "80:3838"
     volumes:
-        - type: bind
-          source: demo\config
-          target: /config
         - type: bind
           source: demo\data
           target: /data   
@@ -72,8 +60,7 @@ services:
     cap_add:
       - SYS_PTRACE
     networks:
-            frontend:
-                ipv4_address: 172.20.0.5
+      - frontend
     build:
       context: .
       dockerfile: ./setup/Dockerfile_converter
@@ -84,7 +71,6 @@ services:
           target: /data   
     restart: always
     env_file: "settings_demo.env"
-      # remember to escape quotes
     command: '/setup/cron_with_env.sh'
 
 
@@ -92,10 +78,11 @@ services:
     container_name: db-backup
     image: tiredofit/db-backup
     networks:
-            frontend:
-                ipv4_address: 172.20.0.6
+      - frontend
     volumes:
-      - ./backups:/backup
+        - type: bind
+          source: ./backups
+          target: /backup  
     env_file: "settings_demo.env"
     depends_on:
         - mariadb

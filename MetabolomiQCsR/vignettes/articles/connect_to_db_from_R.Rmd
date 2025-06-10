@@ -46,6 +46,8 @@ QC4METABOLOMICS_base=I:/SCIENCE-NEXS-NyMetabolomics/Projects
 First you read the settings:
 
 ```{r, eval = FALSE}
+library(MetabolomiQCsR)
+
 set_QC4Metabolomics_settings_from_file("settings_remote.env")
 ```
 
@@ -53,8 +55,6 @@ set_QC4Metabolomics_settings_from_file("settings_remote.env")
 You can now connect and pull data or modify it as with any other database.
 
 ```{r, eval=FALSE}
-
-library(MetabolomiQCsR)
 library(dplyr)
 library(DBI)
 
@@ -67,7 +67,7 @@ files <-  paste0("
                     ) %>% 
             dbGetQuery(pool,.) %>% 
             distinct() %>% 
-            as_tibbl
+            as_tibble
 ```
 
 \

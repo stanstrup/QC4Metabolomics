@@ -55,32 +55,39 @@ heatmap_data_selected <-  reactive({
                                 
                                 md5_str <- files_tbl_selected() %>% extract2("file_md5") %>% paste(collapse="','") %>% paste0("('",.,"')")
 
-                                ion_id_str <-   paste0("
-                                                        SELECT DISTINCT ion_id, mode
-                                                        FROM cont_data
-                                                        WHERE (cont_data.stat = '",metric,"') AND (value > ",cut_off,")
-                                                       ") %>% 
-                                                dbGetQuery_sel_no_warn(pool,.) %>% 
-                                                extract2("ion_id") %>% 
-                                                paste(collapse="','") %>% paste0("('",.,"')")
 
-                                out <- paste0("
-                                             SELECT cont_data.*, cont_cmp.name, cont_cmp.anno, cont_cmp.notes, file_info.sample_id, file_info.time_run, files.path
-                                             FROM cont_data
-                                             LEFT JOIN cont_cmp USING(ion_id, mode)
-                                             LEFT JOIN file_info USING(file_md5)
-                                             LEFT JOIN files USING(file_md5)
-                                             WHERE (cont_data.stat = '",metric,"') AND (
-                                             ion_id IN ", ion_id_str,") AND (
-                                             file_md5 IN ",md5_str,")"
-                                            ) %>% 
-                                    dbGetQuery_sel_no_warn(pool,.) %>% 
-                                    as_tibble %>% 
-                                    mutate(across(time_run, ~as.POSIXct(., tz="UTC"))) %>% 
-                                    mutate(time_run = with_tz(time_run, Sys.timezone(location = TRUE))) # time zone fix
+                                query <- paste0("
+                                                  WITH filtered_cont_data AS (
+                                                      SELECT *
+                                                      FROM cont_data
+                                                      WHERE stat = '", metric, "' AND file_md5 IN ", md5_str, "
+                                                  ),
+                                                  filtered_ions AS (
+                                                      SELECT DISTINCT ion_id, mode
+                                                      FROM cont_data
+                                                      WHERE stat = '", metric, "' AND value > ", cut_off, " AND file_md5 IN ", md5_str, "
+                                                  )
+                                                  SELECT f.*, cmp.name, cmp.anno, cmp.notes, fi.sample_id, fi.time_run, files.path
+                                                  FROM filtered_cont_data f
+                                                  INNER JOIN filtered_ions i
+                                                      ON f.ion_id = i.ion_id AND f.mode = i.mode
+                                                  LEFT JOIN cont_cmp cmp
+                                                      ON f.ion_id = cmp.ion_id AND f.mode = cmp.mode
+                                                  LEFT JOIN file_info fi
+                                                      ON f.file_md5 = fi.file_md5
+                                                  LEFT JOIN files
+                                                      ON f.file_md5 = files.file_md5
+                                                  ")
                                 
-                                out
+                                out <- dbGetQuery_sel_no_warn(pool, query) %>%
+                                  as_tibble() %>%
+                                  mutate(across(time_run, ~as.POSIXct(., tz = "UTC"))) %>%
+                                  mutate(time_run = with_tz(time_run, Sys.timezone(location = TRUE)))
+
+                                
                                 })
+
+
 
 
 
@@ -225,3 +232,6 @@ heatmap_data_selected <-  reactive({
   },height = exprToFunction(17*nrow(distinct(heatmap_data_selected(), ion_id, stat))+300), res = 100
   )
 
+# ggsave(plot = p, file="manual_contaminants_poster.pdf", height = 7, width = 10)
+
+  

@@ -8,7 +8,7 @@ services:
       - frontend
     volumes:
       - type: bind
-        source: demo\db
+        source: demo/db
         target: /var/lib/mysql
     ports:
       - "12345:3306"
@@ -26,7 +26,7 @@ services:
       target: process
     volumes:
         - type: bind
-          source: demo\data
+          source: demo/data
           target: /data   
     depends_on:
         - mariadb
@@ -46,7 +46,7 @@ services:
       - "80:3838"
     volumes:
         - type: bind
-          source: demo\data
+          source: demo/data
           target: /data   
     depends_on:
         - mariadb
@@ -67,7 +67,7 @@ services:
       target: converter
     volumes:
         - type: bind
-          source: demo\data
+          source: demo/data
           target: /data   
     restart: always
     env_file: "settings_demo.env"

@@ -31,8 +31,10 @@ RUN apt-get update && \
 	# to read in access files (waters samples lists)
 	mdbtools \
 	\
-	dos2unix \ # to convert to unix line endings
-	libglpk-dev \ # igraph
+	# to convert to unix line endings
+	dos2unix \ 
+	# igraph
+	libglpk-dev \
 	\
 	libcurl4-openssl-dev \
     ca-certificates \
@@ -75,7 +77,7 @@ RUN R -e 'install.packages("MetabolomiQCsR", repos = NULL, type = "source")'
 ##### Copy complete Shiny App #################################################
 COPY ./Modules /srv/shiny-server/QC4Metabolomics/Modules/
 COPY ./setup /srv/shiny-server/QC4Metabolomics/setup/
-find /srv/shiny-server/QC4Metabolomics/ -type f -exec dos2unix {} +
+RUN find /srv/shiny-server/QC4Metabolomics/ -type f -exec dos2unix {} +
 ###############################################################################
 
 
@@ -105,7 +107,7 @@ RUN R -e "library(cronR);cmd <- cron_rscript('/srv/shiny-server/QC4Metabolomics/
 
 RUN mkdir /setup
 COPY ./setup/cron_with_env.sh /setup/cron_with_env.sh
-find /setup/ -type f -exec dos2unix {} +
+RUN find /setup/ -type f -exec dos2unix {} +
 
 RUN chmod +x  /setup/cron_with_env.sh
 RUN chmod +x  /srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.sh
@@ -117,7 +119,7 @@ RUN chmod +x  /srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.sh
 FROM base AS shiny
 ##### Misc  ###################################################################
 COPY ./Shiny_App /srv/shiny-server/QC4Metabolomics/Shiny_App/
-find /srv/shiny-server/QC4Metabolomics/ -type f -exec dos2unix {} +
+RUN find /srv/shiny-server/QC4Metabolomics/ -type f -exec dos2unix {} +
 # Dunno what this is for...
 RUN mkdir -p /var/lib/shiny-server/bookmarks/shiny
 ###############################################################################

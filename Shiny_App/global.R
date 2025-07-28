@@ -18,11 +18,12 @@ stat_name2id <- . %>% paste0("SELECT * FROM std_stat_types WHERE stat_name = '",
 # Get enabled modules -----------------------------------------------------
 module_names <- get_QC4Metabolomics_settings() %>% 
                   filter(!is.na(module)) %>% 
-                  filter(grepl("shiny_enabled|shiny_order",name)) %>% 
-                  mutate(type = gsub("^.*_(.*)$","\\1", name)) %>% 
+                  filter(grepl("_enabled|shiny_enabled|shiny_order",name)) %>% 
+                  mutate(type = gsub("^QC4METABOLOMICS_module_.*?_(.*)$","\\1", name)) %>% 
                   pivot_wider(id_cols = "module", values_from = "value", names_from = "type") %>% 
-                  filter(as.logical(enabled)) %>% 
-                  arrange(as.integer(order)) %>% 
+                  arrange(module) %>%                                 
+                  filter(as.logical(enabled) & as.logical(shiny_enabled)) %>% 
+                  arrange(as.integer(shiny_order)) %>%                 
                   pull(module)
 
 

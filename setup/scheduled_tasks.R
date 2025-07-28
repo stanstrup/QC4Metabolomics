@@ -16,14 +16,14 @@ source("setup/init_db.R")
 
 # Get enabled modules -----------------------------------------------------
 module_names <- get_QC4Metabolomics_settings() %>% 
-                      filter(grepl("^QC4METABOLOMICS_module_.*?_schedule$|^QC4METABOLOMICS_module_.*?_process_order$",name)) %>%
+                      filter(grepl("^QC4METABOLOMICS_module_.*?_enabled$|^QC4METABOLOMICS_module_.*?_schedule$|^QC4METABOLOMICS_module_.*?_process_order$",name)) %>%
                       filter(!grepl("^QC4METABOLOMICS_module_.*?_file_schedule$",name)) %>%
-                      mutate(type = gsub("^.*_(.*)$","\\1", name)) %>% 
+                      mutate(type = gsub("^QC4METABOLOMICS_module_.*?_(.*)$","\\1", name)) %>% 
                       pivot_wider(id_cols = "module", values_from = "value", names_from = "type") %>% 
-                      mutate(schedule = as.logical(schedule), order = as.integer(order)) %>%
-                      filter(schedule == TRUE) %>% 
-                      mutate(order = if_else(is.na(order), Inf, order)) %>% 
-                      arrange(order) %>% 
+                      mutate(schedule = as.logical(schedule), process_order = as.integer(process_order)) %>%
+                      filter(enabled == TRUE, schedule == TRUE) %>% 
+                      mutate(process_order = if_else(is.na(process_order), Inf, process_order)) %>% 
+                      arrange(process_order) %>% 
                       pull(module)
 
 

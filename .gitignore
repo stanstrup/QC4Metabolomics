@@ -45,3 +45,4 @@ contaminant_test_data.RData
 plot_mz_all.png
 docker-compose_demo_MINE.yml
 backups/
+settings_demo_from_outside.env

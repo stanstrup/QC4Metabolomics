@@ -1,0 +1,40 @@
+stages:
+  - build_base
+  - build_derived
+  - push
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+.default-docker:
+  image: docker:25.0.3
+  services:
+    - docker:25.0.3-dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+
+build:base:
+  stage: build_base
+  extends: .default-docker
+  script:
+    - docker build -f setup/Dockerfile_base -t qc_base:local .
+    - docker tag qc_base:local $CI_REGISTRY_IMAGE/qc_base:latest
+    - docker push $CI_REGISTRY_IMAGE/qc_base:latest
+
+build:process:
+  stage: build_derived
+  extends: .default-docker
+  script:
+    - docker pull $CI_REGISTRY_IMAGE/qc_base:latest
+    - docker build --build-arg BASE_IMAGE=$CI_REGISTRY_IMAGE/qc_base:latest -t $CI_REGISTRY_IMAGE/qc_process:latest -f setup/Dockerfile --target process .
+    - docker push $CI_REGISTRY_IMAGE/qc_process:latest
+  needs: ["build:base"]
+
+build:shiny:
+  stage: build_derived
+  extends: .default-docker
+  script:
+    - docker pull $CI_REGISTRY_IMAGE/qc_base:latest
+    - docker build --build-arg BASE_IMAGE=$CI_REGISTRY_IMAGE/qc_base:latest -t $CI_REGISTRY_IMAGE/qc_shiny:latest -f setup/Dockerfile --target shiny .
+    - docker push $CI_REGISTRY_IMAGE/qc_shiny:latest
+  needs: ["build:base"]

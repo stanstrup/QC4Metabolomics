@@ -10,14 +10,14 @@ WORKDIR /srv/shiny-server/QC4Metabolomics/
 COPY ./MetabolomiQCsR /srv/shiny-server/QC4Metabolomics/MetabolomiQCsR/
 RUN R -e 'install.packages("MetabolomiQCsR", repos = NULL, type = "source")'
 
-
-# Setup cron job
-RUN R -e "library(cronR);cmd <- cron_rscript('/srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.sh', cmd = '/bin/bash', rscript_log = '/var/log/QC_cron.log');cron_add(cmd, frequency = '*/1 * * * *', id = 'QC_processing', description = 'Process files every 1 minute', ask = FALSE)"
-
 RUN mkdir /setup
 COPY ./setup/cron_with_env.sh /setup/cron_with_env.sh
 COPY ./Modules /srv/shiny-server/QC4Metabolomics/Modules/
 COPY ./setup /srv/shiny-server/QC4Metabolomics/setup/
+
+# Setup cron job
+RUN R -e "library(cronR);cmd <- cron_rscript('/srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.sh', cmd = '/bin/bash', rscript_log = '/var/log/QC_cron.log');cron_add(cmd, frequency = '*/1 * * * *', id = 'QC_processing', description = 'Process files every 1 minute', ask = FALSE)"
+
 
 RUN find /setup/ -type f -exec dos2unix {} +
 RUN find /srv/shiny-server/QC4Metabolomics/ -type f -exec dos2unix {} +

@@ -20,7 +20,13 @@ services:
   qc_process:
     networks:
       - frontend
-    image: ghcr.io/QC4Metabolomics/qc_shiny:latest
+    build:
+      context: .
+      dockerfile: ./setup/Dockerfile
+      target: process
+      args:
+        BASE_IMAGE: qc_base:local
+    image: qc_process:local
     volumes:
         - type: bind
           source: demo/data
@@ -35,7 +41,13 @@ services:
   qc_shiny:
     networks:
       - frontend
-    image: ghcr.io/QC4Metabolomics/qc_shiny:latest
+    build:
+      context: .
+      dockerfile: ./setup/Dockerfile
+      target: shiny
+      args:
+        BASE_IMAGE: qc_base:local
+    image: qc_shiny:local
     ports:
       - "80:3838"
     volumes:

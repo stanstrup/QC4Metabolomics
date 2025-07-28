@@ -32,8 +32,7 @@ jobs:
 
       - name: Build and push qc_base
         run: |
-          docker build -f setup/Dockerfile_base -t $IMAGE_BASE/qc_base:local .
-          docker tag qc_base:local $IMAGE_BASE/qc_base:latest
+          docker build -f setup/Dockerfile_base -t qc_base:local -t $IMAGE_BASE/qc_base:latest .
           docker push $IMAGE_BASE/qc_base:latest
 
   build-process:

@@ -20,7 +20,7 @@ services:
   qc_process:
     networks:
       - frontend
-    image: ghcr.io/qc4metabolomics/qc_shiny:latest
+    image: ghcr.io/qc4metabolomics/qc_process:latest
     volumes:
         - type: bind
           source: demo/data

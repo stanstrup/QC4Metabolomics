@@ -1,8 +1,9 @@
-ARG BASE_IMAGE=qc_base:local
+ARG BASE_IMAGE=ghcr.io/stanstrup/qc4metabolomics/qc_base:latest
 FROM ${BASE_IMAGE} AS base
-FROM base AS process
 
 ##### Scheduled jobs ##########################################################
+FROM base AS process
+
 RUN apt-get update && \
 	apt-get install  -y \
 	\
@@ -25,18 +26,17 @@ RUN chmod +x  /srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.sh
 ###############################################################################
 
 
-
-
+##### Shiny ###################################################################
 FROM base AS shiny
-##### Misc  ###################################################################
+
 COPY ./Shiny_App /srv/shiny-server/QC4Metabolomics/Shiny_App/
 RUN find /srv/shiny-server/QC4Metabolomics/ -type f -exec dos2unix {} +
 # Dunno what this is for...
 RUN mkdir -p /var/lib/shiny-server/bookmarks/shiny
-###############################################################################
 
 
-##### Shiny config ############################################################
+
+##Shiny config
 COPY ./setup/shiny-server.conf /etc/shiny-server/shiny-server.conf
 EXPOSE 3838
 ###############################################################################

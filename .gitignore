@@ -44,3 +44,4 @@ settings_demo_MINE.env
 contaminant_test_data.RData
 plot_mz_all.png
 docker-compose_demo_MINE.yml
+backups/

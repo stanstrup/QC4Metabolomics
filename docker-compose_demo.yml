@@ -20,7 +20,7 @@ services:
   qc_process:
     networks:
       - frontend
-    image: ghcr.io/qc4metabolomics/qc_process:latest
+    image: ghcr.io/stanstrup/qc4metabolomics/qc_process:latest
     volumes:
         - type: bind
           source: demo/data
@@ -35,7 +35,7 @@ services:
   qc_shiny:
     networks:
       - frontend
-    image: ghcr.io/qc4metabolomics/qc_shiny:latest
+    image: ghcr.io/stanstrup/qc4metabolomics/qc_shiny:latest
     ports:
       - "80:3838"
     volumes:

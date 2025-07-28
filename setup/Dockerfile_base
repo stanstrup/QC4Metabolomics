@@ -36,9 +36,10 @@ RUN apt-get update && \
 	libglpk-dev \
 	\
 	libcurl4-openssl-dev \
-    ca-certificates \
-    curl \
-    gnupg \
+  ca-certificates \
+  curl \
+  gnupg \
+  cron \
     && update-ca-certificates \
     && rm -rf /var/lib/apt
 
@@ -65,24 +66,4 @@ RUN R -e "renv::restore()"
 RUN R -e "renv::install('git2r')"
 
 RUN R -e "BiocManager::install('bnosac/cronR')"
-
-
-# Always use newest version of the package without having to do a renv snapshot
-COPY ./MetabolomiQCsR /srv/shiny-server/QC4Metabolomics/MetabolomiQCsR/
-RUN R -e 'install.packages("MetabolomiQCsR", repos = NULL, type = "source")'
 ###############################################################################
-
-
-##### Copy complete Shiny App #################################################
-COPY ./Modules /srv/shiny-server/QC4Metabolomics/Modules/
-COPY ./setup /srv/shiny-server/QC4Metabolomics/setup/
-RUN find /srv/shiny-server/QC4Metabolomics/ -type f -exec dos2unix {} +
-###############################################################################
-
-
-##### File permissions ########################################################
-# make all app files readable (solves issue when dev in Windows, but building in Ubuntu)
-# Evidently not needed and takes a lot of space
-# RUN chmod -R 755 /srv/shiny-server/
-###############################################################################
-

@@ -141,7 +141,7 @@ jobs:
     name: Semantic Release
     runs-on: ubuntu-latest
     needs: wait-for-builds
-    if: success()
+    if: always()
     steps:
       - uses: actions/checkout@v4
 

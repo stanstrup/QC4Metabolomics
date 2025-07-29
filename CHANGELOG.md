@@ -3,6 +3,14 @@
 
 ### Bug Fixes
 
+* more ignore ([bc94485](https://github.com/stanstrup/QC4Metabolomics/commit/bc94485b53d89c2a3b02e6b8cde8042e57d3c343))
+* trigger release ([279d33e](https://github.com/stanstrup/QC4Metabolomics/commit/279d33ea8d7909d212b0a905c645e8fe4205a8bb))
+
+## [1.0.1](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.0...v1.0.1) (2025-07-29)
+
+
+### Bug Fixes
+
 * trigger release ([279d33e](https://github.com/stanstrup/QC4Metabolomics/commit/279d33ea8d7909d212b0a905c645e8fe4205a8bb))
 
 # 1.0.0 (2025-07-29)

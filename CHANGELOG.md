@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.2...v1.0.3) (2025-07-29)
+
+
+### Bug Fixes
+
+* update filename of release ([f91398d](https://github.com/stanstrup/QC4Metabolomics/commit/f91398d0d831ec34864012564f27e3cb6f40cc11))
+
 ## [1.0.2](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.1...v1.0.2) (2025-07-29)
 
 

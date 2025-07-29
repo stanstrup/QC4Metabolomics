@@ -181,7 +181,7 @@ jobs:
       - name: Zip release assets
         run: |
           cd release-dist
-          zip -r ../demo-release-assets.zip .
+          zip -r ../QC4Metabolomics-demo-${nextRelease.version}.zip .
       - name: Run Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

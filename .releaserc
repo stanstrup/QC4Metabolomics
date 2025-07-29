@@ -27,7 +27,7 @@
         "assets": [
           {
             "path": "QC4Metabolomics-demo-${nextRelease.version}.zip",
-            "label": "Demo Release Bundle"
+            "label": "QC4Metabolomics Demo Bundle"
           }
         ]
       }

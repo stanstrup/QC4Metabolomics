@@ -144,7 +144,10 @@ jobs:
     if: always()
     steps:
       - uses: actions/checkout@v4
-
+        with:
+          lfs: true  # This fetches LFS pointers only
+      - name: Fetch LFS files
+        run: git lfs pull
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

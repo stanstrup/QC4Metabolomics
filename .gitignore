@@ -47,3 +47,6 @@ docker-compose_demo_MINE.yml
 backups/
 settings_demo_from_outside.env
 manual_cont_plot.RData
+node_modules
+package-lock.json
+package.json

@@ -177,11 +177,6 @@ jobs:
           cp docker-compose_demo.yml release-dist/
           cp settings_demo.env release-dist/
           cp -r demo/data release-dist/demo
-
-      - name: Zip release assets
-        run: |
-          cd release-dist
-          zip -r ../QC4Metabolomics-demo-${nextRelease.version}.zip .
       - name: Run Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

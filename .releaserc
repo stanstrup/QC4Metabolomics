@@ -22,6 +22,12 @@
       }
     ],
     [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "cd release-dist && zip -r ../QC4Metabolomics-demo-${nextRelease.version}.zip ."
+      }
+    ],
+    [
       "@semantic-release/github",
       {
         "assets": [

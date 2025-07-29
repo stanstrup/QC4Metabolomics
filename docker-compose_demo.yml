@@ -55,10 +55,7 @@ services:
       - SYS_PTRACE
     networks:
       - frontend
-    build:
-      context: .
-      dockerfile: ./setup/Dockerfile_converter
-      target: converter
+    image: ghcr.io/stanstrup/qc4metabolomics/qc_converter:latest
     volumes:
         - type: bind
           source: demo/data

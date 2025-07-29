@@ -107,3 +107,27 @@ jobs:
           docker build -f setup/Dockerfile --target shiny -t qc_shiny:latest .
           docker tag qc_shiny:latest $IMAGE_BASE/qc_shiny:latest
           docker push $IMAGE_BASE/qc_shiny:latest
+
+
+
+
+  build-converter:
+    name: Build and Push qc_converter
+    needs: [check-base-changes, build-base]
+    runs-on: ubuntu-latest
+    if: always()  # Always run, even if build-base was skipped
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push qc_converter
+        run: |
+          docker build -f setup/Dockerfile_converter --target shiny -t qc_converter:latest .
+          docker tag qc_converter:latest $IMAGE_BASE/qc_converter:latest
+          docker push $IMAGE_BASE/qc_converter:latest

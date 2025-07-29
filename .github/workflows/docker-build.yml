@@ -1,4 +1,4 @@
-name: Build and Push Docker Images
+name: Build and Release
 
 on:
   push:
@@ -20,33 +20,25 @@ jobs:
       - name: Check if base dependencies changed
         id: check
         run: |
-          echo "Checking if base files changed..."
           git fetch origin ${{ github.event.before }} --depth=1 || true
           CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} || true)
           echo "$CHANGED"
 
           if echo "$CHANGED" | grep -E '^(setup/Dockerfile_base|\.Rprofile|renv\.lock|\.env.*|renv/)' > /dev/null; then
-            echo "Base dependencies changed"
             echo "base_changed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "No base-related changes"
             echo "base_changed=false" >> "$GITHUB_OUTPUT"
           fi
+
   build-base:
     name: Build and Push qc_base
     runs-on: ubuntu-latest
     needs: check-base-changes
     if: needs.check-base-changes.outputs.base_changed == 'true'
-    permissions:
-      packages: write
-      contents: read
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -59,71 +51,114 @@ jobs:
 
   build-process:
     name: Build and Push qc_process
-    needs: [check-base-changes, build-base]
     runs-on: ubuntu-latest
-    if: always()  # Always run, even if build-base was skipped
+    needs: [check-base-changes, build-base]
+    if: always()
+    outputs:
+      image_tag: ${{ steps.tag.outputs.image_tag }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pull qc_base from registry
-        run: docker pull $IMAGE_BASE/qc_base:latest
+      - run: docker pull $IMAGE_BASE/qc_base:latest
 
-      - name: Build and push qc_process
-        run: |
-          docker build -f setup/Dockerfile --target process -t qc_process:latest .
+      - name: Build qc_process
+        run: docker build -f setup/Dockerfile --target process -t qc_process:latest .
+
+      - id: tag
+        run: echo "image_tag=qc_process" >> "$GITHUB_OUTPUT"
+
+      - run: |
           docker tag qc_process:latest $IMAGE_BASE/qc_process:latest
           docker push $IMAGE_BASE/qc_process:latest
 
-
   build-shiny:
     name: Build and Push qc_shiny
-    needs: [check-base-changes, build-base]
     runs-on: ubuntu-latest
-    if: always()  # Always run, even if build-base was skipped
+    needs: [check-base-changes, build-base]
+    if: always()
+    outputs:
+      image_tag: ${{ steps.tag.outputs.image_tag }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pull qc_base from registry
-        run: docker pull $IMAGE_BASE/qc_base:latest
+      - run: docker pull $IMAGE_BASE/qc_base:latest
 
-      - name: Build and push qc_shiny
-        run: |
-          docker build -f setup/Dockerfile --target shiny -t qc_shiny:latest .
+      - name: Build qc_shiny
+        run: docker build -f setup/Dockerfile --target shiny -t qc_shiny:latest .
+
+      - id: tag
+        run: echo "image_tag=qc_shiny" >> "$GITHUB_OUTPUT"
+
+      - run: |
           docker tag qc_shiny:latest $IMAGE_BASE/qc_shiny:latest
           docker push $IMAGE_BASE/qc_shiny:latest
 
-
   build-converter:
     name: Build and Push qc_converter
-    needs: [check-base-changes, build-base]
     runs-on: ubuntu-latest
-    if: always()  # Always run, even if build-base was skipped
+    needs: [check-base-changes, build-base]
+    if: always()
+    outputs:
+      image_tag: ${{ steps.tag.outputs.image_tag }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push qc_converter
-        run: |
-          docker build -f setup/Dockerfile_converter --target converter -t qc_converter:latest .
+      - name: Build qc_converter
+        run: docker build -f setup/Dockerfile_converter --target converter -t qc_converter:latest .
+
+      - id: tag
+        run: echo "image_tag=qc_converter" >> "$GITHUB_OUTPUT"
+
+      - run: |
           docker tag qc_converter:latest $IMAGE_BASE/qc_converter:latest
           docker push $IMAGE_BASE/qc_converter:latest
+
+  release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    needs: [build-process, build-shiny, build-converter]
+    if: success()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Semantic Release CLI and plugins
+        run: |
+          npm install --global semantic-release \
+            @semantic-release/changelog \
+            @semantic-release/git \
+            @semantic-release/github \
+            @semantic-release/exec
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-dist/demo/db
+          mkdir -p release-dist/demo/data
+          mkdir -p release-dist/backups
+          cp docker-compose_demo.yml release-dist/
+          cp settings_demo.env release-dist/
+          cp -r demo/data release-dist/demo
+
+      - name: Run Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: semantic-release

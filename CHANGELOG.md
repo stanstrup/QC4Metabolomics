@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.1...v1.0.2) (2025-07-29)
+
+
+### Bug Fixes
+
+* LFS files in release ([94ad556](https://github.com/stanstrup/QC4Metabolomics/commit/94ad5565096e3c067a8b37b970564f6a52a3b5a9))
+
 ## [1.0.1](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.0...v1.0.1) (2025-07-29)
 
 

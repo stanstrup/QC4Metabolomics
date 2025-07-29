@@ -3,8 +3,6 @@ name: Build and Push Docker Images
 on:
   push:
     branches: [main, master]
-  pull_request:
-    branches: [main, master]
 
 env:
   REGISTRY: ghcr.io
@@ -107,8 +105,6 @@ jobs:
           docker build -f setup/Dockerfile --target shiny -t qc_shiny:latest .
           docker tag qc_shiny:latest $IMAGE_BASE/qc_shiny:latest
           docker push $IMAGE_BASE/qc_shiny:latest
-
-
 
 
   build-converter:

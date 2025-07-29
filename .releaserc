@@ -1,25 +1,42 @@
 {
-  "branches": ["main", "master"],
+  "branches": [
+    "main",
+    "master"
+  ],
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
-    ["@semantic-release/changelog", {
-      "changelogFile": "CHANGELOG.md"
-    }],
-    ["@semantic-release/git", {
-      "assets": ["CHANGELOG.md"],
-      "message": "chore(release): ${nextRelease.version} [skip ci]"
-    }],
-    ["@semantic-release/github", {
-      "assets": [
-        {
-          "path": "release-dist/**/*",
-          "label": "Demo Release Assets"
-        }
-      ]
-    }],
-    ["@semantic-release/exec", {
-      "publishCmd": "bash -x ./setup/tag-docker-images.sh ${nextRelease.version}"
-    }]
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "CHANGELOG.md"
+        ],
+        "message": "chore(release): ${nextRelease.version} [skip ci]"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          {
+            "path": "demo-release-assets.zip",
+            "label": "Demo Release Bundle"
+          }
+        ]
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "publishCmd": "bash -x ./setup/tag-docker-images.sh ${nextRelease.version}"
+      }
+    ]
   ]
 }

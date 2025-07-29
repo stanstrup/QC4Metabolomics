@@ -149,6 +149,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Make tag-docker-images.sh executable
         run: chmod +x setup/tag-docker-images.sh
   
@@ -169,6 +175,10 @@ jobs:
           cp settings_demo.env release-dist/
           cp -r demo/data release-dist/demo
 
+      - name: Zip release assets
+        run: |
+          cd release-dist
+          zip -r ../demo-release-assets.zip .
       - name: Run Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

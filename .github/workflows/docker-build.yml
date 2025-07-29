@@ -149,7 +149,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
+      - name: Make tag-docker-images.sh executable
+        run: chmod +x setup/tag-docker-images.sh
+  
       - name: Install Semantic Release CLI and plugins
         run: |
           npm install --global semantic-release \

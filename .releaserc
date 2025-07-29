@@ -19,7 +19,7 @@
       ]
     }],
     ["@semantic-release/exec", {
-      "publishCmd": "./setup/tag-docker-images.sh ${nextRelease.version}"
+      "publishCmd": "bash -x ./setup/tag-docker-images.sh ${nextRelease.version}"
     }]
   ]
 }

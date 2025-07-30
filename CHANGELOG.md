@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.3...v1.0.4) (2025-07-29)
+
+
+### Bug Fixes
+
+* better naming ([73e779f](https://github.com/stanstrup/QC4Metabolomics/commit/73e779f10962a9c2c32c8ba6f1997b8b82626f55))
+
 ## [1.0.3](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.2...v1.0.3) (2025-07-29)
 
 

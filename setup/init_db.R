@@ -56,12 +56,6 @@ con <- poolCheckout(initpool)
 dbBegin(con)
 
 # functions for repeated use
-# msg_fun <- . %>% extract2("sql") %>% 
-#                 unlist %>% 
-#                 length %>% 
-#                 paste0(" drop queries to make.\n") %>% 
-#                 message()
-
 msg_fun <- function(tab, qm){
   
   extract2(tab, "sql") %>% 

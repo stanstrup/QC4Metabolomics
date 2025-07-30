@@ -1,4 +1,4 @@
-tag-docker-images.sh#!/bin/bash
+#!/bin/bash
 set -e
 
 VERSION="$1"

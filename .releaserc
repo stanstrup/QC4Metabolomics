@@ -24,7 +24,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "cd release-dist && zip -r ../QC4Metabolomics-demo-${nextRelease.version}.zip ."
+        "prepareCmd": "cd release-dist && zip -r ../QC4Metabolomics-demo-${nextRelease.version}.zip . && echo QC4Metabolomics-demo-${nextRelease.version}.zip > ../zip-filename.txt"
       }
     ],
     [
@@ -32,7 +32,7 @@
       {
         "assets": [
           {
-            "path": "QC4Metabolomics-demo-${nextRelease.version}.zip",
+            "path": "${file:zip-filename.txt}",
             "label": "QC4Metabolomics Demo Bundle"
           }
         ]

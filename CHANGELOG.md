@@ -4,6 +4,14 @@
 ### Bug Fixes
 
 * drop the idea of the dynamic name since we cannot infer the filename of the latest version then. ([0dfae00](https://github.com/stanstrup/QC4Metabolomics/commit/0dfae005621fab9b38aabdf76b4b19bf3210c0c6))
+* forgot input path to zip ([25223f9](https://github.com/stanstrup/QC4Metabolomics/commit/25223f980c35d51e10d9b2e4c7d7c23d18c13d30))
+
+## [1.0.7](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.6...v1.0.7) (2025-07-30)
+
+
+### Bug Fixes
+
+* drop the idea of the dynamic name since we cannot infer the filename of the latest version then. ([0dfae00](https://github.com/stanstrup/QC4Metabolomics/commit/0dfae005621fab9b38aabdf76b4b19bf3210c0c6))
 
 ## [1.0.6](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.5...v1.0.6) (2025-07-30)
 

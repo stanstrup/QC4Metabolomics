@@ -19,7 +19,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "cd release-dist && zip -r ../QC4Metabolomics-demo.zip"
+        "prepareCmd": "cd release-dist && zip -r ../QC4Metabolomics-demo.zip ."
       }
     ],
     [

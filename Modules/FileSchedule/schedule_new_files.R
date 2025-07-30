@@ -5,8 +5,41 @@ log_source = "FileSchedule"
 
 
 # Get new files -----------------------------------------------------------
-new_files <-  "SELECT file_md5 FROM file_info WHERE file_md5 NOT IN (SELECT file_md5 FROM file_schedule)" %>% 
-              dbGetQuery(pool,.)
+enabled_modules <- get_QC4Metabolomics_settings() %>% 
+                    filter(grepl("^QC4METABOLOMICS_.*_enabled$|QC4METABOLOMICS_.*_file_schedule$",name)) %>%
+                    mutate(value = as.logical(value)) %>%
+                    mutate(module = gsub("^QC4METABOLOMICS_module_(.*?)_.*$","\\1",name)) %>%
+                    mutate(parameter = gsub("^QC4METABOLOMICS_module_.*?_(.*)$","\\1",name)) %>% 
+                    pivot_wider(id_cols = module, names_from = "parameter", values_from = "value") %>% 
+                    filter(file_schedule == TRUE & enabled == TRUE) %>% 
+                    pull(module)
+
+
+modules_sql <- paste0("SELECT '", enabled_modules, "' AS module", collapse = " UNION ALL ")
+
+
+query <- glue::glue("
+  WITH enabled_modules AS (
+    {modules_sql}
+  ),
+  all_combinations AS (
+    SELECT fi.file_md5, em.module
+    FROM file_info fi
+    CROSS JOIN enabled_modules em
+  ),
+  scheduled AS (
+    SELECT file_md5, module FROM file_schedule
+  )
+  SELECT ac.file_md5, ac.module AS module
+  FROM all_combinations ac
+  LEFT JOIN scheduled s
+    ON ac.file_md5 = s.file_md5 AND ac.module = s.module
+  WHERE s.file_md5 IS NULL
+")
+
+
+new_files <- dbGetQuery(pool, query)
+
 
 
 
@@ -22,20 +55,7 @@ if(nrow(new_files)==0){
 }
 
 
-enabled_modules <- get_QC4Metabolomics_settings() %>% 
-                    filter(grepl("^QC4METABOLOMICS_.*_enabled$|QC4METABOLOMICS_.*_file_schedule$",name)) %>%
-                    mutate(value = as.logical(value)) %>%
-                    mutate(module = gsub("^QC4METABOLOMICS_module_(.*?)_.*$","\\1",name)) %>%
-                    mutate(parameter = gsub("^QC4METABOLOMICS_module_.*?_(.*)$","\\1",name)) %>% 
-                    pivot_wider(id_cols = module, names_from = "parameter", values_from = "value") %>% 
-                    filter(file_schedule == TRUE & enabled == TRUE) %>% 
-                    pull(module)
-
-
- new_files %<>% 
-                  cbind(tibble(module = list(enabled_modules))) %>% 
-                  unnest(module) %>% 
-                  as_tibble %>% 
+ new_files <- new_files %>% 
                   mutate(priority = 1L)
 
 

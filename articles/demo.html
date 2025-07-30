@@ -76,34 +76,78 @@
 
     
     
+<p>Make sure to revisit the prerequisites on the front page.</p>
 <div class="section level2">
-<h2 id="download-and-compilation">Download and compilation<a class="anchor" aria-label="anchor" href="#download-and-compilation"></a>
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
+<div class="section level3">
+<h3 id="download-setup-files-and-use-pre-compiled-image">Download setup files and use pre-compiled image<a class="anchor" aria-label="anchor" href="#download-setup-files-and-use-pre-compiled-image"></a>
+</h3>
+<p>Make a folder where you want to install
+<code>QC4Metabolomics</code>.<br></p>
+<p><br></p>
+<div class="section level4">
+<h4 id="linuxwsl">Linux/WSL<a class="anchor" aria-label="anchor" href="#linuxwsl"></a>
+</h4>
+<p><strong>If you are using linux/WSL</strong>, navigate to the folder
+you created and then run the following in a command-prompt, which will
+download the demo data (or download manually from <a href="https://github.com/stanstrup/QC4Metabolomics/releases">github</a>),
+and unzip the content:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">wget</span> https://github.com/stanstrup/QC4Metabolomics/releases/latest/download/QC4Metabolomics-demo.zip</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">unzip</span> QC4Metabolomics-demo.zip</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">rm</span>  QC4Metabolomics-demo.zip</span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="windows">Windows<a class="anchor" aria-label="anchor" href="#windows"></a>
+</h4>
+<p><strong>If you are using Windows</strong>, navigate to the folder you
+created and then run the following in a command-prompt, which will
+download the demo data (or download manually from <a href="https://github.com/stanstrup/QC4Metabolomics/releases">github</a>),
+and unzip the content:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">curl.exe</span> <span class="at">-L</span> <span class="at">-o</span> QC4Metabolomics-demo.zip https://github.com/stanstrup/QC4Metabolomics/releases/latest/download/QC4Metabolomics-demo.zip</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">tar</span> <span class="at">-xf</span> QC4Metabolomics-demo.zip</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="ex">del</span> QC4Metabolomics-demo.zip</span></code></pre></div>
+<p><br></p>
+<p>Now you can launch the demo:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">--file</span> docker-compose_demo.yml up <span class="at">--build</span> <span class="at">--force-recreate</span></span></code></pre></div>
+<p><br></p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="local-compilation">Local compilation<a class="anchor" aria-label="anchor" href="#local-compilation"></a>
+</h3>
+<p><strong>This is only useful if you want to modify the software
+yourself.</strong> Otherwise move ahead to the next step.</p>
 <p>Make sure to revisit the prerequisites on the front page.</p>
 <p>First download the repository to somewhere convenient (here
 <code>/opt</code>).</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="bu">cd</span> /opt</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">sudo</span> git lfs clone https://github.com/stanstrup/QC4Metabolomics.git</span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="bu">cd</span> QC4Metabolomics</span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">sudo</span> chmod +x ./setup/<span class="pp">*</span>.sh</span></code></pre></div>
-<p>Now you need to build the image which requires downloading many R
-packages (a pre-compiled image is not currently available) and will take
-a while. This will also start the demo.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">--file</span> docker-compose_demo.yml up <span class="at">--build</span> <span class="at">--force-recreate</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="bu">cd</span> /opt</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">sudo</span> git lfs clone https://github.com/stanstrup/QC4Metabolomics.git</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="bu">cd</span> QC4Metabolomics</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="fu">sudo</span> chmod +x ./setup/<span class="pp">*</span>.sh</span></code></pre></div>
+<p>Now you need to build the base image (used by several processes)
+which requires downloading many R packages and will take a while.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="ex">docker</span> build <span class="at">-f</span> setup/Dockerfile_base <span class="at">-t</span> qc_base:local .</span></code></pre></div>
+<p>You can now build the final containers. This will also start the
+demo.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">--file</span> docker-compose_demo_local_build.yml up <span class="at">--build</span> <span class="at">--force-recreate</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="getting-started-with-the-demo">Getting started with the demo<a class="anchor" aria-label="anchor" href="#getting-started-with-the-demo"></a>
 </h2>
 <p>You can now open the demo in your browser by visiting
 <code>localhost</code>. It might take a few minutes before it can load
-though, since the database needs to be initialized on first load.</p>
-<p>You will also see that no plots appear. This is because no compounds
-to analyze has been defined.</p>
+though, since the database needs to be initialized on first load. If the
+database is not initialized yet the console will show “Error : No tables
+in the DB. Probably not done initializing.”.</p>
+<p>Once the app loads you will see that no plots appear. This is because
+no compounds to analyze has been defined.</p>
 <p>First click the <code>Contaminants</code> tab. If no plot appears go
 get a coffee and come back and reload the page (it will look for new
-compounds every 1 min and then analyze the data). The plot is available
-when the system has analyzed the demo files. Once a plot appears you can
-try to change the “Minimum intensity in any sample” (for example to
+files every 1 min and then analyze the data). The plot is available when
+the system has analyzed the demo files. Once a plot appears you can try
+to change the “Minimum intensity in any sample” (for example to
 10<sup>3</sup>). Now you can see which are the most common
 contaminants.</p>
 </div>
@@ -167,29 +211,31 @@ Once you have create your password you need to edit the settings for the
 “module: Warner”. First you enable the module by setting
 <code>QC4METABOLOMICS_module_Warner_enabled</code> to
 <code>TRUE</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode ini"><code class="sourceCode ini"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_enabled</span><span class="ot">=</span><span class="kw">TRUE</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode ini"><code class="sourceCode ini"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_enabled</span><span class="ot">=</span><span class="kw">TRUE</span></span></code></pre></div>
 <p>Next you need to set your credentials and server. Below is an example
 where <code>EMAIL_SENDER</code> and <code>YOUR_USER</code> would be your
-email address for the account that <em>sends</em> the emails and
+e-mail address for the account that <em>sends</em> the emails and
 <code>EMAIL_RECEIVER</code> would be the address of the email that
 should <em>receive</em> the emails (can be the same as the sender). The
 password is the account password or in the case of GMail the “app
 password”. Below are the settings needed for GMail.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode ini"><code class="sourceCode ini"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_email_from</span><span class="ot">=</span><span class="st">EMAIL_SENDER</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_email_to</span><span class="ot">=</span><span class="st">EMAIL_RECEIVER</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_email_user</span><span class="ot">=</span><span class="st">YOUR_USER</span></span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_email_password</span><span class="ot">=</span><span class="st">YOUR_PASSWORD</span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_email_host</span><span class="ot">=</span><span class="st">smtp.gmail.com</span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_email_port</span><span class="ot">=</span><span class="dv">587</span></span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_email_use_ssl</span><span class="ot">=</span><span class="kw">TRUE</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode ini"><code class="sourceCode ini"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_email_from</span><span class="ot">=</span><span class="st">EMAIL_SENDER</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_email_to</span><span class="ot">=</span><span class="st">EMAIL_RECEIVER</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_email_user</span><span class="ot">=</span><span class="st">YOUR_USER</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_email_password</span><span class="ot">=</span><span class="st">YOUR_PASSWORD</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_email_host</span><span class="ot">=</span><span class="st">smtp.gmail.com</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_email_port</span><span class="ot">=</span><span class="dv">587</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="dt">QC4METABOLOMICS_module_Warner_email_use_ssl</span><span class="ot">=</span><span class="kw">TRUE</span></span></code></pre></div>
 <p>You should now stop QC4Metabolomics (<code>ctrl + C</code>) and start
 it again using:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">--file</span> docker-compose_demo.yml up <span class="at">--build</span> <span class="at">--force-recreate</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">--file</span> docker-compose_demo.yml up <span class="at">--build</span> <span class="at">--force-recreate</span></span></code></pre></div>
 <p><br></p>
-<p>Next go to the “Warning rules” tab and setup some rules. Any file
-that matches any of the rules will trigger an email. The emails are send
-as soon as a matching file is found, but in bulk for all newly found
-files and only once per file.<br></p>
+<p>Next go to the “Warning rules” tab and setup some rules. If the page
+is empty wait up to 5 mins for the database to create the new tables the
+Warner modules uses.<br></p>
+<p>Any file that matches any of the rules will trigger an email. The
+emails are send as soon as a matching file is found, but in bulk for all
+newly found files and only once per file.<br></p>
 <p>The rules only apply to files from a specific
 <code>Instrument</code>, as extracted from the filename. Next you need
 to select which statistic to monitor. Usually the most relevant
@@ -249,6 +295,13 @@ be found at in the <code>DB backup</code> section in
 <code>settings_demo.env</code>.<br><br></p>
 <p>Refer to “Running your own system” for more explanation of
 settings.</p>
+</div>
+<div class="section level2">
+<h2 id="updating">Updating<a class="anchor" aria-label="anchor" href="#updating"></a>
+</h2>
+<p>Run the following to download the new images. Your docker-compose
+file and settings should stay the same unless specifically stated.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">--file</span> docker-compose_demo.yml pull</span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

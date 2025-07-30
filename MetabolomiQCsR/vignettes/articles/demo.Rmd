@@ -115,7 +115,7 @@ Once you have create your password you need to edit the settings for the "Warner
 QC4METABOLOMICS_module_Warner_enabled=TRUE
 ```
 
-Next you need to set your credentials and server. Below is an example where `EMAIL_SENDER` and `YOUR_USER` would be your email address for the account that *sends* the emails and `EMAIL_RECEIVER` would be the address of the email that should *receive* the emails (can be the same as the sender). The password is the account password or in the case of GMail the "app password". Below are the settings needed for GMail.
+Next you need to set your credentials and server. Below is an example where `EMAIL_SENDER` and `YOUR_USER` would be your e-mail address for the account that *sends* the emails and `EMAIL_RECEIVER` would be the address of the email that should *receive* the emails (can be the same as the sender). The password is the account password or in the case of GMail the "app password". Below are the settings needed for GMail.
 
 ```ini
 QC4METABOLOMICS_module_Warner_email_from=EMAIL_SENDER
@@ -135,7 +135,9 @@ docker compose --file docker-compose_demo.yml up --build --force-recreate
 
 \
 
-Next go to the "Warning rules" tab and setup some rules. Any file that matches any of the rules will trigger an email. The emails are send as soon as a matching file is found, but in bulk for all newly found files and only once per file.\
+Next go to the "Warning rules" tab and setup some rules. If the page is empty wait up to 5 mins for the database to create the new tables the Warner modules uses.\
+
+Any file that matches any of the rules will trigger an email. The emails are send as soon as a matching file is found, but in bulk for all newly found files and only once per file.\
 
 The rules only apply to files from a specific `Instrument`, as extracted from the filename. Next you need to select which statistic to monitor. Usually the most relevant statistics are the *m/z* deviation from the expected (`mz_dev_ppm`), the retention time deviation from the expected in minutes (`rt_dev`) and the apex intensity (`maxo`).\
 You then choose the `operator` meaning the comparison to be done. "Greater than" (`>`) would be typical. Then the `Value` to compare the statistic to needs to be chosen and finally it should be decided if the absolute value of the `Value` is to be considered instead of the raw (signed) value.

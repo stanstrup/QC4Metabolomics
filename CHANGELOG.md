@@ -1,3 +1,10 @@
+## [1.0.7](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.6...v1.0.7) (2025-07-30)
+
+
+### Bug Fixes
+
+* drop the idea of the dynamic name since we cannot infer the filename of the latest version then. ([0dfae00](https://github.com/stanstrup/QC4Metabolomics/commit/0dfae005621fab9b38aabdf76b4b19bf3210c0c6))
+
 ## [1.0.6](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.5...v1.0.6) (2025-07-30)
 
 

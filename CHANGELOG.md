@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.5...v1.0.6) (2025-07-30)
+
+
+### Bug Fixes
+
+* use the name attribute to set the file name with version ([c477884](https://github.com/stanstrup/QC4Metabolomics/commit/c477884fc6cb7ebbb6db0e7a9d7f70435cd139c1))
+
 ## [1.0.5](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.4...v1.0.5) (2025-07-30)
 
 

@@ -1,3 +1,11 @@
+## [1.0.8](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.7...v1.0.8) (2025-07-30)
+
+
+### Bug Fixes
+
+* made all shiny models do a self-test to check that they are initialized before running any code. ([69b0a5c](https://github.com/stanstrup/QC4Metabolomics/commit/69b0a5c8dccc0a918d16c3f6eebb9b83319781a4))
+* now checks individually for each relevant module if there are new files to schedule. Previously only files with no previous schedules could be scheduled. This caused newly enabled modules to have no effect. ([914d38a](https://github.com/stanstrup/QC4Metabolomics/commit/914d38ae911f13940153bb4040b4241231c74f6b))
+
 ## [1.0.7](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.6...v1.0.7) (2025-07-30)
 
 

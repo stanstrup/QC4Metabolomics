@@ -1,3 +1,10 @@
+## [1.0.9](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.8...v1.0.9) (2025-08-18)
+
+
+### Bug Fixes
+
+* converter that handles ([fc10e8c](https://github.com/stanstrup/QC4Metabolomics/commit/fc10e8cfc7e158c02f7434497db735d5d7fba604))
+
 ## [1.0.8](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.7...v1.0.8) (2025-07-30)
 
 

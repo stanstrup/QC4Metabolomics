@@ -15,7 +15,7 @@ tags$head(
                "
                 #inline label{ display: table-cell; text-align: center; vertical-align: middle; } 
                 #inline .form-group { display: table-row;}
-                #inline .selectize-control { width: 200px; margin: 0;}
+                #inline .selectize-control { width: 30em; margin: 0;}
                "
              )
 ),

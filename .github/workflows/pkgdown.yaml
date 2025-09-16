@@ -67,11 +67,15 @@ jobs:
       #   uses: mxschmitt/action-tmate@v3
 
       - name: Install MetabolomiQCsR package
-        run: install.packages("MetabolomiQCsR", repos = NULL, type = "source")
+        run: |
+          install.packages("remotes")
+          remotes::install_local("MetabolomiQCsR", dependencies = TRUE)
         shell: Rscript {0}
 
       - name: Build site
-        run: pkgdown::build_site_github_pages("MetabolomiQCsR", new_process = FALSE, install = FALSE)
+        run: |
+          install.packages("pkgdown")
+          pkgdown::build_site_github_pages("MetabolomiQCsR", new_process = FALSE, install = FALSE)
         shell: Rscript {0}
 
       - name: Deploy to GitHub pages 🚀

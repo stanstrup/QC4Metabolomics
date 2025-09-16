@@ -1,3 +1,10 @@
+## [1.0.12](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.11...v1.0.12) (2025-09-16)
+
+
+### Bug Fixes
+
+* updated R in base image. should fix package installation issues ([23f2af4](https://github.com/stanstrup/QC4Metabolomics/commit/23f2af45ee07cc6cae007012c1bdc743a0781c47))
+
 ## [1.0.11](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.10...v1.0.11) (2025-09-16)
 
 

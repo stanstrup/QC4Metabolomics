@@ -70,13 +70,13 @@ jobs:
         run: |
           install.packages("remotes")
           remotes::install_local("MetabolomiQCsR", dependencies = TRUE)
-        shell: Rscript {0}
+        shell: Rscript --no-site-file --no-init-file {0}
 
       - name: Build site
         run: |
           install.packages("pkgdown")
           pkgdown::build_site_github_pages("MetabolomiQCsR", new_process = FALSE, install = FALSE)
-        shell: Rscript {0}
+        shell: Rscript  --no-site-file --no-init-file {0}
 
       - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'

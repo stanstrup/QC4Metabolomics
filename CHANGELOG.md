@@ -1,3 +1,10 @@
+## [1.0.11](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.10...v1.0.11) (2025-09-16)
+
+
+### Bug Fixes
+
+* properly update bioconductor version. ([1f8a788](https://github.com/stanstrup/QC4Metabolomics/commit/1f8a7886ff29a95f96ff05f70f200f0961a05bad))
+
 ## [1.0.10](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.9...v1.0.10) (2025-09-16)
 
 

@@ -48,7 +48,8 @@ jobs:
               libharfbuzz-dev \
               libfribidi-dev \
               libtiff5-dev \
-              libjpeg-dev
+              libjpeg-dev \
+              librsvg2-dev
         
         
       # - name: Set Bioconductor mirror

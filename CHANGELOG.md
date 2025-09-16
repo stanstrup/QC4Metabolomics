@@ -1,3 +1,10 @@
+## [1.0.10](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.9...v1.0.10) (2025-09-16)
+
+
+### Bug Fixes
+
+* updated mzR (and many other packages) + R to support new orbitrap: ([ba280c7](https://github.com/stanstrup/QC4Metabolomics/commit/ba280c73730818e956eb90ac506550b57f4c6f02))
+
 ## [1.0.9](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.8...v1.0.9) (2025-08-18)
 
 

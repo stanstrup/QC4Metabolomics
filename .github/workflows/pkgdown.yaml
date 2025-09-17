@@ -52,9 +52,12 @@ jobs:
               librsvg2-dev
         
         
-      # - name: Set Bioconductor mirror
-      #   run: |
-      #     echo 'options(BioC_mirror = "https://mirrors.dotsrc.org/bioconductor")' >> .Rprofile        
+      - name: Delete local .Rprofile and set Bioconductor and CRAN mirror
+        run: |
+          rm .Rprofile
+          echo 'options(BioC_mirror = "https://mirrors.dotsrc.org/bioconductor")' >> .Rprofile
+          echo 'options(repos = c(CRAN = "https://cran.r-project.org"))' >> .Rprofile
+          
   
       # - uses: awalsh128/cache-apt-pkgs-action@latest
       #   with:
@@ -70,13 +73,13 @@ jobs:
         run: |
           install.packages("remotes")
           remotes::install_local("MetabolomiQCsR", dependencies = TRUE)
-        shell: Rscript --no-site-file --no-init-file {0}
+        shell: Rscript {0}
 
       - name: Build site
         run: |
           install.packages("pkgdown")
           pkgdown::build_site_github_pages("MetabolomiQCsR", new_process = FALSE, install = FALSE)
-        shell: Rscript  --no-site-file --no-init-file {0}
+        shell: Rscript {0}
 
       - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'

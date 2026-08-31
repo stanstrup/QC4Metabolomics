@@ -25,23 +25,23 @@ file_screening_selected <-  reactive({
                                          )
     
 
+                                allowed_metrics <- c("EIC_mean", "EIC_median", "EIC_max")
                                 metric <- input$file_int %>% as.character
-                                
-                                
-                                md5_str <- files_tbl_selected() %>% extract2("file_md5") %>% paste(collapse="','") %>% paste0("('",.,"')")
-                                
+                                validate(need(metric %in% allowed_metrics, "Invalid metric selected."))
+
+                                metric_q     <- as.character(dbQuoteString(pool, metric))
+                                file_select_q <- as.character(dbQuoteString(pool, as.character(input$file_select)))
 
                                 out <- paste0("
                                              SELECT cont_data.*, cont_cmp.name,cont_cmp.mz, cont_cmp.anno, cont_cmp.notes, file_info.sample_id, file_info.time_run
                                              FROM cont_data
                                              LEFT JOIN cont_cmp USING(ion_id, mode)
                                              LEFT JOIN file_info USING(file_md5)
-                                             WHERE (cont_data.stat = '",metric,"') AND (
-                                             file_md5 = '", input$file_select,"')"
-
-                                            ) %>% 
-                                    dbGetQuery_sel_no_warn(pool,.) %>% 
-                                    as_tibble %>% 
+                                             WHERE (cont_data.stat = ", metric_q, ") AND (
+                                             file_md5 = ", file_select_q, ")"
+                                            ) %>%
+                                    dbGetQuery_sel_no_warn(pool,.) %>%
+                                    as_tibble %>%
                                     mutate(across(time_run, ~as.POSIXct(., tz="UTC")))
                                 
                                 out

@@ -66,11 +66,13 @@ sample_id_reactive <- reactive(input$sample_id) %>%
 # Get the files in selected range
 data_selected <-      reactive({
 
+                                    date_from_q <- as.character(dbQuoteString(pool, as.character(as.Date(input$file_date_range_input[1]))))
+                                    date_to_q   <- as.character(dbQuoteString(pool, as.character(as.Date(input$file_date_range_input[2]))))
                                     out <- paste0(
                                                     "SELECT * FROM ic_data ",
                                                     "WHERE ",
-                                                    "(DATE(time) BETWEEN '",input$file_date_range_input[1],"' AND '",input$file_date_range_input[2],"')"
-                                                    ) %>% 
+                                                    "(DATE(time) BETWEEN ", date_from_q, " AND ", date_to_q, ")"
+                                                    ) %>%
                                            dbGetQuery_sel_no_warn(pool,.) %>% as_tibble
     
                                     Encoding(out$metric) <- "UTF-8"

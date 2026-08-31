@@ -164,7 +164,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Install pandoc and rsync
-        run: apt-get install -y pandoc rsync
+        run: apt-get update && apt-get install -y pandoc rsync
 
       - name: Install pkgdown and MetabolomiQCsR
         run: |

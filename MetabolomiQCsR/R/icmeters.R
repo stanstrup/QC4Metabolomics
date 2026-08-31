@@ -46,7 +46,8 @@ ic_boxes <- function(token){
     # make check happy
     fromDate <- lastMeasurementDate <- . <- NULL
 
-    boxes <- GET(paste0("https://app.ic-meter.com/icm/api/boxlocations/1.0/list?access_token=",token))
+    boxes <- GET("https://app.ic-meter.com/icm/api/boxlocations/1.0/list",
+                 add_headers(Authorization = paste("Bearer", token)))
     boxes <- content(boxes)
     boxes <- do.call(rbind.data.frame, c(boxes, stringsAsFactors = FALSE)) %>% as_tibble
     
@@ -84,7 +85,8 @@ ic_measurements <- function(token,  boxQR, fromDate, toDate){
     
     
     # Indoor
-    test_dat <- GET(paste0("https://app.ic-meter.com/icm/api/measurements/1.2/days/range/",boxQR,"?fromDate=",fromDate,"&toDate=",toDate,"&access_token=",token))
+    test_dat <- GET(paste0("https://app.ic-meter.com/icm/api/measurements/1.2/days/range/",boxQR,"?fromDate=",fromDate,"&toDate=",toDate),
+                    add_headers(Authorization = paste("Bearer", token)))
     
     test_dat <- content(test_dat)
     

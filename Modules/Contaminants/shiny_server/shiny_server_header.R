@@ -132,7 +132,11 @@ sample_id_reactive <- reactive(input$sample_id) %>%
 # Get the files in selected range
 files_tbl_selected <- reactive({
 
-                                    validate(need(length(global_instruments_input()) > 0, "No instruments selected. Hold on."))
+                                    validate(
+                                        need(length(global_instruments_input()) > 0, "No instruments selected. Hold on."),
+                                        need(input$project_select_input, "No project(s) selected. Hold on."),
+                                        need(input$mode_select_input, "No mode(s) selected. Hold on.")
+                                    )
 
                                     q <- function(x) as.character(dbQuoteString(pool, x))
 

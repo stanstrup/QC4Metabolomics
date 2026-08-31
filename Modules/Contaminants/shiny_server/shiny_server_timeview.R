@@ -3,6 +3,8 @@ dbGetQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbGetQu
 
 # Build UI for time view --------------------------------------------------
 all_ions <- reactive({
+                        if (length(input$mode_select_input) == 0) return(tibble())
+
                         mode_select <- input$mode_select_input %>%
                             sapply(function(x) as.character(dbQuoteString(pool, x))) %>%
                             paste(collapse=",") %>%

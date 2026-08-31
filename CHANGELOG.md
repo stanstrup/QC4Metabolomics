@@ -1,3 +1,38 @@
+## [1.1.3](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.2...v1.1.3) (2026-08-31)
+
+
+### Bug Fixes
+
+* add 60s timeout to GET calls in get_cont_list (M10) ([eea12a0](https://github.com/stanstrup/QC4Metabolomics/commit/eea12a0d99023338559dd60b05a1db3698c64927))
+* add libuv1-dev for fs/pkgdown build and bump checkout to v7 ([4381f01](https://github.com/stanstrup/QC4Metabolomics/commit/4381f0124bea3e204280e98f44ac643cc33565d4))
+* C1 scope Warner UPDATE to captured pending md5s; C2 make FileInfo ignore-list writes atomic ([6c04592](https://github.com/stanstrup/QC4Metabolomics/commit/6c04592816daad52bd998d014a2c23fdf0957a71))
+* email header group count must match 9 SELECT columns not 12 (M5) ([96a670c](https://github.com/stanstrup/QC4Metabolomics/commit/96a670c14fe90cee305ba699aabaaf9d61da79cb))
+* move ICMeter access_token from URL to Authorization header (H12) ([99ade63](https://github.com/stanstrup/QC4Metabolomics/commit/99ade63cdebedd9d724d8dd138c6ed249dc64b8d))
+* on.exit guards, atomic transactions, pivot_longer, VALUES alias, remove debug print (M1/M2/L1/L6 TrackCmp) ([ae56d2e](https://github.com/stanstrup/QC4Metabolomics/commit/ae56d2ee532a44a530a506a83e29a016b71da8ea))
+* on.exit guards, atomic transactions, VALUES alias, wrong error log var, pivot_longer (M1/M2/M3/L6 Contaminants) ([42f505e](https://github.com/stanstrup/QC4Metabolomics/commit/42f505e16bc095add9ea50ec8ed1b70d07505203))
+* prevent SQL injection in TrackCmp compound edit/delete (H1) ([2320088](https://github.com/stanstrup/QC4Metabolomics/commit/2320088c7c406cfbd8882e6b9a52215f91f85e4a))
+* prevent SQL injection in TrackCmp stats query (H4) ([9889142](https://github.com/stanstrup/QC4Metabolomics/commit/988914244a5edee343600c6393bd605b6bdcfc99))
+* prevent SQL injection in Warner get_data_matching_rules (H3) ([fcff9e4](https://github.com/stanstrup/QC4Metabolomics/commit/fcff9e46fae5bffe0cf36a4092f048370a67f329))
+* prevent SQL injection in Warner rule edit/delete (H2) ([e8383bf](https://github.com/stanstrup/QC4Metabolomics/commit/e8383bf16b5d859377d7ece5a4a15995743e5cb7))
+* quote all IN/REGEXP values in Contaminants files_tbl_selected (H7) ([1c7f2bc](https://github.com/stanstrup/QC4Metabolomics/commit/1c7f2bc7b86107f4fcf28afe50e5bc7574ac677d))
+* quote all IN/REGEXP/date values in Productivity heatmap queries (H10) ([868bd3d](https://github.com/stanstrup/QC4Metabolomics/commit/868bd3d7bccaf49e5f1c6de6e8bcdd64a36df7f6))
+* quote date inputs in ICMeter timeplot query (H5) ([25f43f2](https://github.com/stanstrup/QC4Metabolomics/commit/25f43f22b4defcf9dac7e182c5011599460956bc))
+* quote ion_id/mode/metric and validate mode in Contaminants time view (H9) ([0d4b056](https://github.com/stanstrup/QC4Metabolomics/commit/0d4b0568df98e438ed0dc19fbec18b4a9403e0a0))
+* quote module names from env vars with dbQuoteString (L4) ([c58645f](https://github.com/stanstrup/QC4Metabolomics/commit/c58645f45d719f21a86d75591816bae83d3759ef))
+* register output bindings once per plot id (M9 Productivity) ([70dd7df](https://github.com/stanstrup/QC4Metabolomics/commit/70dd7df9a296b48dbbf84f9956e288a22fc08d88))
+* register output bindings once, linewidth instead of size (M9/M12 ICMeter) ([3f7c2b9](https://github.com/stanstrup/QC4Metabolomics/commit/3f7c2b972faea53f26b52465ab878eb4b2d5664d))
+* remove plyr dependency, replace unrowname with as.data.frame(row.names=NULL) (L5) ([f90e566](https://github.com/stanstrup/QC4Metabolomics/commit/f90e56674fc34fe2eb84cdbde07b837de7db8ecd))
+* removed code review file ([306bc46](https://github.com/stanstrup/QC4Metabolomics/commit/306bc46e1003caa2cc33affa2e956eed789f5c3a))
+* replace deprecated aes_string() and size= in plots.R (M12) ([daedec5](https://github.com/stanstrup/QC4Metabolomics/commit/daedec5c6b20a32fa858d62d6342321cbec01150))
+* replace gsub path-quoting with dbQuoteString in Files module (H11) ([d85a20e](https://github.com/stanstrup/QC4Metabolomics/commit/d85a20e2e11ef86cd0707cbd14c40471c1c14a75))
+* replace spread() with pivot_wider() (L6 Contaminants overview) ([7abd19f](https://github.com/stanstrup/QC4Metabolomics/commit/7abd19f7b653edd06e1e5d67dc8152d1c7646a85))
+* rm() on conditional exclude_path, remove normalizePath that broke relative paths (M7/M8) ([abfa166](https://github.com/stanstrup/QC4Metabolomics/commit/abfa1663bd517217f820980f12a626324b36f9e6))
+* seq_len(nrow()) to avoid 1:0 crash, replace purrrlyr::by_row with pmap (M6/M11) ([5dc398f](https://github.com/stanstrup/QC4Metabolomics/commit/5dc398f5b5da8bab6d9b4c40a66fda141e5674c1))
+* validate metric allowlist and quote file_md5 in Contaminants file screening (H6) ([fa01111](https://github.com/stanstrup/QC4Metabolomics/commit/fa011115f8301157a99bbc75cfd6938461c6312e))
+* validate metric allowlist and quote md5/cut_off in Contaminants overview (H8) ([68f48de](https://github.com/stanstrup/QC4Metabolomics/commit/68f48dedff231fc93c93f462bd7dbca54150f434))
+* VALUES alias, bounded while loop with per-device offset reset, pivot_longer (M2/M4/L6 ICMeter) ([2e077bb](https://github.com/stanstrup/QC4Metabolomics/commit/2e077bb0485bd9f93a03d23bd961bcb429f2bcd4))
+* write_to_log null-pool bug and rem_dead_files per-DELETE commit (L2, L3) ([59b1b6b](https://github.com/stanstrup/QC4Metabolomics/commit/59b1b6b223d314108ce4d2556843f056e16bb168))
+
 ## [1.1.2](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.1...v1.1.2) (2026-08-31)
 
 

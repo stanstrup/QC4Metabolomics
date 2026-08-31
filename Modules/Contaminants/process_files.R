@@ -172,35 +172,26 @@ for(ii in seq_along(file_tbl_std_l)){
             paste0(sum(file_tbl_std_l[[ii]]$has_ms1), " files did not contain any MS1 data or too few scans to be meaningful. First was: ",.,". They will be ignored.") %>% 
             write_to_log(cat = "warning", source = log_source, pool = pool)
         
-      # Move to ignore list
+      # Move to ignore list — INSERT and DELETEs in one atomic transaction.
       con <- poolCheckout(pool)
+      on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
       dbBegin(con)
-      
-      # add
+
       res <- file_tbl_std_l[[ii]] %>%
-        filter(!has_ms1) %>% 
-        select(path, file_md5) %>% 
-        sqlAppendTable(con, "files_ignore", .) %>% 
+        filter(!has_ms1) %>%
+        select(path, file_md5) %>%
+        sqlAppendTable(con, "files_ignore", .) %>%
         dbSendQuery(con,.)
-      
-      res <- dbCommit(con)
-      
-      # remove
-      md5del <- filter(file_tbl_std_l[[ii]], !has_ms1) %>% select(path, file_md5) %>% pull(file_md5)
-      
+
+      md5del <- filter(file_tbl_std_l[[ii]], !has_ms1) %>% pull(file_md5)
+
       for(i in seq_along(md5del)){
-        
         for(files_tables in c("file_info", "file_schedule", "files")){
-          
-          sql_query <- paste0("DELETE FROM ",files_tables," WHERE (file_md5='",md5del[i],"')")
-          dbSendQuery(con,sql_query)
-          dbCommit(con)
-          
+          dbSendQuery(con, paste0("DELETE FROM ",files_tables," WHERE (file_md5='",md5del[i],"')"))
         }
-        
       }
-      
-      poolReturn(con)
+
+      dbCommit(con)
       
       
       
@@ -243,7 +234,7 @@ for(ii in seq_along(file_tbl_std_l)){
                               .groups = "drop"
                               ) %>% 
                     ungroup %>% 
-                    gather(stat, value, -file_md5, -ion_id, -mode) %>% 
+                    pivot_longer(-c(file_md5, ion_id, mode), names_to = "stat") %>%
                     filter(value > 0)
     
     
@@ -256,22 +247,22 @@ for(ii in seq_along(file_tbl_std_l)){
     
     if(nrow(EIC_summary)!=0) {
         con <- poolCheckout(pool)
+        on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
         dbBegin(con)
-        
+
         sql_query <- EIC_summary %>%
                      sqlAppendTable(pool, "cont_data", .)
-        
-        sql_query@.Data <- paste0(sql_query@.Data, "\n  ","ON DUPLICATE KEY UPDATE value = values(value)")
-        
+
+        sql_query@.Data <- paste0(sql_query@.Data, " AS new_row\n  ON DUPLICATE KEY UPDATE value = new_row.value")
+
         q_res <- sql_query %>% dbSendQuery(con, .)
         row_updates <- dbGetRowsAffected(q_res)
         res <- dbCommit(con)
-        poolReturn(con)
-        
+
         # write to log
         if(res) write_to_log(paste0("Successfully asked to update statistics for ",EIC_summary$file_md5 %>% unique %>% length," files. ",row_updates, " operations actually performed."), cat = "info", source = log_source, pool = pool)
-        if(!res) write_to_log(paste0("Failed to update statistics. Update was requested for ",file_stds_tbl_flat$file_md5 %>% unique %>% nlevels," files."), cat = "error", source = log_source, pool = pool)
-        
+        if(!res) write_to_log(paste0("Failed to update statistics. Update was requested for ",EIC_summary$file_md5 %>% unique %>% length," files."), cat = "error", source = log_source, pool = pool)
+
     }
     
     
@@ -295,18 +286,16 @@ for(ii in seq_along(file_tbl_std_l)){
         
         
         con <- poolCheckout(pool)
+        on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
         dbBegin(con)
-        
-        res_pri <- vector("logical", nrow(sql_data))
-        for(i in 1:nrow(sql_data)){
+
+        for(i in seq_len(nrow(sql_data))){
             sql_query <- paste0("UPDATE file_schedule SET priority='", sql_data$priority[i],"' WHERE (file_md5='",sql_data$file_md5[i],"' AND module='",sql_data$module[i],"')")
             dbSendQuery(con,sql_query)
-            res_pri[i] <- dbCommit(con)
         }
-        
-        
-        poolReturn(con)
-        write_to_log(paste0("priority updated for ",sum(res_pri)," files."), cat = "info", source = log_source, pool = pool)
+        dbCommit(con)
+
+        write_to_log(paste0("priority updated for ",nrow(sql_data)," files."), cat = "info", source = log_source, pool = pool)
     }
 
 

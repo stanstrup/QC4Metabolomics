@@ -113,8 +113,8 @@ set_QC4Metabolomics_settings_from_file <- function(file) {
 #' @importFrom purrr map_chr map
 #' @importFrom readr read_tsv
 #' @importFrom magrittr extract2
-#' @importFrom httr GET content
-#' 
+#' @importFrom httr GET content timeout
+#'
 
 get_cont_list <- function(polarity = c("positive", "negative", "unknown"), type = "URL") {
 
@@ -135,7 +135,7 @@ get_cont_list <- function(polarity = c("positive", "negative", "unknown"), type 
         cont_list <- loc %>% 
                      {tibble(polarity = names(.),loc = as.character(.))} %>% 
                      filter(polarity %in% polarity_un) %>% 
-                     mutate(cont_list = map_chr(loc, ~content(GET(..1)))) %>% 
+                     mutate(cont_list = map_chr(loc, ~content(GET(..1, timeout(60))))) %>%
                      mutate(cont_list = map(cont_list, read_tsv))
     }else{return(NULL)}
     

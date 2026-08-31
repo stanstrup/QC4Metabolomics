@@ -96,7 +96,7 @@ getEIC_C_wrap <- function(xraw_values, range_tbl) {
     
     out <- list()
     
-    for(i in 1:nrow(range_tbl)){
+    for(i in seq_len(nrow(range_tbl))){
         out[[i]] <- .Call(  "getEIC",
                               mz,
                               int,

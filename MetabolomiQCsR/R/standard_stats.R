@@ -8,9 +8,8 @@
 #' @return List containing the ROIs. Each list contains mz, mzmin, mzmax, scmin, scmax, length (set to -1, not used by centWave) and intensity (set to -1, not used by centWave) columns.
 #' @export
 #' 
-#' @importFrom dplyr %>% rowwise transmute ungroup mutate
-#' @importFrom purrr map
-#' @importFrom purrrlyr by_row
+#' @importFrom dplyr %>% rowwise transmute ungroup mutate pick
+#' @importFrom purrr map pmap
 #' @importFrom massageR attr_rem
 #' @importFrom magrittr extract2
 #' 
@@ -29,10 +28,9 @@ tbl2ROI <- function(tbl, raw, ppm, rt_tol) {
                        length    = -1, # not used!
                        intensity = -1  # not used!
                        ) %>%
-             ungroup %>% 
-        
-             by_row(as.list) %>% 
-             mutate( .out = map(.out, ~ attr_rem(.x,"indices"))) %>% # we get some indices attribute. Dunno why. But lets remove it.
+             ungroup %>%
+             mutate(.out = pmap(pick(everything()), list)) %>%
+             mutate(.out = map(.out, ~ attr_rem(.x,"indices"))) %>%
              extract2(".out") ->
     out
     
@@ -72,7 +70,7 @@ closest_match <- function(stds, peakTable, rt_tol = 0.25, mz_ppm = 30, rt_col = 
     peakTable_mz <- peakTable %>% extract2(mz_col)
     peakTable_rt <- peakTable %>% extract2(rt_col)
         
-    for(i in 1:nrow(stds)){
+    for(i in seq_len(nrow(stds))){
         
         stds_mz <- stds %>% slice(i) %>% extract2(mz_col)
         stds_rt <- stds %>% slice(i) %>% extract2(rt_col)

@@ -62,20 +62,15 @@ output$file_date_range_ui <- renderUI({
 
 # Build project selector --------------------------------------------------
 # Get available projects
-std_stats_project_available <- reactive({ 
-    
-    global_instruments_input() %>%
-        paste(collapse="','") %>% 
-        paste0("'",.,"'") %>% 
-        paste0("
-                SELECT DISTINCT project
-                FROM file_info
-                WHERE instrument IN (
-               ",
-               .,
-               ")"
-        ) %>% 
-        dbGetQuery_sel_no_warn(pool,.) %>% 
+std_stats_project_available <- reactive({
+
+    instrument_in <- global_instruments_input() %>%
+        sapply(function(x) as.character(dbQuoteString(pool, x))) %>%
+        paste(collapse=",") %>%
+        paste0("(", ., ")")
+
+    paste0("SELECT DISTINCT project FROM file_info WHERE instrument IN ", instrument_in) %>%
+        dbGetQuery_sel_no_warn(pool,.) %>%
         as.matrix %>% as.character %>% sort
 })
 
@@ -178,33 +173,37 @@ std_data_selected <- reactive({
     need(!is.null(input$std_stats_sample_id), "No search string received yet. Hold on."),
     need(global_instruments_input(), "Haven't retrieved list of instruments yet. Hold on.")
   )
-  
-    project_select <- input$std_stats_project_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
-    mode_select    <- input$std_stats_mode_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
-    REGEXP <- std_stats_sample_id_reactive() %>% ifelse(.=="",".*",.)
+
+    q <- function(x) as.character(dbQuoteString(pool, x))
+
+    project_select    <- input$std_stats_project_select_input %>% sapply(q) %>% paste(collapse=",") %>% paste0("(", ., ")")
+    mode_select       <- input$std_stats_mode_select_input    %>% sapply(q) %>% paste(collapse=",") %>% paste0("(", ., ")")
+    instrument_select <- global_instruments_input()            %>% sapply(q) %>% paste(collapse=",") %>% paste0("(", ., ")")
+    REGEXP_q   <- std_stats_sample_id_reactive() %>% { ifelse(.=="",".*",.) } %>% q()
     REGEXP_inv <- input$std_stats_sample_id_inv %>% ifelse("NOT ", "")
-    instrument_select <- global_instruments_input() %>% paste(collapse="','") %>% paste0("('",.,"')")
-    
-    out <- glue("
+    date_from_q <- as.character(as.Date(input$file_date_range_input[1])) %>% q()
+    date_to_q   <- as.character(as.Date(input$file_date_range_input[2])) %>% q()
+
+    sql <- paste0("
       SELECT file_info.mode, file_info.time_run, files.path, std_stat_data.*, std_stat_types.stat_name, std_compounds.cmp_name, std_compounds.cmp_mz, std_compounds.cmp_rt1, std_compounds.updated_at
       FROM file_info CROSS JOIN std_stat_types
-      
+
       LEFT JOIN files ON (file_info.file_md5 = files.file_md5)
       INNER JOIN std_stat_data ON (file_info.file_md5 = std_stat_data.file_md5) AND (std_stat_types.stat_id = std_stat_data.stat_id)
       LEFT JOIN std_compounds ON (std_compounds.cmp_id = std_stat_data.cmp_id)
-      
-      WHERE (file_info.sample_id {REGEXP_inv} REGEXP '{REGEXP}')
-      AND (DATE(file_info.time_run) BETWEEN '{input$file_date_range_input[1]}' AND '{input$file_date_range_input[2]}')
-      AND (file_info.project in {project_select})
-      AND (file_info.mode in {mode_select})
-      AND (file_info.instrument in {instrument_select})
+
+      WHERE (file_info.sample_id ", REGEXP_inv, " REGEXP ", REGEXP_q, ")
+      AND (DATE(file_info.time_run) BETWEEN ", date_from_q, " AND ", date_to_q, ")
+      AND (file_info.project in ", project_select, ")
+      AND (file_info.mode in ", mode_select, ")
+      AND (file_info.instrument in ", instrument_select, ")
       AND std_stat_types.stat_name in ('TF', 'ASF', 'datapoints', 'into', 'sn', 'rt_dev', 'mz_dev_ppm', 'FWHM')
-      ;
-      "
-      ) %>% 
-       dbGetQuery_sel_no_warn(pool,.) %>% 
-       as_tibble %>% 
-      mutate(across(c(updated_at, time_run), ~as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S"))) %>% 
+      ;"
+    )
+
+    out <- dbGetQuery_sel_no_warn(pool, sql) %>%
+       as_tibble %>%
+      mutate(across(c(updated_at, time_run), ~as.POSIXct(., tz="UTC", format="%Y-%m-%d %H:%M:%S"))) %>%
       mutate(time_run = with_tz(time_run, Sys.timezone(location = TRUE))) %>% # time zone fix
       mutate(filename = sub('\\..*$', '', basename(path)))
 

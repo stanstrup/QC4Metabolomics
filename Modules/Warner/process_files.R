@@ -49,11 +49,19 @@ rules <-  "SELECT
 
 
 get_data_matching_rules <- function(stat_id, use_abs_value, instrument, operator, value){
-  
-glue("
-     SELECT file_schedule.*, 
+
+  allowed_operators <- c(">", "<", ">=", "<=", "=", "!=", "<>")
+  if (!operator %in% allowed_operators) stop(paste("Invalid operator:", operator))
+
+  stat_id_q    <- as.character(dbQuoteLiteral(pool, as.integer(stat_id)))
+  instrument_q <- as.character(dbQuoteLiteral(pool, as.character(instrument)))
+  value_q      <- as.character(dbQuoteLiteral(pool, as.numeric(value)))
+  abs_fn       <- if_else(as.logical(use_abs_value), "ABS", "")
+
+  paste0("
+     SELECT file_schedule.*,
             std_stat_data.cmp_id,
-            std_stat_data.found, 
+            std_stat_data.found,
             std_stat_data.value,
             file_info.project,
             file_info.mode,
@@ -61,23 +69,21 @@ glue("
             file_info.time_run,
             files.path
      FROM file_schedule
-     INNER JOIN std_stat_data 
+     INNER JOIN std_stat_data
      ON file_schedule.file_md5=std_stat_data.file_md5
-     INNER JOIN file_info 
+     INNER JOIN file_info
      ON file_schedule.file_md5=file_info.file_md5
-     INNER JOIN files 
+     INNER JOIN files
      ON file_schedule.file_md5=files.file_md5
-     WHERE (std_stat_data.stat_id = '{stat_id}' AND 
-            {if_else(as.logical(use_abs_value),'ABS', '')}(std_stat_data.value) {operator} {value} AND
-            file_info.instrument = '{instrument}' AND
+     WHERE (std_stat_data.stat_id = ", stat_id_q, " AND
+            ", abs_fn, "(std_stat_data.value) ", operator, " ", value_q, " AND
+            file_info.instrument = ", instrument_q, " AND
             file_schedule.module = 'Warner' AND file_schedule.priority > 0
             )
      ORDER BY file_schedule.priority ASC, file_info.time_run DESC
-     
-     "
-     ) %>% 
-            dbGetQuery(pool,.) %>% 
-            as_tibble
+     ") %>%
+    dbGetQuery(pool, .) %>%
+    as_tibble
 
 }
 

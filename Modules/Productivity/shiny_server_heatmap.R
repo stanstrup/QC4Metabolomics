@@ -58,7 +58,10 @@ output$file_date_range_ui <- renderUI({
 # Get available projects
 project_available <- reactive({
 
-    instrument_in <- global_instruments_input() %>%
+    instr <- global_instruments_input()
+    if (length(instr) == 0) return(character(0))
+
+    instrument_in <- instr %>%
         sapply(function(x) as.character(dbQuoteString(pool, x))) %>%
         paste(collapse=",") %>%
         paste0("(", ., ")")
@@ -158,6 +161,8 @@ sample_id_reactive <- reactive(input$sample_id) %>%
 
 # Get the files in selected range
 files_tbl_selected <- reactive({
+
+                                    validate(need(length(global_instruments_input()) > 0, "No instruments selected. Hold on."))
 
                                     q <- function(x) as.character(dbQuoteString(pool, x))
 

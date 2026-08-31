@@ -64,7 +64,10 @@ output$file_date_range_ui <- renderUI({
 # Get available projects
 std_stats_project_available <- reactive({
 
-    instrument_in <- global_instruments_input() %>%
+    instr <- global_instruments_input()
+    if (length(instr) == 0) return(character(0))
+
+    instrument_in <- instr %>%
         sapply(function(x) as.character(dbQuoteString(pool, x))) %>%
         paste(collapse=",") %>%
         paste0("(", ., ")")

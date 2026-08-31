@@ -4,6 +4,12 @@ on:
   push:
     branches: [main, master]
 
+# Serialize runs so a slow base-image build from one push finishes before the
+# next push's workflow starts pulling qc_base:latest.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   REGISTRY: ghcr.io
   IMAGE_BASE: ghcr.io/${{ github.repository_owner }}/qc4metabolomics
@@ -129,20 +135,15 @@ jobs:
           docker tag qc_converter:latest $IMAGE_BASE/qc_converter:latest
           docker push $IMAGE_BASE/qc_converter:latest
 
-  wait-for-builds:
-    name: Wait for all image builds
-    runs-on: ubuntu-latest
-    needs: [build-process, build-shiny, build-converter]
-    if: always()
-    steps:
-      - name: Dummy step
-        run: echo "Waiting for all builds to complete"
-
   release:
     name: Semantic Release
     runs-on: ubuntu-latest
-    needs: wait-for-builds
-    if: always()
+    needs: [build-process, build-shiny, build-converter]
+    if: >-
+      always() &&
+      needs.build-process.result == 'success' &&
+      needs.build-shiny.result == 'success' &&
+      needs.build-converter.result == 'success'
     steps:
       - uses: actions/checkout@v7
         with:

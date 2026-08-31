@@ -31,5 +31,5 @@ The processing queue is a multi-step process that works the following way:
 \
 \
 
-If you update settings in any of the modules (for example add more compounds to track) the new settings are only applied going forward. If you want to re-process the files already processed the processing queue for those files need to be reset in the database (currently manually).
+If you update settings in any of the modules (for example add more compounds to track) the new settings are only applied going forward — already-processed files will not be re-analysed automatically. To apply the new settings to historical files, use the **Reprocess Files** function in the Admin panel (Admin → Actions → Reprocess Files). Select the relevant module(s) and click "Reprocess Files"; the system will then re-analyse all previously processed files with the updated settings during the next processing cycle.
 

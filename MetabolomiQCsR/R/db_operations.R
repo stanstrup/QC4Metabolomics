@@ -115,47 +115,51 @@ rem_dead_files <- function(file_md5, path, pool = NULL, log_source){
     if(is.null(pool)) dbPool_MetabolomiQCs(5)
     
     
-    file_tbl <- tibble(file_md5 = file_md5, path = path) %>% 
+    file_tbl <- tibble(file_md5 = file_md5, path = path) %>%
                 mutate(file_exists = path %>% as.character %>% paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",.) %>% file.exists)
-    
-        
-    if(any(!file_tbl$file_exists)){
-     
-        # get all tables that references files
-        # also add a list of all files to remove
-        tab_with_files <-   dbListTables(pool) %>% 
-                            tibble(table = .) %>% 
-                            mutate(fields = map(table, ~ dbListFields(pool,.x))) %>% 
-                            mutate(has_file_md5 = map_lgl(fields, ~ "file_md5" %in% .x)) %>% 
+
+    # Only remove a md5 when EVERY path for that md5 is gone.
+    # files and files_ignore can share a md5 (duplicate-file tracking), so a
+    # missing duplicate path must not destroy data for the still-present original.
+    found_md5  <- file_tbl$file_md5[ file_tbl$file_exists] %>% unique() %>% as.character()
+    to_delete  <- file_tbl$file_md5[!file_tbl$file_exists] %>% unique() %>% as.character() %>% setdiff(found_md5)
+
+    if(length(to_delete) > 0){
+
+        # get all tables that reference files
+        tab_with_files <-   dbListTables(pool) %>%
+                            tibble(table = .) %>%
+                            mutate(fields = map(table, ~ dbListFields(pool,.x))) %>%
+                            mutate(has_file_md5 = map_lgl(fields, ~ "file_md5" %in% .x)) %>%
                             filter(has_file_md5) %>%
-                            rowwise %>% 
-                            mutate(file_md5 = list(as.character(file_tbl$file_md5[!file_tbl$file_exists]))) %>% 
+                            rowwise %>%
+                            mutate(file_md5 = list(to_delete)) %>%
                             ungroup
-                            
+
         # make sql queries ready
-        tab_with_files %<>% 
+        tab_with_files %<>%
             mutate(sql = map2_chr(file_md5,table, ~ .x %>% paste(collapse="','") %>% paste0("'",.,"'") %>% paste0("DELETE FROM ",.y," WHERE file_md5 in (",.,")") ))
-        
-        # put the files table last to satisfy contraints
-        tab_with_files %<>% 
-            mutate(is_files_tab = table == "files") %>% 
-            arrange(is_files_tab) %>% 
+
+        # put the files table last to satisfy constraints
+        tab_with_files %<>%
+            mutate(is_files_tab = table == "files") %>%
+            arrange(is_files_tab) %>%
             select(-is_files_tab)
-        
-        
+
+
         # Do db query
         con <- poolCheckout(pool)
         dbBegin(con)
-        
+
         res <- sapply(tab_with_files$sql, function(x){ dbSendQuery(con,x); dbCommit(con)})
         res <- unname(res)
         poolReturn(con)
-        
+
         # write to log
-        if(all(res)) write_to_log(paste0("Removed ",sum(!file_tbl$file_exists)," files that could not be found from the database"), cat = "warning", source = log_source, pool = pool)
-        
+        if(all(res)) write_to_log(paste0("Removed ", length(to_delete), " files that could not be found from the database"), cat = "warning", source = log_source, pool = pool)
+
     }
-    
+
     return(file_tbl$file_exists)
 }
 

@@ -11,6 +11,21 @@ Admin <- function(input, output, session, global_instruments_input) {
 
 
     # -------------------------------------------------------------------------
+    # Output bindings — set once; updated via reactiveVals below
+    # -------------------------------------------------------------------------
+
+    reset_result  <- reactiveVal(NULL)
+    remove_result <- reactiveVal(NULL)
+    clean_result  <- reactiveVal(NULL)
+    edit_result   <- reactiveVal(NULL)
+
+    output$reset_priority_result <- renderPrint({ req(reset_result());  cat(reset_result(),  "\n") })
+    output$remove_missing_result <- renderPrint({ req(remove_result()); cat(remove_result(), "\n") })
+    output$clean_log_result      <- renderPrint({ req(clean_result());  cat(clean_result(),  "\n") })
+    output$edit_result           <- renderPrint({ req(edit_result());   cat(edit_result(),   "\n") })
+
+
+    # -------------------------------------------------------------------------
     # Actions tab
     # -------------------------------------------------------------------------
 
@@ -42,15 +57,14 @@ Admin <- function(input, output, session, global_instruments_input) {
     # Reset priority ----------------------------------------------------------
     observeEvent(input$reset_priority_btn, {
 
-        # Whitelist: only accept values that are actually known module names
         selected <- intersect(input$modules_to_reset, file_schedule_modules())
 
         if (length(selected) == 0) {
-            output$reset_priority_result <- renderPrint(cat("No modules selected.\n"))
+            reset_result("No modules selected.")
             return()
         }
 
-        results <- map_chr(selected, function(mod) {
+        lines <- map_chr(selected, function(mod) {
             tryCatch({
                 con <- poolCheckout(pool)
                 on.exit({ try(dbRollback(con), silent = TRUE); poolReturn(con) }, add = TRUE)
@@ -59,14 +73,15 @@ Admin <- function(input, output, session, global_instruments_input) {
                            " WHERE module = ", dbQuoteString(con, mod),
                            " AND priority = -1"))
                 paste0(mod, ": ", n, " file(s) queued for reprocessing")
-            }, error = function(e) {
-                paste0(mod, ": ERROR - ", conditionMessage(e))
-            })
+            }, error = function(e) paste0(mod, ": ERROR - ", conditionMessage(e)))
         })
 
-        output$reset_priority_result <- renderPrint(
-            cat(paste(results, collapse = "\n"), "\n")
+        write_to_log(
+            paste0("Admin: reprocessing triggered for — ", paste(selected, collapse = ", ")),
+            cat = "info", source = "Admin", pool = pool
         )
+
+        reset_result(paste(lines, collapse = "\n"))
     })
 
 
@@ -87,49 +102,28 @@ Admin <- function(input, output, session, global_instruments_input) {
     observeEvent(input$confirm_remove_missing_btn, {
         removeModal()
 
-        result_msg <- tryCatch({
-
+        msg <- tryCatch({
             file_tbl <- "SELECT path, file_md5 FROM files
                          UNION ALL
                          SELECT path, file_md5 FROM files_ignore" %>%
                 dbGetQuery(pool, .) %>%
-                as_tibble() %>%
-                mutate(path = paste0(Sys.getenv("QC4METABOLOMICS_base"), "/", path),
-                       file_found = file_exists(path))
+                as_tibble()
 
-            # A md5 may appear in both files and files_ignore (duplicate tracking).
-            # Only remove it when ALL its paths are gone.
-            found_md5 <- file_tbl %>% filter( file_found) %>% pull(file_md5) %>% unique()
-            bad_md5   <- file_tbl %>% filter(!file_found) %>% pull(file_md5) %>% unique()
-            bad_md5   <- setdiff(bad_md5, found_md5)
+            # rem_dead_files handles the setdiff, deletion, and logging
+            file_exists_vec <- rem_dead_files(
+                file_md5   = file_tbl$file_md5,
+                path       = file_tbl$path,
+                pool       = pool,
+                log_source = "Admin"
+            )
 
-            if (length(bad_md5) == 0) {
-                "No missing files found — nothing to remove."
-            } else {
-                tables_to_prune <- c("std_stat_data", "cont_data", "file_schedule",
-                                     "file_info", "files_ignore", "files")
-
-                con <- poolCheckout(pool)
-                on.exit({ try(dbRollback(con), silent = TRUE); poolReturn(con) }, add = TRUE)
-                dbBegin(con)
-
-                n_deleted <- 0L
-                for (tbl in tables_to_prune) {
-                    for (md5 in bad_md5) {
-                        n_deleted <- n_deleted + dbExecute(con,
-                            paste0("DELETE FROM ", tbl, " WHERE file_md5 = '", md5, "'"))
-                    }
-                }
-
-                dbCommit(con)
-
-                paste0("Removed ", length(bad_md5), " missing file(s) (",
-                       n_deleted, " total row(s) deleted across all tables).")
-            }
+            n <- sum(!file_exists_vec)
+            if (n == 0) "No missing files found — nothing to remove."
+            else paste0("Removed ", n, " missing file(s) from the database.")
 
         }, error = function(e) paste0("ERROR: ", conditionMessage(e)))
 
-        output$remove_missing_result <- renderPrint(cat(result_msg, "\n"))
+        remove_result(msg)
     })
 
 
@@ -150,17 +144,23 @@ Admin <- function(input, output, session, global_instruments_input) {
     observeEvent(input$confirm_clean_log_btn, {
         removeModal()
 
-        result_msg <- tryCatch({
+        msg <- tryCatch({
             con <- poolCheckout(pool)
             on.exit({ try(dbRollback(con), silent = TRUE); poolReturn(con) }, add = TRUE)
             dbBegin(con)
             n <- dbExecute(con,
                 "DELETE FROM log WHERE time < DATE_SUB(NOW(), INTERVAL 1 MONTH)")
             dbCommit(con)
+
+            write_to_log(
+                paste0("Admin: deleted ", n, " log entries older than 1 month"),
+                cat = "info", source = "Admin", pool = pool
+            )
+
             paste0("Deleted ", n, " log entry/entries older than 1 month.")
         }, error = function(e) paste0("ERROR: ", conditionMessage(e)))
 
-        output$clean_log_result <- renderPrint(cat(result_msg, "\n"))
+        clean_result(msg)
     })
 
 
@@ -289,7 +289,7 @@ Admin <- function(input, output, session, global_instruments_input) {
         from_val <- trimws(input$edit_from)
 
         if (!field %in% allowed_fields || nchar(from_val) == 0) {
-            output$edit_result <- renderPrint(cat("Please select a field and enter a value to search for.\n"))
+            edit_result("Please select a field and enter a value to search for.")
             edit_preview_data(NULL)
             return()
         }
@@ -306,11 +306,9 @@ Admin <- function(input, output, session, global_instruments_input) {
                 ORDER BY f.path
             ")) %>% as_tibble()
             list(rows = rows, msg = paste0(nrow(rows), " file(s) match ", field, " = \"", from_val, "\""))
-        }, error = function(e) {
-            list(rows = NULL, msg = paste0("ERROR: ", conditionMessage(e)))
-        })
+        }, error = function(e) list(rows = NULL, msg = paste0("ERROR: ", conditionMessage(e))))
 
-        output$edit_result <- renderPrint(cat(result$msg, "\n"))
+        edit_result(result$msg)
         edit_preview_data(result$rows)
     })
 
@@ -330,11 +328,11 @@ Admin <- function(input, output, session, global_instruments_input) {
         to_val   <- trimws(input$edit_to)
 
         if (!field %in% allowed_fields || nchar(from_val) == 0 || nchar(to_val) == 0) {
-            output$edit_result <- renderPrint(cat("Please fill in all fields before applying.\n"))
+            edit_result("Please fill in all fields before applying.")
             return()
         }
 
-        result <- tryCatch({
+        msg <- tryCatch({
             con <- poolCheckout(pool)
             on.exit({ try(dbRollback(con), silent = TRUE); poolReturn(con) }, add = TRUE)
             from_q <- dbQuoteString(con, from_val)
@@ -344,11 +342,18 @@ Admin <- function(input, output, session, global_instruments_input) {
                 paste0("UPDATE file_info SET ", field, " = ", to_q,
                        " WHERE ", field, " = ", from_q))
             dbCommit(con)
+
+            write_to_log(
+                paste0("Admin: changed ", field, " from \"", from_val,
+                       "\" to \"", to_val, "\" (", n, " file(s))"),
+                cat = "info", source = "Admin", pool = pool
+            )
+
             edit_preview_data(NULL)
             paste0("Updated ", n, " file(s): ", field, " \"", from_val, "\" → \"", to_val, "\"")
         }, error = function(e) paste0("ERROR: ", conditionMessage(e)))
 
-        output$edit_result <- renderPrint(cat(result, "\n"))
+        edit_result(msg)
     })
 
 }

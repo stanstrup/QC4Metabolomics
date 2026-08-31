@@ -90,18 +90,17 @@ if(length(files)==0){
 # we split the query in thousands to avoid errors.
 
 # figure if files are already in the files table
-q_fun <- . %>% 
-            pull(files) %>% 
-            paste(collapse="','") %>% 
-            paste0("'",.,"'") %>% 
-            paste0("select path from files where path in (",.,")") %>% 
+q_fun <- . %>%
+            pull(files) %>%
+            sapply(function(x) as.character(dbQuoteString(pool, x))) %>%
+            paste(collapse=",") %>%
+            paste0("select path from files where path in (",.,")") %>%
             dbGetQuery(pool,.) %>%
             extract2("path")
 
 
 
-files_already_in_db <- files %>% 
-                        gsub("'","''",.) %>% 
+files_already_in_db <- files %>%
                         tibble(files = .) %>%
                         mutate(n = (1:nrow(.) %/% 1000)) %>% 
                         nest(data = -n) %>% 
@@ -131,17 +130,16 @@ if(length(files)==0 | all(is.na(files))){
 
 # If a file with same checksum is already in the db add new file to ignore list
 # we split the query in thousands to avoid errors.
-q_fun <- . %>% 
-            pull(files) %>% 
-            paste(collapse="','") %>% 
-            paste0("'",.,"'") %>% 
-            paste0("select path from files_ignore where path in (",.,")") %>% 
-            dbGetQuery(pool,.) %>% 
+q_fun <- . %>%
+            pull(files) %>%
+            sapply(function(x) as.character(dbQuoteString(pool, x))) %>%
+            paste(collapse=",") %>%
+            paste0("select path from files_ignore where path in (",.,")") %>%
+            dbGetQuery(pool,.) %>%
             extract2("path")
 
 
-ignored_files <- files %>% 
-                    gsub("'","''",.) %>% 
+ignored_files <- files %>%
                     tibble(files = .) %>%
                     mutate(n = (1:nrow(.) %/% 1000)) %>% 
                     nest(data = -n) %>% 
@@ -204,11 +202,11 @@ for(i in seq_along(files_l)){
     
     
     # If a file is already in the db with same MD5 add to ignore list
-    md5_already_in_db <-    files_tab %>% extract2("file_md5") %>% 
-                            paste(collapse="','") %>% 
-                            paste0("'",.,"'") %>% 
-                            paste0("select path, file_md5 from files where file_md5 in (",.,")") %>% 
-                            dbGetQuery(pool,.) %>% 
+    md5_in <- files_tab %>% extract2("file_md5") %>%
+        sapply(function(x) as.character(dbQuoteString(pool, x))) %>%
+        paste(collapse=",")
+    md5_already_in_db <- paste0("select path, file_md5 from files where file_md5 in (", md5_in, ")") %>%
+                            dbGetQuery(pool,.) %>%
                             extract2("file_md5")
 
     dup_md5 <- files_tab$file_md5 %in% md5_already_in_db

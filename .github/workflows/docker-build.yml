@@ -166,17 +166,19 @@ jobs:
       - name: Install pandoc and rsync
         run: apt-get update && apt-get install -y pandoc rsync
 
+      - name: Set R library from base image
+        run: |
+          set -- /srv/shiny-server/QC4Metabolomics/renv/library/R-*/*/
+          echo "R_LIBS=$1" >> "$GITHUB_ENV"
+
       - name: Install pkgdown and MetabolomiQCsR
         run: |
-          renv::load("/srv/shiny-server/QC4Metabolomics")
           install.packages("pkgdown")
           remotes::install_local("MetabolomiQCsR", dependencies = FALSE)
         shell: Rscript {0}
 
       - name: Build site
-        run: |
-          renv::load("/srv/shiny-server/QC4Metabolomics")
-          pkgdown::build_site_github_pages("MetabolomiQCsR", new_process = FALSE, install = FALSE)
+        run: pkgdown::build_site_github_pages("MetabolomiQCsR", new_process = FALSE, install = FALSE)
         shell: Rscript {0}
 
       - name: Deploy to GitHub pages 🚀

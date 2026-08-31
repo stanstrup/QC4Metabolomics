@@ -1,5 +1,3 @@
-# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
     branches: [main, master]
@@ -16,76 +14,33 @@ permissions: read-all
 jobs:
   pkgdown:
     runs-on: ubuntu-latest
-    # Only restrict concurrency for non-PR jobs
+    container: ghcr.io/stanstrup/qc4metabolomics/qc_base:latest
     concurrency:
       group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      RENV_CONFIG_AUTOLOADER_ENABLED: false
+      RENV_CONFIG_SYNCHRONIZED_CHECK: false
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v7
 
-      - uses: r-lib/actions/setup-pandoc@v2
+      - name: Install pandoc and rsync
+        run: apt-get install -y pandoc rsync
 
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          use-public-rspm: true
-
-      - name: Install igraph dependencies for building and rsync for deploying
-        run: sudo apt-get install -y libglpk-dev libnetcdf-dev rsync 
-
-
-      - name: Package dependencies
-        run:  |
-              sudo apt-get install -y \
-              libcurl4-openssl-dev \
-              libfontconfig1-dev \
-              libfreetype6-dev \
-              libpng-dev \
-              libx11-dev \
-              pandoc \
-              libharfbuzz-dev \
-              libfribidi-dev \
-              libtiff5-dev \
-              libjpeg-dev \
-              librsvg2-dev \
-              libuv1-dev
-        
-        
-      - name: Set Bioconductor and CRAN mirror
+      - name: Install pkgdown and MetabolomiQCsR
         run: |
-          echo 'options(BioC_mirror = "https://mirrors.dotsrc.org/bioconductor")' >> .Rprofile
-          echo 'options(repos = c(CRAN = "https://cran.r-project.org"))' >> .Rprofile
-          
-  
-      # - uses: awalsh128/cache-apt-pkgs-action@latest
-      #   with:
-      #     packages: libglpk-dev libnetcdf-dev rsync
-      #     version: 1.0
-  
-      # - uses: r-lib/actions/setup-renv@v2
-
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
-
-      - name: Install MetabolomiQCsR package
-        run: |
-          install.packages("remotes")
-          remotes::install_local("MetabolomiQCsR", dependencies = TRUE)
+          renv::load("/srv/shiny-server/QC4Metabolomics")
+          install.packages("pkgdown")
+          remotes::install_local("MetabolomiQCsR", dependencies = FALSE)
         shell: Rscript {0}
-        env:
-          RENV_CONFIG_AUTOLOADER_ENABLED: false
-          RENV_CONFIG_SYNCHRONIZED_CHECK: false
-          
+
       - name: Build site
         run: |
-          install.packages("pkgdown")
+          renv::load("/srv/shiny-server/QC4Metabolomics")
           pkgdown::build_site_github_pages("MetabolomiQCsR", new_process = FALSE, install = FALSE)
         shell: Rscript {0}
-        env:
-          RENV_CONFIG_AUTOLOADER_ENABLED: false
-          RENV_CONFIG_SYNCHRONIZED_CHECK: false
 
       - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'

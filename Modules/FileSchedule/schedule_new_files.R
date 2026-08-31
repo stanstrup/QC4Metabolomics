@@ -15,7 +15,7 @@ enabled_modules <- get_QC4Metabolomics_settings() %>%
                     pull(module)
 
 
-modules_sql <- paste0("SELECT '", enabled_modules, "' AS module", collapse = " UNION ALL ")
+modules_sql <- paste0("SELECT ", sapply(enabled_modules, function(x) as.character(dbQuoteString(pool, x))), " AS module", collapse = " UNION ALL ")
 
 
 query <- glue::glue("

@@ -16,15 +16,16 @@ jobs:
       base_changed: ${{ steps.check.outputs.base_changed }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
 
       - name: Check if base dependencies changed
         id: check
         run: |
-          git fetch origin ${{ github.event.before }} --depth=1 || true
-          CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} || true)
+          CHANGED=$(git diff --name-only HEAD~1 HEAD)
           echo "$CHANGED"
 
-          if echo "$CHANGED" | grep -E '^(setup/Dockerfile_base|\.Rprofile|renv\.lock|\.env.*|renv/)' > /dev/null; then
+          if echo "$CHANGED" | grep -qE '^(setup/Dockerfile_base|\.Rprofile|renv\.lock|\.env.*|renv/)'; then
             echo "base_changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "base_changed=false" >> "$GITHUB_OUTPUT"

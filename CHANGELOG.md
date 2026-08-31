@@ -1,3 +1,11 @@
+## [1.1.4](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.3...v1.1.4) (2026-08-31)
+
+
+### Bug Fixes
+
+* guard against empty IN () when global_instruments_input() is empty at startup ([3cc856e](https://github.com/stanstrup/QC4Metabolomics/commit/3cc856e72bbef69eb72dffff1baa5581e898fe82))
+* guard all IN () clauses built from UI inputs that may be NULL at startup ([4502ac0](https://github.com/stanstrup/QC4Metabolomics/commit/4502ac0ae965c62872922d2960ec639e311d3ba4))
+
 ## [1.1.3](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.2...v1.1.3) (2026-08-31)
 
 

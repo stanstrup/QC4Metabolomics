@@ -24,20 +24,15 @@ output$file_date_range_ui <- renderUI({
 
 # Build project selector --------------------------------------------------
 # Get avaiable projects
-project_available <- reactive({ 
-    
-    global_instruments_input() %>%
-        paste(collapse="','") %>% 
-        paste0("'",.,"'") %>% 
-        paste0("
-                SELECT DISTINCT project
-                FROM file_info
-                WHERE instrument IN (
-               ",
-               .,
-               ")"
-        ) %>% 
-        dbGetQuery_sel_no_warn(pool,.) %>% 
+project_available <- reactive({
+
+    instrument_in <- global_instruments_input() %>%
+        sapply(function(x) as.character(dbQuoteString(pool, x))) %>%
+        paste(collapse=",") %>%
+        paste0("(", ., ")")
+
+    paste0("SELECT DISTINCT project FROM file_info WHERE instrument IN ", instrument_in) %>%
+        dbGetQuery_sel_no_warn(pool,.) %>%
         as.matrix %>% as.character %>% sort
 })
 
@@ -134,23 +129,27 @@ sample_id_reactive <- reactive(input$sample_id) %>%
 # Get the files in selected range
 files_tbl_selected <- reactive({
 
-                                    project_select <- input$project_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
-                                    mode_select    <- input$mode_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
-                                    REGEXP <- sample_id_reactive() %>% ifelse(.=="",".*",.)
+                                    q <- function(x) as.character(dbQuoteString(pool, x))
+
+                                    project_select    <- input$project_select_input %>% sapply(q) %>% paste(collapse=",") %>% paste0("(", ., ")")
+                                    mode_select       <- input$mode_select_input    %>% sapply(q) %>% paste(collapse=",") %>% paste0("(", ., ")")
+                                    instrument_select <- global_instruments_input()  %>% sapply(q) %>% paste(collapse=",") %>% paste0("(", ., ")")
+                                    REGEXP_q   <- sample_id_reactive() %>% { ifelse(.=="",".*",.) } %>% q()
                                     REGEXP_inv <- input$sample_id_inv %>% ifelse("NOT ", "")
-									                  instrument_select <- global_instruments_input() %>% paste(collapse="','") %>% paste0("('",.,"')")
-                                    
+                                    date_from_q <- as.character(as.Date(input$file_date_range_input[1])) %>% q()
+                                    date_to_q   <- as.character(as.Date(input$file_date_range_input[2])) %>% q()
+
                                     paste0(
                                     "SELECT file_info.file_md5, file_info.time_run, files.path FROM file_info ",
                                     "LEFT JOIN files USING(file_md5) ",
                                     "WHERE ",
-                                    "(sample_id ",REGEXP_inv,"REGEXP ","'",REGEXP,"') AND ",
-                                    "(DATE(time_run) BETWEEN '",input$file_date_range_input[1],"' AND '",input$file_date_range_input[2],"') AND ",
-                                    "(project in ",project_select,") AND ",
-                                    "(mode in ",mode_select,") AND ",
-                                    "(instrument in ",instrument_select,")"                                    
-                                    ) %>% 
-                                    dbGetQuery_sel_no_warn(pool,.) %>% as_tibble %>% 
+                                    "(sample_id ", REGEXP_inv, "REGEXP ", REGEXP_q, ") AND ",
+                                    "(DATE(time_run) BETWEEN ", date_from_q, " AND ", date_to_q, ") AND ",
+                                    "(project in ", project_select, ") AND ",
+                                    "(mode in ", mode_select, ") AND ",
+                                    "(instrument in ", instrument_select, ")"
+                                    ) %>%
+                                    dbGetQuery_sel_no_warn(pool,.) %>% as_tibble %>%
                                     mutate(across(time_run, ~as.POSIXct(., tz="UTC")))
                                })
 

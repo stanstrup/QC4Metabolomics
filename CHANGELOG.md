@@ -1,3 +1,10 @@
+## [1.1.6](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.5...v1.1.6) (2026-08-31)
+
+
+### Bug Fixes
+
+* use R_LIBS to expose base image renv library instead of renv::load() ([f772799](https://github.com/stanstrup/QC4Metabolomics/commit/f772799ff5afd74a9a090617368e242dd3aecab8))
+
 ## [1.1.5](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.4...v1.1.5) (2026-08-31)
 
 

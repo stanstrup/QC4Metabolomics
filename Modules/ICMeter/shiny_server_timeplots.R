@@ -108,15 +108,19 @@ data_selected <-      reactive({
 
 
 
-  observe({             
+  registered_plots <- new.env(parent = emptyenv())
+
+  observe({
     data <- data_selected()
     device <- data %>% extract2("device") %>% unique %>% sort(decreasing = TRUE)
-          
+
     for (i in device) {
-                      local({ 
-                                
+                      local({
+
                                 my_i <- i
                                 plotname <- paste("plot", my_i, sep="")
+                                if (!is.null(registered_plots[[plotname]])) return()
+                                registered_plots[[plotname]] <- TRUE
                                 output[[plotname]] <- renderPlotly({
                                                                     if(!(nrow(data)>0)) return(NULL)
                                     
@@ -129,7 +133,7 @@ data_selected <-      reactive({
                                                                     if(nrow(plot_data)==0) return(NULL)
                                                                     
                                                                     p <- ggplot(plot_data, aes(x = time, y = value)) +
-                                                                         geom_line(size=0.3) +
+                                                                         geom_line(linewidth=0.3) +
                                                                          facet_wrap(~metric, scales="free_y", ncol=1)+
                                                                          theme_gdocs() +
                                                                          theme(axis.title=element_text(face="bold", size = 16), title=element_text(face="bold", size = 18)) +

@@ -84,50 +84,46 @@ while( N_todo(pool) != 0 ){
             paste0(sum(file_tbl$FLAG), " files had invalid filenames. First was: ",.,". They will be ignored. ") %>% 
             write_to_log(cat = "warning", source = log_source, pool = pool)
         
-      # Move to ignore list
+      # Move to ignore list — INSERT and DELETE are one atomic transaction.
       con <- poolCheckout(pool)
+      on.exit({ try(dbRollback(con), silent = TRUE); poolReturn(con) }, add = TRUE)
       dbBegin(con)
-      
+
       # add
       res <- file_tbl %>%
-        filter(FLAG) %>% 
-        select(path, file_md5) %>% 
-        sqlAppendTable(con, "files_ignore", .) %>% 
+        filter(FLAG) %>%
+        select(path, file_md5) %>%
+        sqlAppendTable(con, "files_ignore", .) %>%
         dbSendQuery(con,.)
-      
-      res <- dbCommit(con)
-      
+
       # remove
       md5del <- filter(file_tbl, FLAG) %>% select(path, file_md5) %>% pull(file_md5)
-      
+
       for(i in seq_along(md5del)){
         sql_query <- paste0("DELETE FROM files WHERE (file_md5='",md5del[i],"')")
-        dbSendQuery(con,sql_query)
-        dbCommit(con)
+        dbSendQuery(con, sql_query)
       }
-      
-      poolReturn(con)
-      
-      
-      
-        
+
+      dbCommit(con)
+
+
     file_tbl %<>% filter(!FLAG) %>% select(-FLAG)
-        
+
     }else{
-      file_tbl %<>% select(-FLAG)  
+      file_tbl %<>% select(-FLAG)
     }
-    
-    
-    
+
+
+
     # Do nothing if no new files
     if(nrow(file_tbl)==0){
         write_to_log("No valid files left in batch to add to queue", cat = "info", source = log_source, pool = pool)
-        
+
       next
     }
-    
-    
-            
+
+
+
     # get mode from other field. Steno work-around
     if(as.logical(Sys.getenv("QC4METABOLOMICS_module_FileInfo_mode_from_other_field"))){
        
@@ -166,49 +162,45 @@ while( N_todo(pool) != 0 ){
             paste0(sum(file_tbl$FLAG), " files had invalid mode specification First was: ",.,". They will be ignored. ") %>% 
             write_to_log(cat = "warning", source = log_source, pool = pool)
         
-      # Move to ignore list
+      # Move to ignore list — INSERT and DELETE are one atomic transaction.
       con <- poolCheckout(pool)
+      on.exit({ try(dbRollback(con), silent = TRUE); poolReturn(con) }, add = TRUE)
       dbBegin(con)
-      
+
       # add
       res <- file_tbl %>%
-        filter(FLAG) %>% 
-        select(path, file_md5) %>% 
-        sqlAppendTable(con, "files_ignore", .) %>% 
+        filter(FLAG) %>%
+        select(path, file_md5) %>%
+        sqlAppendTable(con, "files_ignore", .) %>%
         dbSendQuery(con,.)
-      
-      res <- dbCommit(con)
-      
+
       # remove
       md5del <- filter(file_tbl, FLAG) %>% select(path, file_md5) %>% pull(file_md5)
-      
+
       for(i in seq_along(md5del)){
         sql_query <- paste0("DELETE FROM files WHERE (file_md5='",md5del[i],"')")
-        dbSendQuery(con,sql_query)
-        dbCommit(con)
+        dbSendQuery(con, sql_query)
       }
-      
-      poolReturn(con)
-      
-      
-      
-        
+
+      dbCommit(con)
+
+
     file_tbl %<>% filter(!FLAG) %>% select(-FLAG)
-        
+
     }else{
-      file_tbl %<>% select(-FLAG)  
+      file_tbl %<>% select(-FLAG)
     }
-    
-    
-    
+
+
+
     # Do nothing if no new files
     if(nrow(file_tbl)==0){
         write_to_log("No valid files left in batch to add to queue", cat = "info", source = log_source, pool = pool)
-        
+
       next
     }
-        
-    
+
+
     
 
 
@@ -260,31 +252,27 @@ while( N_todo(pool) != 0 ){
             {paste0(sum(is.na(file_tbl$time_run)), " files had missing run time. First was: ",.$filename,". They will be ignored. ")} %>% 
             write_to_log(cat = "warning", source = log_source, pool = pool)
         
-      # Move to ignore list
+      # Move to ignore list — INSERT and DELETE are one atomic transaction.
       con <- poolCheckout(pool)
+      on.exit({ try(dbRollback(con), silent = TRUE); poolReturn(con) }, add = TRUE)
       dbBegin(con)
-      
+
       # add
       res <- file_tbl %>%
         filter(is.na(time_run)) %>%
-        select(path, file_md5) %>% 
-        sqlAppendTable(con, "files_ignore", .) %>% 
+        select(path, file_md5) %>%
+        sqlAppendTable(con, "files_ignore", .) %>%
         dbSendQuery(con,.)
-      
-      res <- dbCommit(con)
-      
+
       # remove
-      md5del <- file_tbl %>% filter(is.na(time_run)) %>% 
-        #select(path, file_md5) %>% 
-        pull(file_md5)
-      
+      md5del <- file_tbl %>% filter(is.na(time_run)) %>% pull(file_md5)
+
       for(i in seq_along(md5del)){
         sql_query <- paste0("DELETE FROM files WHERE (file_md5='",md5del[i],"')")
-        dbSendQuery(con,sql_query)
-        dbCommit(con)
+        dbSendQuery(con, sql_query)
       }
-      
-      poolReturn(con)
+
+      dbCommit(con)
       
       
         

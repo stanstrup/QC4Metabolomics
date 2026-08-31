@@ -20,6 +20,14 @@ if(rules_count==0){
 
 
 
+# Capture all currently-pending Warner file_md5s before evaluating rules so the
+# UPDATE below only marks files that existed at run-start as done, preventing
+# files added between the SELECT and UPDATE from being silently skipped.
+pending_md5s <- "SELECT DISTINCT file_md5 FROM file_schedule WHERE module='Warner' AND priority > 0" %>%
+    dbGetQuery(pool, .) %>%
+    pull(file_md5)
+
+
 # extract rules and relevant violators ------------------------------------
 rules <-  "SELECT
                 warner_rules.rule_id,
@@ -253,23 +261,17 @@ if (is.null(result$error)) {
   message("Email sent successfully!")
   
   write_to_log(paste0("Successfully send warning email ",length(unique(rule_violators$path))," files."), cat = "info", source = log_source, pool = pool)
-  
-# Update schedule
-    sql_data <- rule_violators %>% distinct(module) %>% mutate(priority = -1L)
-    
+
+  # Mark only the files captured at run-start as done (not all Warner rows).
+  if (length(pending_md5s) > 0) {
+    md5_in <- paste(sapply(pending_md5s, function(x) as.character(dbQuoteString(pool, x))), collapse = ",")
     con <- poolCheckout(pool)
+    on.exit({ try(dbRollback(con), silent = TRUE); poolReturn(con) }, add = TRUE)
     dbBegin(con)
-    
-    res_pri <- vector("logical", nrow(sql_data))
-    for(i in 1:nrow(sql_data)){
-        sql_query <- paste0("UPDATE file_schedule SET priority='", sql_data$priority[i],"' WHERE (module='",sql_data$module[i],"')")
-        dbSendQuery(con,sql_query)
-        res_pri[i] <- dbCommit(con)
-    }
-    
-    
-    poolReturn(con)
-    write_to_log(paste0("priority updated for all files."), cat = "info", source = log_source, pool = pool)
+    dbSendQuery(con, paste0("UPDATE file_schedule SET priority=-1 WHERE module='Warner' AND file_md5 IN (", md5_in, ")"))
+    dbCommit(con)
+  }
+  write_to_log("priority updated for processed files.", cat = "info", source = log_source, pool = pool)
 
 
 }

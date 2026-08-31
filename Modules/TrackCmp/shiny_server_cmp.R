@@ -70,20 +70,21 @@ observeEvent(input$std_cmp_new, {
 
 
 # Press "Delete" button -> delete from data
-observeEvent(input$std_cmp_delete, 
+observeEvent(input$std_cmp_delete,
              {
                 con <- poolCheckout(pool)
+                on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
                 dbBegin(con)
-                sql1 <- paste0("DELETE FROM std_stat_data WHERE cmp_id=",input$std_cmp_id)
-                sql2 <- paste0("DELETE FROM std_compounds WHERE cmp_id=",input$std_cmp_id)
-                res <- dbSendQuery_sel_no_warn(con,sql1)
-                res <- dbSendQuery_sel_no_warn(con,sql2)
-                res <- dbCommit(con)
-                poolReturn(con)
-                
+                cmp_id_q <- dbQuoteLiteral(con, as.integer(input$std_cmp_id))
+                sql1 <- paste0("DELETE FROM std_stat_data WHERE cmp_id=", cmp_id_q)
+                sql2 <- paste0("DELETE FROM std_compounds WHERE cmp_id=", cmp_id_q)
+                res <- dbSendQuery_sel_no_warn(con, sql1)
+                res <- dbSendQuery_sel_no_warn(con, sql2)
+                dbCommit(con)
+
                 std_cmp_default_data %>% UpdateInputs(session)
                 updateActionButton(session, "std_cmp_submit", label="Submit")
-             }, 
+             },
              priority = 1
 )
 
@@ -102,26 +103,28 @@ observeEvent(   input$std_cmp_submit,
                                       )
                     
                     con <- poolCheckout(pool)
+                    on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
                     dbBegin(con)
-                            
+
                     if (!is.na(input$std_cmp_id)) {
-                        # update
-                        sql <-  data %>% 
-                                mutate(across(everything(), as.character)) %>% 
-                                gather %>% 
-                                mutate(value = paste0("'",value,"'")) %>% 
-                                unite(out,key,value, sep="=") %>% 
-                                extract2("out") %>% 
-                                paste(collapse=",") %>% 
-                                paste0("UPDATE std_compounds SET ",.," WHERE cmp_id=",input$std_cmp_id) %>% 
-                                gsub("'NA'","null",.)
+                        # update — use dbQuoteLiteral/dbQuoteString to prevent injection
+                        sql <- paste0(
+                            "UPDATE std_compounds SET ",
+                            "cmp_name=",  dbQuoteLiteral(con, data$cmp_name),  ", ",
+                            "instrument=",dbQuoteLiteral(con, data$instrument), ", ",
+                            "mode=",      dbQuoteLiteral(con, data$mode),       ", ",
+                            "cmp_mz=",    dbQuoteLiteral(con, data$cmp_mz),     ", ",
+                            "cmp_rt1=",   dbQuoteLiteral(con, data$cmp_rt1),    ", ",
+                            "cmp_rt2=",   dbQuoteLiteral(con, data$cmp_rt2),    ", ",
+                            "enabled=",   dbQuoteLiteral(con, data$enabled),
+                            " WHERE cmp_id=", dbQuoteLiteral(con, as.integer(input$std_cmp_id))
+                        )
                     } else {
-                            sql <- sqlAppendTable(con, "std_compounds", data) # insert
+                        sql <- sqlAppendTable(con, "std_compounds", data) # insert
                     }
-                    
-                res <- dbSendQuery_sel_no_warn(con,sql)
-                res <- dbCommit(con)
-                poolReturn(con)
+
+                res <- dbSendQuery_sel_no_warn(con, sql)
+                dbCommit(con)
                 
                 std_cmp_default_data %>% UpdateInputs(session)
                 updateActionButton(session, "std_cmp_submit", label="Submit")

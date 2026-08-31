@@ -50,22 +50,29 @@ heatmap_data_selected <-  reactive({
     
 
     
+                                allowed_metrics <- c("EIC_mean", "EIC_median", "EIC_max")
                                 metric <- input$int_type %>% as.character
-                                cut_off <- 10^(input$int_cutoff) %>% as.character
-                                
-                                md5_str <- files_tbl_selected() %>% extract2("file_md5") %>% paste(collapse="','") %>% paste0("('",.,"')")
+                                validate(need(metric %in% allowed_metrics, "Invalid metric selected."))
+
+                                metric_q <- as.character(dbQuoteString(pool, metric))
+                                cut_off  <- as.numeric(10^(as.numeric(input$int_cutoff)))
+
+                                md5_str <- files_tbl_selected() %>% extract2("file_md5") %>%
+                                    sapply(function(x) as.character(dbQuoteString(pool, x))) %>%
+                                    paste(collapse=",") %>%
+                                    paste0("(", ., ")")
 
 
                                 query <- paste0("
                                                   WITH filtered_cont_data AS (
                                                       SELECT *
                                                       FROM cont_data
-                                                      WHERE stat = '", metric, "' AND file_md5 IN ", md5_str, "
+                                                      WHERE stat = ", metric_q, " AND file_md5 IN ", md5_str, "
                                                   ),
                                                   filtered_ions AS (
                                                       SELECT DISTINCT ion_id, mode
                                                       FROM cont_data
-                                                      WHERE stat = '", metric, "' AND value > ", cut_off, " AND file_md5 IN ", md5_str, "
+                                                      WHERE stat = ", metric_q, " AND value > ", cut_off, " AND file_md5 IN ", md5_str, "
                                                   )
                                                   SELECT f.*, cmp.name, cmp.anno, cmp.notes, fi.sample_id, fi.time_run, files.path
                                                   FROM filtered_cont_data f

@@ -114,7 +114,7 @@ heatmap_data_selected <-  reactive({
     # Matrix shapes etc
     data_wide <- data %>% 
                     select(file_md5, value, ion_id, mode) %>% 
-                    spread(file_md5, value)
+                    pivot_wider(names_from = file_md5, values_from = value)
     
     data_wide_mat <- data_wide %>% select(-ion_id, -mode) %>% as.matrix %>% unname(force=TRUE)
     data_wide_mat_NA <- data_wide_mat

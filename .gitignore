@@ -35,6 +35,8 @@ docker-compose.yml
 tracked_stds.xlsx
 docker-compose_full.yml
 demo/db/*
+demo/data/*.raw
+demo/data/raw_filelist.txt
 settings_remote.env
 MetabolomiQCsR_*.tar.gz
 .env.R

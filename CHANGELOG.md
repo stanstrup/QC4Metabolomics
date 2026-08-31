@@ -1,3 +1,10 @@
+## [1.1.7](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.6...v1.1.7) (2026-08-31)
+
+
+### Bug Fixes
+
+* correct renv library glob depth and drop redundant pkgdown install ([16a3570](https://github.com/stanstrup/QC4Metabolomics/commit/16a3570aedf5e17d85f51a97714af49ccc1b819b))
+
 ## [1.1.6](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.5...v1.1.6) (2026-08-31)
 
 

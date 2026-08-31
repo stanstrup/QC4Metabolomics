@@ -117,7 +117,6 @@ file_tbl_l <- file_tbl_l[1:pmin(10,length(file_tbl_l))] # to avoid doing to many
 
 
 for(ii in seq_along(file_tbl_l)){
-  print("Starting next batch of files")
     
     
     # Joined data appropriately ------------------------------------------------
@@ -133,22 +132,22 @@ for(ii in seq_along(file_tbl_l)){
     
     
     if(any(to_ignore)){
-      
+
       # Update schedule
           sql_data <- file_stds_tbl %>% filter(to_ignore) %>% distinct(file_md5, module) %>% mutate(priority = -1L)
-          
+
           con <- poolCheckout(pool)
+          on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
           dbBegin(con)
-          
+
           res_pri <- vector("logical", nrow(sql_data))
-          for(i in 1:nrow(sql_data)){
+          for(i in seq_len(nrow(sql_data))){
               sql_query <- paste0("UPDATE file_schedule SET priority='", sql_data$priority[i],"' WHERE (file_md5='",sql_data$file_md5[i],"' AND module='",sql_data$module[i],"')")
               dbSendQuery(con,sql_query)
-              res_pri[i] <- dbCommit(con)
           }
-          
-          poolReturn(con)
-          write_to_log(paste0("priority updated for ",sum(res_pri)," files."), cat = "info", source = log_source, pool = pool)
+          res_pri[] <- dbCommit(con)
+
+          write_to_log(paste0("priority updated for ",nrow(sql_data)," files."), cat = "info", source = log_source, pool = pool)
       
       
       # remove from current queue
@@ -178,35 +177,26 @@ check_if_ms1_possibly <- possibly(check_if_ms1, FALSE)
             paste0(sum(file_stds_tbl$has_ms1), " files did not contain any MS1 data or too few scans to be meaningful. First was: ",.,". They will be ignored.") %>% 
             write_to_log(cat = "warning", source = log_source, pool = pool)
         
-      # Move to ignore list
+      # Move to ignore list — INSERT and DELETEs in one atomic transaction.
       con <- poolCheckout(pool)
+      on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
       dbBegin(con)
-      
-      # add
+
       res <- file_stds_tbl %>%
-        filter(!has_ms1) %>% 
-        select(path, file_md5) %>% 
-        sqlAppendTable(con, "files_ignore", .) %>% 
+        filter(!has_ms1) %>%
+        select(path, file_md5) %>%
+        sqlAppendTable(con, "files_ignore", .) %>%
         dbSendQuery(con,.)
-      
-      res <- dbCommit(con)
-      
-      # remove
-      md5del <- filter(file_stds_tbl, !has_ms1) %>% select(path, file_md5) %>% pull(file_md5)
-      
+
+      md5del <- filter(file_stds_tbl, !has_ms1) %>% pull(file_md5)
+
       for(i in seq_along(md5del)){
-        
         for(files_tables in c("file_info", "file_schedule", "files")){
-          
-          sql_query <- paste0("DELETE FROM ",files_tables," WHERE (file_md5='",md5del[i],"')")
-          dbSendQuery(con,sql_query)
-          dbCommit(con)
-          
+          dbSendQuery(con, paste0("DELETE FROM ",files_tables," WHERE (file_md5='",md5del[i],"')"))
         }
-        
       }
-      
-      poolReturn(con)
+
+      dbCommit(con)
       
       
       
@@ -241,8 +231,6 @@ findPeaks_settings <-
     
     
     file_stds_tbl <- file_stds_tbl %>% mutate(out = map2(path, stds, function(a,b) {
-      
-      print(a)
                                     																				raw <- a %>% 
                                           																				  as.character %>% 
                                           																				  paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",.) %>% 
@@ -360,7 +348,7 @@ findPeaks_settings <-
                                   mz_dev_ppm, rt_dev, FWHM, datapoints = FWHM_dp,
                                   TF, ASF
                                   ) %>% 
-                            gather(stat_name, value, -file_md5, -cmp_id, -found) %>% 
+                            pivot_longer(-c(file_md5, cmp_id, found), names_to = "stat_name") %>%
                             left_join(std_stat_types, by="stat_name") %>% 
                             select(file_md5, stat_id, cmp_id, found, value) %>% 
                             mutate(value = if_else(is.nan(value), NA_real_, value)) %>% 
@@ -368,7 +356,7 @@ findPeaks_settings <-
     sql_query
                             
     
-    sql_query@.Data <- paste0(sql_query@.Data, "\n  ","ON DUPLICATE KEY UPDATE found = values(found), value = values(value)")
+    sql_query@.Data <- paste0(sql_query@.Data, " AS new_row\n  ON DUPLICATE KEY UPDATE found = new_row.found, value = new_row.value")
     
     q_res <- sql_query %>% dbSendQuery(con, .)
     row_updates <- dbGetRowsAffected(q_res)
@@ -384,22 +372,20 @@ findPeaks_settings <-
     
     # Update schedule
     if(res){
-        
+
         sql_data <- file_stds_tbl_flat %>% distinct(file_md5, module) %>% mutate(priority = -1L)
-        
+
         con <- poolCheckout(pool)
+        on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
         dbBegin(con)
-        
-        res_pri <- vector("logical", nrow(sql_data))
-        for(i in 1:nrow(sql_data)){
+
+        for(i in seq_len(nrow(sql_data))){
             sql_query <- paste0("UPDATE file_schedule SET priority='", sql_data$priority[i],"' WHERE (file_md5='",sql_data$file_md5[i],"' AND module='",sql_data$module[i],"')")
             dbSendQuery(con,sql_query)
-            res_pri[i] <- dbCommit(con)
         }
-        
-        
-        poolReturn(con)
-        write_to_log(paste0("priority updated for ",sum(res_pri)," files."), cat = "info", source = log_source, pool = pool)
+        dbCommit(con)
+
+        write_to_log(paste0("priority updated for ",nrow(sql_data)," files."), cat = "info", source = log_source, pool = pool)
     }
 
     # try to avoid memory leak

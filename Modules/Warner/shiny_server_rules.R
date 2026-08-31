@@ -97,20 +97,21 @@ observeEvent(input$warner_new, {
 
 
 # Press "Delete" button -> delete from data
-observeEvent(input$warner_delete, 
+observeEvent(input$warner_delete,
              {
                 con <- poolCheckout(pool)
+                on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
                 dbBegin(con)
-                sql1 <- paste0("DELETE FROM warner_rules WHERE rule_id=",input$warner_rule_id)
-                sql2 <- paste0("DELETE FROM warner_log   WHERE rule_id=",input$warner_rule_id)
-                res <- dbSendQuery_sel_no_warn(con,sql1)
-                res <- dbSendQuery_sel_no_warn(con,sql2)
-                res <- dbCommit(con)
-                poolReturn(con)
-                
+                rule_id_q <- dbQuoteLiteral(con, as.integer(input$warner_rule_id))
+                sql1 <- paste0("DELETE FROM warner_rules WHERE rule_id=", rule_id_q)
+                sql2 <- paste0("DELETE FROM warner_log   WHERE rule_id=", rule_id_q)
+                res <- dbSendQuery_sel_no_warn(con, sql1)
+                res <- dbSendQuery_sel_no_warn(con, sql2)
+                dbCommit(con)
+
                 warner_default_data %>% UpdateInputs(session)
                 updateActionButton(session, "warner_submit", label="Submit")
-             }, 
+             },
              priority = 1
 )
 
@@ -119,8 +120,6 @@ observeEvent(input$warner_delete,
 # Click "Submit" button -> save data
 observeEvent(   input$warner_submit,
                 {
-
-                  
                     data <- data.frame(rule_id       =  input$warner_rule_id     %>% as.numeric,
                                        rule_name     =  input$warner_rule_name   %>% as.character,
                                        instrument    =  input$warner_instrument  %>% as.character,
@@ -130,34 +129,35 @@ observeEvent(   input$warner_submit,
                                        use_abs_value =  input$warner_use_abs     %>% as.numeric,
                                        enabled       =  input$warner_enable      %>% as.numeric
                                       )
-                    
 
                     con <- poolCheckout(pool)
+                    on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
                     dbBegin(con)
-                            
+
                     if (!is.na(input$warner_rule_id)) {
-                        # update
-                        sql <-  data %>% 
-                                mutate(across(everything(), as.character)) %>% 
-                                gather(value = "value_col") %>% 
-                                mutate(value_col = paste0("'",value_col,"'")) %>% 
-                                unite(out,key,value_col, sep="=") %>% 
-                                extract2("out") %>% 
-                                paste(collapse=",") %>% 
-                                paste0("UPDATE warner_rules SET ",.," WHERE rule_id=",input$warner_rule_id) %>% 
-                                gsub("'NA'","null",.)
+                        # update — use dbQuoteLiteral for all values to prevent injection
+                        sql <- paste0(
+                            "UPDATE warner_rules SET ",
+                            "rule_name=",     dbQuoteLiteral(con, data$rule_name),     ", ",
+                            "instrument=",    dbQuoteLiteral(con, data$instrument),    ", ",
+                            "stat_id=",       dbQuoteLiteral(con, data$stat_id),       ", ",
+                            "operator=",      dbQuoteLiteral(con, data$operator),      ", ",
+                            "value=",         dbQuoteLiteral(con, data$value),         ", ",
+                            "use_abs_value=", dbQuoteLiteral(con, data$use_abs_value), ", ",
+                            "enabled=",       dbQuoteLiteral(con, data$enabled),
+                            " WHERE rule_id=", dbQuoteLiteral(con, as.integer(input$warner_rule_id))
+                        )
                     } else {
-                            sql <- sqlAppendTable(con, "warner_rules", data) # insert
+                        sql <- sqlAppendTable(con, "warner_rules", data) # insert
                     }
-                    
-                res <- dbSendQuery_sel_no_warn(con,sql)
-                res <- dbCommit(con)
-                poolReturn(con)
-                
+
+                res <- dbSendQuery_sel_no_warn(con, sql)
+                dbCommit(con)
+
                 warner_default_data %>% UpdateInputs(session)
                 updateActionButton(session, "warner_submit", label="Submit")
-                
-                }, 
+
+                },
                 priority = 1
             )
 

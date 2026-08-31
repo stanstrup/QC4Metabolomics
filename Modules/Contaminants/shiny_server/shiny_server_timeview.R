@@ -3,18 +3,20 @@ dbGetQuery_sel_no_warn <- MetabolomiQCsR:::selectively_suppress_warnings(dbGetQu
 
 # Build UI for time view --------------------------------------------------
 all_ions <- reactive({
-                        mode_select    <- input$mode_select_input %>% paste(collapse="','") %>% paste0("('",.,"')")
-                        
+                        mode_select <- input$mode_select_input %>%
+                            sapply(function(x) as.character(dbQuoteString(pool, x))) %>%
+                            paste(collapse=",") %>%
+                            paste0("(", ., ")")
+
                         paste0("SELECT cont_cmp.ion_id, cont_cmp.name, cont_cmp.mode, cont_cmp.mz
                                              FROM cont_cmp ",
                                "INNER JOIN (SELECT DISTINCT ion_id, mode FROM cont_data) cont_data
                                ON cont_cmp.ion_id = cont_data.ion_id AND cont_cmp.mode = cont_data.mode ",
-                               "WHERE (cont_cmp.mode IN ",mode_select,")"
-                                    
-                               ) %>% 
-                        dbGetQuery_sel_no_warn(pool,.) %>% 
-                        as_tibble 
-                        
+                               "WHERE (cont_cmp.mode IN ", mode_select, ")"
+                               ) %>%
+                        dbGetQuery_sel_no_warn(pool,.) %>%
+                        as_tibble
+
     })
 
 
@@ -53,14 +55,23 @@ time_data_selected <-  reactive({
                                          )
     
     
+                                allowed_metrics <- c("EIC_mean", "EIC_median", "EIC_max")
                                 metric <- input$time_int %>% as.character
-                                
-                                
-                                md5_str <- files_tbl_selected() %>% extract2("file_md5") %>% paste(collapse="','") %>% paste0("('",.,"')")
-                                
-                                ion_id <- gsub("^(.*)___.*$","\\1",input$cont_select)
-                                mode <-  gsub("^.*___(.*)$","\\1",input$cont_select)
-                                
+                                validate(need(metric %in% allowed_metrics, "Invalid metric selected."))
+
+                                allowed_modes <- c("pos", "neg", "unknown")
+                                ion_id <- gsub("^(.*)___.*$", "\\1", input$cont_select)
+                                mode   <- gsub("^.*___(.*)$", "\\1", input$cont_select)
+                                validate(need(mode %in% allowed_modes, "Invalid mode value."))
+
+                                metric_q  <- as.character(dbQuoteString(pool, metric))
+                                ion_id_q  <- as.character(dbQuoteLiteral(pool, as.integer(ion_id)))
+                                mode_q    <- as.character(dbQuoteString(pool, mode))
+
+                                md5_str <- files_tbl_selected() %>% extract2("file_md5") %>%
+                                    sapply(function(x) as.character(dbQuoteString(pool, x))) %>%
+                                    paste(collapse=",") %>%
+                                    paste0("(", ., ")")
 
                                 out <- paste0("
                                              SELECT cont_data.*, cont_cmp.name, cont_cmp.anno, cont_cmp.notes, file_info.sample_id, file_info.time_run, files.path
@@ -68,14 +79,14 @@ time_data_selected <-  reactive({
                                              LEFT JOIN cont_cmp USING(ion_id, mode)
                                              LEFT JOIN file_info USING(file_md5)
                                              LEFT JOIN files USING(file_md5)
-                                             WHERE (cont_data.stat = '",metric,"') AND (
-                                             cont_cmp.ion_id = '", ion_id,"') AND (
-                                             file_md5 IN ",md5_str,")"," AND (
-                                             cont_cmp.mode = '", mode,"')"
-                                            ) %>% 
-                                    dbGetQuery_sel_no_warn(pool,.) %>% 
-                                    as_tibble %>% 
-                                    mutate(across(time_run, ~as.POSIXct(., tz="UTC"))) %>% 
+                                             WHERE (cont_data.stat = ", metric_q, ") AND (
+                                             cont_cmp.ion_id = ", ion_id_q, ") AND (
+                                             file_md5 IN ", md5_str, ") AND (
+                                             cont_cmp.mode = ", mode_q, ")"
+                                            ) %>%
+                                    dbGetQuery_sel_no_warn(pool,.) %>%
+                                    as_tibble %>%
+                                    mutate(across(time_run, ~as.POSIXct(., tz="UTC"))) %>%
                                     mutate(time_run = with_tz(time_run, Sys.timezone(location = TRUE))) # time zone fix
                                 
                                 out

@@ -168,13 +168,11 @@ jobs:
 
       - name: Set R library from base image
         run: |
-          set -- /srv/shiny-server/QC4Metabolomics/renv/library/R-*/*/
+          set -- /srv/shiny-server/QC4Metabolomics/renv/library/*/*/*/
           echo "R_LIBS=$1" >> "$GITHUB_ENV"
 
-      - name: Install pkgdown and MetabolomiQCsR
-        run: |
-          install.packages("pkgdown")
-          remotes::install_local("MetabolomiQCsR", dependencies = FALSE)
+      - name: Install MetabolomiQCsR
+        run: remotes::install_local("MetabolomiQCsR", dependencies = FALSE)
         shell: Rscript {0}
 
       - name: Build site

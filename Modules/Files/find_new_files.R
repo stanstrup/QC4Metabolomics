@@ -56,11 +56,6 @@ if( str_trim(as.character(Sys.getenv("QC4METABOLOMICS_module_Files_exclude_path"
 }
 
 
-# normalize paths ---------------------------------------------------------
-
-files <- normalizePath(files)
-
-
 # Establish db connection -------------------------------------------------
 pool <- dbPool_MetabolomiQCs(30)
 
@@ -72,7 +67,8 @@ paste0("Found ",length(files)," files") %>%
     write_to_log(cat = "info", source = log_source, pool = pool)
 
 # clean up
-rm(search_pat, exclude_path, include_path)
+rm(search_pat, include_path)
+if (exists("exclude_path")) rm(exclude_path)
 
 # If no files found quit the process. Else do rest of script
 if(length(files)==0){

@@ -16,6 +16,16 @@
 ### Features
 
 * add Admin module with stats, reprocess, cleanup, and edit tools ([2afec20](https://github.com/stanstrup/QC4Metabolomics/commit/2afec204af7a2bacd6fe457b75074d5bfc0db3da))
+
+  To enable the Admin panel add the following to your `.env` file:
+
+  ```
+  QC4METABOLOMICS_module_Admin_enabled=TRUE
+  QC4METABOLOMICS_module_Admin_shiny_enabled=TRUE
+  QC4METABOLOMICS_module_Admin_shiny_order=99
+  QC4METABOLOMICS_module_Admin_schedule=FALSE
+  QC4METABOLOMICS_module_Admin_file_schedule=FALSE
+  ```
 * upgrade to R 4.6.0 and Bioconductor 3.23 ([7332211](https://github.com/stanstrup/QC4Metabolomics/commit/7332211ae0388d2862e304aacecc07f4bd47b007))
 
 ## [1.0.12](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.11...v1.0.12) (2025-09-16)

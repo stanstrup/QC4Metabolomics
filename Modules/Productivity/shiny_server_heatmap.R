@@ -229,7 +229,9 @@ std_data_selected <-  reactive({
 
 
 
-  observe({             
+  registered_plots <- new.env(parent = emptyenv())
+
+  observe({
     data <- std_data_selected()
     years <- data %>% extract2("time_run") %>% year %>% unique %>% sort(decreasing = TRUE)
     
@@ -241,10 +243,12 @@ std_data_selected <-  reactive({
     
     
     for (i in years) {
-                      local({ 
-                                
+                      local({
+
                                 my_i <- i
                                 plotname <- paste("plot", my_i, sep="")
+                                if (!is.null(registered_plots[[plotname]])) return()
+                                registered_plots[[plotname]] <- TRUE
                                 output[[plotname]] <- renderPlotly({
                                                                     if(!(nrow(data)>0)) return(NULL)
                                     

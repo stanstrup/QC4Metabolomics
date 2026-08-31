@@ -3,6 +3,12 @@ name: Build and Release
 on:
   push:
     branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      force_base_rebuild:
+        description: Force base image rebuild even if dependencies did not change
+        type: boolean
+        default: false
 
 # Serialize runs so a slow base-image build from one push finishes before the
 # next push's workflow starts pulling qc_base:latest.
@@ -28,6 +34,11 @@ jobs:
       - name: Check if base dependencies changed
         id: check
         run: |
+          if [ "${{ inputs.force_base_rebuild }}" = "true" ]; then
+            echo "base_changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           CHANGED=$(git diff --name-only HEAD~1 HEAD)
           echo "$CHANGED"
 

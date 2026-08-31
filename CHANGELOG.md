@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.0...v1.1.1) (2026-08-31)
+
+
+### Bug Fixes
+
+* harden Admin module against data loss and injection ([6d7432b](https://github.com/stanstrup/QC4Metabolomics/commit/6d7432b9ec3197dd69b37f1f8a9d2cf243d71d0d))
+
 # [1.1.0](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.12...v1.1.0) (2026-08-31)
 
 

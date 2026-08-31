@@ -1,0 +1,19 @@
+# Troubleshooting
+
+## Get into the containers
+
+If you need to directly access the containers to debug you can connect
+to a bash shell like this:
+
+``` bash
+docker exec -it qc4metabolomics-qc_process-1 bash
+```
+
+The following images are running:
+
+- qc4metabolomics-qc_shiny-1 \<- runs the Shiny frontend
+- qc4metabolomics-qc_process-1 \<- runs the scheduled data processing
+- qc4metabolomics-mariadb-1 \<- runs the database
+- qc4metabolomics-ms_converter-1 \<- runs the automatic conversion of
+  raw files
+- db-backup \<- runs the automatic database backup

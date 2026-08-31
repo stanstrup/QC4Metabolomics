@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.1...v1.1.2) (2026-08-31)
+
+
+### Bug Fixes
+
+* use reactiveVal pattern, rem_dead_files, and write_to_log in Admin ([f2d4463](https://github.com/stanstrup/QC4Metabolomics/commit/f2d44632142457e70bbec36fd70535116ea4235f))
+
 ## [1.1.1](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.0...v1.1.1) (2026-08-31)
 
 

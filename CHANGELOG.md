@@ -1,3 +1,16 @@
+# [1.1.0](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.12...v1.1.0) (2026-08-31)
+
+
+### Bug Fixes
+
+* override MYSQL_HOST to localhost in mariadb service to allow auto-upgrades ([973ef23](https://github.com/stanstrup/QC4Metabolomics/commit/973ef23f5bcda6ecacb4068b2e4e0b7195537aef))
+
+
+### Features
+
+* add Admin module with stats, reprocess, cleanup, and edit tools ([2afec20](https://github.com/stanstrup/QC4Metabolomics/commit/2afec204af7a2bacd6fe457b75074d5bfc0db3da))
+* upgrade to R 4.6.0 and Bioconductor 3.23 ([7332211](https://github.com/stanstrup/QC4Metabolomics/commit/7332211ae0388d2862e304aacecc07f4bd47b007))
+
 ## [1.0.12](https://github.com/stanstrup/QC4Metabolomics/compare/v1.0.11...v1.0.12) (2025-09-16)
 
 

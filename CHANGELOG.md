@@ -1,3 +1,10 @@
+## [1.1.5](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.4...v1.1.5) (2026-08-31)
+
+
+### Bug Fixes
+
+* apt-get update before installing pandoc and rsync in pkgdown job ([24c5a79](https://github.com/stanstrup/QC4Metabolomics/commit/24c5a797b74f136fcdc2a947434ab5e1813f2a6b))
+
 ## [1.1.4](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.3...v1.1.4) (2026-08-31)
 
 

@@ -45,7 +45,7 @@ AdminUI <- function(id) {
 
                     wellPanel(
                         h4("Ignored Files"),
-                        p("Files in this list are permanently excluded from all processing. They were automatically added when the system detected they contain no MS1 data. Use this list to review what has been excluded."),
+                        p("Files in this list are excluded from all processing. They end up here for various reasons — duplicate filenames, filenames that could not be parsed, or files containing no usable MS data. Use this list to review what has been excluded."),
                         actionButton(ns("refresh_ignored_btn"), "Reload Table"),
                         br(), br(),
                         dataTableOutput(ns("ignored_files_tbl"))

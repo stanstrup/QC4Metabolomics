@@ -207,7 +207,7 @@ email_safe_table <- function(df, nested_headers = NULL) {
 
 
 headers <- list(
-  c(rep("Rule", 6), rep("Observed",6)),
+  c(rep("Rule", 6), rep("Observed", 3)),
   c("Rule name", "Instrument", "Statistic", "Operator", "Threshold", "Use absolute value", "Value", "File run time", "File path")
 )
 

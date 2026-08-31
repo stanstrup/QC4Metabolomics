@@ -1,4 +1,4 @@
-FROM rocker/shiny:4.5.1
+﻿FROM rocker/shiny:4.6.0
 
 ##### System libs setup #######################################################
 # Install needed linux tools
@@ -35,6 +35,8 @@ RUN apt-get update && \
 	# igraph
 	libglpk-dev \
 	\
+		libuv1-dev \
+		# for fs package (libuv-based file system ops)
 	libcurl4-openssl-dev \
   ca-certificates \
   curl \
@@ -61,6 +63,8 @@ COPY ./.Rprofile renv.lock .env* /srv/shiny-server/QC4Metabolomics
 
 
 # Make renv install all remaining packages
+# renv::restore() installs locked versions; renv::update() refreshes Bioc packages
+# to their R 4.6 / Bioconductor 3.23 equivalents and snapshots the new lockfile.
 WORKDIR /srv/shiny-server/QC4Metabolomics/
 RUN R -e "renv::restore()"
 RUN R -e "renv::install('git2r')"

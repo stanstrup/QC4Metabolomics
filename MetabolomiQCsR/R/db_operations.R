@@ -42,7 +42,7 @@ dbPool_MetabolomiQCs <- function(idleTimeout = 1){
 #' 
 #' @importFrom pool dbPool poolCheckout poolReturn poolClose
 #' @importFrom RMySQL MySQL
-#' @importFrom DBI dbBegin dbCommit sqlAppendTable dbSendQuery
+#' @importFrom DBI dbBegin dbCommit dbRollback sqlAppendTable dbSendQuery
 #' 
 
 write_to_log <- function(msg, cat, source, pool = NULL){
@@ -56,29 +56,26 @@ write_to_log <- function(msg, cat, source, pool = NULL){
                           )
   
   
-    # if the user didn't give is a pool we close it here.
-    if(is.null(pool)) dbPool_MetabolomiQCs(5)
-    
-    
-    
+    local_pool <- is.null(pool)
+    if(local_pool) pool <- dbPool_MetabolomiQCs(5)
+
+
+
     # Write the data to to db
     con <- poolCheckout(pool)
-    
+    on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
+
     dbBegin(con)
-    
+
     res <- sqlAppendTable(con, "log", log_tbl)
     res <- dbSendQuery(con,res)
-    
+
     res <- dbCommit(con)
-    
-    poolReturn(con)
-    
-    
+
+
     # if we opened a new connection then close it again
-    if(is.null(pool)){
-        poolClose(pool)
-    }
-    
+    if(local_pool) poolClose(pool)
+
 }
 
 
@@ -98,7 +95,7 @@ write_to_log <- function(msg, cat, source, pool = NULL){
 #' 
 #' @importFrom tibble tibble
 #' @importFrom dplyr %>% mutate filter rowwise ungroup arrange select
-#' @importFrom DBI dbListTables dbListFields dbBegin dbSendQuery dbCommit
+#' @importFrom DBI dbListTables dbListFields dbBegin dbSendQuery dbCommit dbRollback
 #' @importFrom purrr map map_lgl map2_chr
 #' @importFrom pool poolCheckout poolReturn
 #' 
@@ -111,10 +108,10 @@ rem_dead_files <- function(file_md5, path, pool = NULL, log_source){
     has_file_md5 <- fields <- is_files_tab <- . <- NULL
 
     
-    # if the user didn't give is a pool we close it here.
-    if(is.null(pool)) dbPool_MetabolomiQCs(5)
-    
-    
+    local_pool <- is.null(pool)
+    if(local_pool) pool <- dbPool_MetabolomiQCs(5)
+
+
     file_tbl <- tibble(file_md5 = file_md5, path = path) %>%
                 mutate(file_exists = path %>% as.character %>% paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",.) %>% file.exists)
 
@@ -149,11 +146,12 @@ rem_dead_files <- function(file_md5, path, pool = NULL, log_source){
 
         # Do db query
         con <- poolCheckout(pool)
+        on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
         dbBegin(con)
 
-        res <- sapply(tab_with_files$sql, function(x){ dbSendQuery(con,x); dbCommit(con)})
+        res <- sapply(tab_with_files$sql, function(x) { dbSendQuery(con, x); TRUE })
+        dbCommit(con)
         res <- unname(res)
-        poolReturn(con)
 
         # write to log
         if(all(res)) write_to_log(paste0("Removed ", length(to_delete), " files that could not be found from the database"), cat = "warning", source = log_source, pool = pool)

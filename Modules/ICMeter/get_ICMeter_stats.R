@@ -7,12 +7,19 @@ token <- ic_token(Sys.getenv("QC4METABOLOMICS_module_ICMeter_user"),Sys.getenv("
 boxes <- ic_boxes(token)
 
 
-offset <- days(0)
 pool   <- dbPool_MetabolomiQCs(30)
 
 
 for(device in boxes$name){
+    offset   <- days(0)   # reset for each device
+    max_iter <- 500L
+    iter     <- 0L
     while(TRUE){
+        iter <- iter + 1L
+        if (iter > max_iter) {
+            write_to_log(paste0("Device: ", device, " hit max iterations without catching up — stopping"), cat = "warning", source = log_source, pool = pool)
+            break
+        }
         # get the times
         to_db <- paste0("SELECT MAX(time) AS time FROM ic_data WHERE device='",device,"'") %>%
                  dbGetQuery(pool,.) %>% 
@@ -59,7 +66,7 @@ for(device in boxes$name){
         }
         
         data %<>% left_join(boxes %>% select(boxQR, name), by = "boxQR")
-        data_long <- data %>% gather(metric, value, -Time,-boxQR,-name) %>% rename(device=name, time = Time) %>% select(-boxQR)
+        data_long <- data %>% pivot_longer(-c(Time, boxQR, name), names_to = "metric") %>% rename(device=name, time = Time) %>% select(-boxQR)
         
         data_long %<>% mutate(time = format(time, "%Y-%m-%d %H:%M:%S"))
         
@@ -70,7 +77,7 @@ for(device in boxes$name){
         
         sql_query <- data_long %>% sqlAppendTable(con, "ic_data", .) 
         
-        sql_query@.Data <- paste0(sql_query@.Data, "\n  ","ON DUPLICATE KEY UPDATE value = values(value)") 
+        sql_query@.Data <- paste0(sql_query@.Data, " AS new_row\n  ON DUPLICATE KEY UPDATE value = new_row.value")
         
         res <- dbSendQuery_sel_no_warn(con,sql_query)
         

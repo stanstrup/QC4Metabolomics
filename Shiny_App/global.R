@@ -1,10 +1,46 @@
 # Libraries ---------------------------------------------------------------
-library(plyr)
-library(dplyr) # we do this in global to be sure we load dplyr after plyr
-library(tidyr)
-library(magrittr)
-library(MetabolomiQCsR)
-library(DBI)
+# Suppress masking/attaching noise; real errors still propagate.
+.quiet_load <- function(expr) {
+    withCallingHandlers(
+        suppressPackageStartupMessages(expr),
+        message = function(m) {
+            if (grepl("masked from|Attaching package|Loading required package|Welcome to Bioconductor|Visit https|Consider switching|This is.*version",
+                      conditionMessage(m), perl = TRUE))
+                invokeRestart("muffleMessage")
+        },
+        warning = function(w) {
+            if (grepl("replacing previous import", conditionMessage(w)))
+                invokeRestart("muffleWarning")
+        }
+    )
+}
+
+.quiet_load({
+    library(plyr)
+    library(dplyr) # load after plyr so dplyr wins masking conflicts
+    library(tidyr)
+    library(magrittr)
+    library(MetabolomiQCsR)
+    library(DBI)
+    # Pre-load all packages required by module shiny_server/ui files so
+    # their require() calls are no-ops and emit no masking messages.
+    library(pool)
+    library(ggplot2)
+    library(plotly)
+    library(ggthemes)
+    library(viridis)
+    library(scales)
+    library(zoo)
+    library(lubridate)
+    library(stringr)
+    library(purrr)
+    library(glue)
+    library(fs)
+    library(DT)
+    library(shinyjs)
+    library(blastula)
+    library(htmltools)
+})
 
 
 # Establish connection

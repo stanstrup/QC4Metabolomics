@@ -100,9 +100,9 @@ tabPanel("Contaminations",
                                                                div(style = "width: 1400px; margin:0 auto;",
                                                                         plotlyOutput(ns("file_screen_plot"), height = "1400px")
                                                                   )
-                                                               
-                                                              ) 
-                                                      
+
+                                                              )
+
                                                   )
                                         
                                         

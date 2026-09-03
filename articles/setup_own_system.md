@@ -227,9 +227,21 @@ runs every minute to check for new files not yet converted.
   first scanEvent (what Waters calls functions), outputs to mzML,
   compresses using zlib and saves the values with 64 bit precision.
   Quotes should be escaped with `\`.
+
 - `QC4METABOLOMICS_msconvert_outdir_prefix`: The output folder relative
   to the source files. the default, `/../mzML`, steps one folder back,
   makes a new mzML folder and puts the converted files there.
+
+  **Demo setup note:** If you are using the demo setup and placing files
+  directly in `demo/data/`, this default will not work — `demo/data/` is
+  the root of the container mount and there is nothing to step back to.
+  Instead, place your raw files in a subdirectory,
+  e.g. `demo/data/raw/`, and list them in `raw_filelist.txt` with the
+  subdirectory prefix:
+
+      raw/metabolomicscourse_urine_20260501_Ex2025Met_both_011_GlobalpoolIS.raw
+
+  The converted mzML files will then appear in `demo/data/mzML/`.
 
 ## Internal settings for advanced users
 

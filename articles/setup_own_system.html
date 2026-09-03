@@ -376,18 +376,27 @@ to mzML and writes the new path to <code>mzML_filelist.txt</code> in the
 mounted folder. It runs every minute to check for new files not yet
 converted.</p>
 <ul>
-<li>
-<code>QC4METABOLOMICS_msconvert_args</code>: settings msconvert from
-ProteoWizard uses to convert the data. the default is
+<li><p><code>QC4METABOLOMICS_msconvert_args</code>: settings msconvert
+from ProteoWizard uses to convert the data. the default is
 <code>--filter \"scanEvent 1\" --mzML --zlib --64</code>, which takes
 only the first scanEvent (what Waters calls functions), outputs to mzML,
 compresses using zlib and saves the values with 64 bit precision. Quotes
-should be escaped with <code>\</code>.</li>
+should be escaped with <code>\</code>.</p></li>
 <li>
-<code>QC4METABOLOMICS_msconvert_outdir_prefix</code>: The output
+<p><code>QC4METABOLOMICS_msconvert_outdir_prefix</code>: The output
 folder relative to the source files. the default, <code>/../mzML</code>,
 steps one folder back, makes a new mzML folder and puts the converted
-files there.</li>
+files there.</p>
+<p><strong>Demo setup note:</strong> If you are using the demo setup and
+placing files directly in <code>demo/data/</code>, this default will not
+work — <code>demo/data/</code> is the root of the container mount and
+there is nothing to step back to. Instead, place your raw files in a
+subdirectory, e.g. <code>demo/data/raw/</code>, and list them in
+<code>raw_filelist.txt</code> with the subdirectory prefix:</p>
+<pre><code><span><span class="va">raw</span><span class="op">/</span><span class="va">metabolomicscourse_urine_20260501_Ex2025Met_both_011_GlobalpoolIS.raw</span></span></code></pre>
+<p>The converted mzML files will then appear in
+<code>demo/data/mzML/</code>.</p>
+</li>
 </ul>
 </div>
 </div>

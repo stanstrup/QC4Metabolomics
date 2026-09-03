@@ -5,4 +5,4 @@
 /data/Mcourse_20230509_Sold_125_neg_7A-0204.mzML
 /data/Mcourse_20230509_Sold_126_neg_2A-0424.mzML
 /data/Mcourse_20230509_Sold_127_neg_2A-0024.mzML
-/data/Mcourse_20230509_Sold_128_neg_6A-0002.mzML
+/data/raw/../mzML/metabolomicscourse_urine_20260501_Ex2025Met_both_011_GlobalpoolIS.mzML

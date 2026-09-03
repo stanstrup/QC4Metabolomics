@@ -97,8 +97,12 @@ convert_file <- function(i, files, files_out, outdir, basedir, temp_workdir) {
       }
     }
     
-    # Add to filelist and report success
-    cat(files_out[i], "\n", file = glue("{basedir}/mzML_filelist.txt"), append = TRUE)
+    # Add to filelist and report success (deduplicate; use sep="" to avoid trailing space)
+    filelist_path <- glue("{basedir}/mzML_filelist.txt")
+    existing <- if (file.exists(filelist_path)) trimws(readLines(filelist_path, warn = FALSE)) else character(0)
+    if (!normalizePath(files_out[i], mustWork = FALSE) %in% normalizePath(existing, mustWork = FALSE)) {
+        cat(paste0(files_out[i], "\n"), file = filelist_path, append = TRUE)
+    }
     message("Successfully converted: ", basename(files[i]))
     return("SUCCESS")
     

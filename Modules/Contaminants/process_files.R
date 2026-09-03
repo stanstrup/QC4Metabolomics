@@ -174,24 +174,22 @@ for(ii in seq_along(file_tbl_std_l)){
         
       # Move to ignore list — INSERT and DELETEs in one atomic transaction.
       con <- poolCheckout(pool)
-      on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
-      dbBegin(con)
-
-      res <- file_tbl_std_l[[ii]] %>%
-        filter(!has_ms1) %>%
-        select(path, file_md5) %>%
-        sqlAppendTable(con, "files_ignore", .) %>%
-        dbSendQuery(con,.)
-
-      md5del <- filter(file_tbl_std_l[[ii]], !has_ms1) %>% pull(file_md5)
-
-      for(i in seq_along(md5del)){
-        for(files_tables in c("file_info", "file_schedule", "files")){
-          dbSendQuery(con, paste0("DELETE FROM ",files_tables," WHERE (file_md5='",md5del[i],"')"))
+      tryCatch({
+        dbBegin(con)
+        file_tbl_std_l[[ii]] %>%
+          filter(!has_ms1) %>%
+          select(path, file_md5) %>%
+          sqlAppendTable(con, "files_ignore", .) %>%
+          dbExecute(con, .)
+        md5del <- filter(file_tbl_std_l[[ii]], !has_ms1) %>% pull(file_md5)
+        for(i in seq_along(md5del)){
+          for(files_tables in c("file_info", "file_schedule", "files")){
+            dbExecute(con, paste0("DELETE FROM ",files_tables," WHERE (file_md5='",md5del[i],"')"))
+          }
         }
-      }
-
-      dbCommit(con)
+        dbCommit(con)
+      }, error = function(e) { try(dbRollback(con), silent=TRUE); stop(e) },
+      finally = poolReturn(con))
       
       
       
@@ -247,17 +245,14 @@ for(ii in seq_along(file_tbl_std_l)){
     
     if(nrow(EIC_summary)!=0) {
         con <- poolCheckout(pool)
-        on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
-        dbBegin(con)
-
-        sql_query <- EIC_summary %>%
-                     sqlAppendTable(pool, "cont_data", .)
-
-        sql_query@.Data <- paste0(sql_query@.Data, " AS new_row\n  ON DUPLICATE KEY UPDATE value = new_row.value")
-
-        q_res <- sql_query %>% dbSendQuery(con, .)
-        row_updates <- dbGetRowsAffected(q_res)
-        res <- dbCommit(con)
+        tryCatch({
+          dbBegin(con)
+          sql_text <- as.character(sqlAppendTable(con, "cont_data", EIC_summary))
+          sql_text <- sub("^INSERT INTO", "REPLACE INTO", sql_text)
+          row_updates <- dbExecute(con, sql_text)
+          res <- dbCommit(con)
+        }, error = function(e) { try(dbRollback(con), silent=TRUE); stop(e) },
+        finally = poolReturn(con))
 
         # write to log
         if(res) write_to_log(paste0("Successfully asked to update statistics for ",EIC_summary$file_md5 %>% unique %>% length," files. ",row_updates, " operations actually performed."), cat = "info", source = log_source, pool = pool)
@@ -286,14 +281,15 @@ for(ii in seq_along(file_tbl_std_l)){
         
         
         con <- poolCheckout(pool)
-        on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
-        dbBegin(con)
-
-        for(i in seq_len(nrow(sql_data))){
+        tryCatch({
+          dbBegin(con)
+          for(i in seq_len(nrow(sql_data))){
             sql_query <- paste0("UPDATE file_schedule SET priority='", sql_data$priority[i],"' WHERE (file_md5='",sql_data$file_md5[i],"' AND module='",sql_data$module[i],"')")
-            dbSendQuery(con,sql_query)
-        }
-        dbCommit(con)
+            dbExecute(con, sql_query)
+          }
+          dbCommit(con)
+        }, error = function(e) { try(dbRollback(con), silent=TRUE); stop(e) },
+        finally = poolReturn(con))
 
         write_to_log(paste0("priority updated for ",nrow(sql_data)," files."), cat = "info", source = log_source, pool = pool)
     }

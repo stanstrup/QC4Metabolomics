@@ -39,11 +39,7 @@ conts_formatted <- conts %>%
 # Send command to the DB --------------------------------------------------
 # init.R only runs on a freshly-dropped+created table, so no duplicates exist;
 # ON DUPLICATE KEY UPDATE is unnecessary and VALUES() was removed in recent MariaDB.
-con <- poolCheckout(pool)
-on.exit({ try(dbRollback(con), silent = TRUE); poolReturn(con) }, add = TRUE)
-dbBegin(con)
-sql <- sqlAppendTable(con, "cont_cmp", conts_formatted)
-dbExecute(con, sql)
-dbCommit(con)
+sql <- sqlAppendTable(pool, "cont_cmp", conts_formatted)
+dbExecute(pool, sql)
 
 poolClose(pool)

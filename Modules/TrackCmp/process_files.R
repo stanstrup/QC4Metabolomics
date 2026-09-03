@@ -137,15 +137,15 @@ for(ii in seq_along(file_tbl_l)){
           sql_data <- file_stds_tbl %>% filter(to_ignore) %>% distinct(file_md5, module) %>% mutate(priority = -1L)
 
           con <- poolCheckout(pool)
-          on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
-          dbBegin(con)
-
-          res_pri <- vector("logical", nrow(sql_data))
-          for(i in seq_len(nrow(sql_data))){
-              sql_query <- paste0("UPDATE file_schedule SET priority='", sql_data$priority[i],"' WHERE (file_md5='",sql_data$file_md5[i],"' AND module='",sql_data$module[i],"')")
-              dbSendQuery(con,sql_query)
-          }
-          res_pri[] <- dbCommit(con)
+          tryCatch({
+              dbBegin(con)
+              for(i in seq_len(nrow(sql_data))){
+                  sql_query <- paste0("UPDATE file_schedule SET priority='", sql_data$priority[i],"' WHERE (file_md5='",sql_data$file_md5[i],"' AND module='",sql_data$module[i],"')")
+                  dbExecute(con, sql_query)
+              }
+              dbCommit(con)
+          }, error = function(e) { try(dbRollback(con), silent=TRUE); stop(e) },
+          finally = poolReturn(con))
 
           write_to_log(paste0("priority updated for ",nrow(sql_data)," files."), cat = "info", source = log_source, pool = pool)
       
@@ -179,24 +179,22 @@ check_if_ms1_possibly <- possibly(check_if_ms1, FALSE)
         
       # Move to ignore list — INSERT and DELETEs in one atomic transaction.
       con <- poolCheckout(pool)
-      on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
-      dbBegin(con)
-
-      res <- file_stds_tbl %>%
-        filter(!has_ms1) %>%
-        select(path, file_md5) %>%
-        sqlAppendTable(con, "files_ignore", .) %>%
-        dbSendQuery(con,.)
-
-      md5del <- filter(file_stds_tbl, !has_ms1) %>% pull(file_md5)
-
-      for(i in seq_along(md5del)){
-        for(files_tables in c("file_info", "file_schedule", "files")){
-          dbSendQuery(con, paste0("DELETE FROM ",files_tables," WHERE (file_md5='",md5del[i],"')"))
-        }
-      }
-
-      dbCommit(con)
+      tryCatch({
+          dbBegin(con)
+          file_stds_tbl %>%
+              filter(!has_ms1) %>%
+              select(path, file_md5) %>%
+              sqlAppendTable(con, "files_ignore", .) %>%
+              dbExecute(con, .)
+          md5del <- filter(file_stds_tbl, !has_ms1) %>% pull(file_md5)
+          for(i in seq_along(md5del)){
+              for(files_tables in c("file_info", "file_schedule", "files")){
+                  dbExecute(con, paste0("DELETE FROM ",files_tables," WHERE (file_md5='",md5del[i],"')"))
+              }
+          }
+          dbCommit(con)
+      }, error = function(e) { try(dbRollback(con), silent=TRUE); stop(e) },
+      finally = poolReturn(con))
       
       
       
@@ -336,33 +334,35 @@ findPeaks_settings <-
     
     
     # write to db -------------------------------------------------------------
-    con <- poolCheckout(pool)
-    dbBegin(con)
-    
-    
-    file_stds_tbl_flat %>% select(file_md5, cmp_id, found,
-                                  mz = mz.peaks, mzmin, mzmax, 
-                                  rt = rt.peaks, rtmin, rtmax, 
-                                  into, intb, maxo, 
-                                  sn, egauss, mu, sigma, h, f, 
+    sql_df <- file_stds_tbl_flat %>% select(file_md5, cmp_id, found,
+                                  mz = mz.peaks, mzmin, mzmax,
+                                  rt = rt.peaks, rtmin, rtmax,
+                                  into, intb, maxo,
+                                  sn, egauss, mu, sigma, h, f,
                                   mz_dev_ppm, rt_dev, FWHM, datapoints = FWHM_dp,
                                   TF, ASF
-                                  ) %>% 
+                                  ) %>%
                             pivot_longer(-c(file_md5, cmp_id, found), names_to = "stat_name") %>%
-                            left_join(std_stat_types, by="stat_name") %>% 
-                            select(file_md5, stat_id, cmp_id, found, value) %>% 
-                            mutate(value = if_else(is.nan(value), NA_real_, value)) %>% 
-                            sqlAppendTable(pool, "std_stat_data", .) ->
-    sql_query
-                            
-    
-    sql_query@.Data <- paste0(sql_query@.Data, " AS new_row\n  ON DUPLICATE KEY UPDATE found = new_row.found, value = new_row.value")
-    
-    q_res <- sql_query %>% dbSendQuery(con, .)
-    row_updates <- dbGetRowsAffected(q_res)
-    res <- dbCommit(con)
-    poolReturn(con)
-    
+                            left_join(std_stat_types, by="stat_name") %>%
+                            select(file_md5, stat_id, cmp_id, found, value) %>%
+                            mutate(value = if_else(is.nan(value), NA_real_, value))
+
+    res <- tryCatch({
+        con <- poolCheckout(pool)
+        tryCatch({
+            dbBegin(con)
+            sql_text <- as.character(sqlAppendTable(con, "std_stat_data", sql_df))
+            sql_text <- sub("^INSERT INTO", "REPLACE INTO", sql_text)
+            row_updates <- dbExecute(con, sql_text)
+            dbCommit(con)
+            TRUE
+        }, error = function(e) { try(dbRollback(con), silent=TRUE); stop(e) },
+        finally = poolReturn(con))
+    }, error = function(e) {
+        write_to_log(paste0("Failed to update statistics: ", conditionMessage(e)), cat = "error", source = log_source, pool = pool)
+        FALSE
+    })
+
     # write to log
     if(res) write_to_log(paste0("Successfully asked to update statistics for ",file_stds_tbl_flat$file_md5 %>% unique %>% length," files. ",row_updates, " operations actually performed."), cat = "info", source = log_source, pool = pool)
     if(!res) write_to_log(paste0("Failed to update statistics. Update was requested for ",file_stds_tbl_flat$file_md5 %>% unique %>% length," files."), cat = "error", source = log_source, pool = pool)
@@ -376,14 +376,15 @@ findPeaks_settings <-
         sql_data <- file_stds_tbl_flat %>% distinct(file_md5, module) %>% mutate(priority = -1L)
 
         con <- poolCheckout(pool)
-        on.exit({ try(dbRollback(con), silent=TRUE); poolReturn(con) }, add=TRUE)
-        dbBegin(con)
-
-        for(i in seq_len(nrow(sql_data))){
-            sql_query <- paste0("UPDATE file_schedule SET priority='", sql_data$priority[i],"' WHERE (file_md5='",sql_data$file_md5[i],"' AND module='",sql_data$module[i],"')")
-            dbSendQuery(con,sql_query)
-        }
-        dbCommit(con)
+        tryCatch({
+            dbBegin(con)
+            for(i in seq_len(nrow(sql_data))){
+                sql_query <- paste0("UPDATE file_schedule SET priority='", sql_data$priority[i],"' WHERE (file_md5='",sql_data$file_md5[i],"' AND module='",sql_data$module[i],"')")
+                dbExecute(con, sql_query)
+            }
+            dbCommit(con)
+        }, error = function(e) { try(dbRollback(con), silent=TRUE); stop(e) },
+        finally = poolReturn(con))
 
         write_to_log(paste0("priority updated for ",nrow(sql_data)," files."), cat = "info", source = log_source, pool = pool)
     }

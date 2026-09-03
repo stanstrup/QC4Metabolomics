@@ -59,7 +59,15 @@ tabPanel("Compound settings",
                                   #action buttons
                                   actionButton(ns("std_cmp_submit"), "Submit"),
                                   actionButton(ns("std_cmp_new"), "New"),
-                                  actionButton(ns("std_cmp_delete"), "Delete")
+                                  actionButton(ns("std_cmp_delete"), "Delete"),
+
+                                  tags$hr(),
+
+                                  h4("Reprocess"),
+                                  p("Force the system to reprocess tracked compound statistics for all files. Use after adding, editing, or removing compounds."),
+                                  actionButton(ns("std_cmp_reprocess"), "Reprocess All Files", class = "btn-warning"),
+                                  br(), br(),
+                                  verbatimTextOutput(ns("std_cmp_reprocess_result"))
                                 )
                                 
 

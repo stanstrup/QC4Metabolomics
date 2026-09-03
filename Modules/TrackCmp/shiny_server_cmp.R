@@ -152,3 +152,32 @@ output$std_cmp_tbl <- renderDataTable({
                                      server = FALSE
 
                                     )
+
+
+# Reprocess button --------------------------------------------------------
+reprocess_result <- reactiveVal(NULL)
+
+observeEvent(input$std_cmp_reprocess, {
+    n <- tryCatch({
+        con <- poolCheckout(pool)
+        tryCatch({
+            dbExecute(con,
+                "UPDATE file_schedule SET priority = 1
+                 WHERE module = 'TrackCmp' AND priority = -1")
+        }, finally = poolReturn(con))
+    }, error = function(e) {
+        write_to_log(paste0("TrackCmp: reprocess trigger failed — ", conditionMessage(e)),
+                     cat = "error", source = "TrackCmp", pool = pool)
+        -1L
+    })
+
+    if (identical(n, -1L)) {
+        reprocess_result("Error triggering reprocess. Check the log.")
+    } else {
+        write_to_log(paste0("TrackCmp: reprocessing triggered — ", n, " file(s) queued"),
+                     cat = "info", source = "TrackCmp", pool = pool)
+        reprocess_result(paste0(n, " file(s) queued for reprocessing."))
+    }
+})
+
+output$std_cmp_reprocess_result <- renderText(reprocess_result())

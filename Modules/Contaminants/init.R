@@ -24,29 +24,26 @@ conts[[2]] %<>% mutate(mode = "neg")
 
 conts <- bind_rows(conts[[1]], conts[[2]])
 
-conts %>%   mutate(anno = paste0(molecular_formula," (",ion_type ,")")) %>% 
-            select(name = compound_ID, 
-                 ion_id = ion_ID, 
-                 mode = mode, 
-                 mz = mz, 
+conts_formatted <- conts %>%
+            mutate(anno = paste0(molecular_formula," (",ion_type ,")")) %>%
+            select(name = compound_ID,
+                 ion_id = ion_ID,
+                 mode = mode,
+                 mz = mz,
                  anno = anno,
                  notes = origin
-                 ) %>% 
-            mutate_all(~gsub(";","\\\\;",.)) %>%
-            sqlAppendTable(pool,"cont_cmp",.) ->
-sql_query
-
-
-sql_query@.Data <- paste0(sql_query@.Data, "\n  ","ON DUPLICATE KEY UPDATE name = values(name), mode = values(mode), mz = values(mz), anno = values(anno), notes = values(notes)")
-
+                 ) %>%
+            mutate(across(where(is.character), ~gsub(";","\\\\;", .x)))
 
 
 # Send command to the DB --------------------------------------------------
+# init.R only runs on a freshly-dropped+created table, so no duplicates exist;
+# ON DUPLICATE KEY UPDATE is unnecessary and VALUES() was removed in recent MariaDB.
 con <- poolCheckout(pool)
+on.exit({ try(dbRollback(con), silent = TRUE); poolReturn(con) }, add = TRUE)
 dbBegin(con)
-q_res <- sql_query %>% dbSendQuery(con, .)
-res <- dbCommit(con)
+sql <- sqlAppendTable(con, "cont_cmp", conts_formatted)
+dbExecute(con, sql)
+dbCommit(con)
 
-# Close connection
-poolReturn(con)
 poolClose(pool)

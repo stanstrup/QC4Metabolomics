@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.7...v1.2.0) (2026-08-31)
+
+
+### Features
+
+* bump to v1.2 ([a204b8b](https://github.com/stanstrup/QC4Metabolomics/commit/a204b8b4a8584d1a813ef261deba1b18895fc710))
+
 ## [1.1.7](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.6...v1.1.7) (2026-08-31)
 
 

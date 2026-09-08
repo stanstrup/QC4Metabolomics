@@ -1,3 +1,14 @@
+## [1.2.1](https://github.com/stanstrup/QC4Metabolomics/compare/v1.2.0...v1.2.1) (2026-09-03)
+
+
+### Bug Fixes
+
+* deduplicate mzML_filelist entries and remove trailing space ([44b127a](https://github.com/stanstrup/QC4Metabolomics/commit/44b127a1c5c6a382939c947ed1fb0c428744db2c))
+* remove VALUES() ODKU from Contaminants init and re-check if cont_cmp is populated ([bcf8a2c](https://github.com/stanstrup/QC4Metabolomics/commit/bcf8a2ca5191460e64b6a82d8e817805fee7038c))
+* repair Contaminants module for recent MariaDB compatibility ([886e1e7](https://github.com/stanstrup/QC4Metabolomics/commit/886e1e71f04918d60fc5981ade7ffe84afdb5425))
+* repair TrackCmp MariaDB compatibility and add reprocess button ([b10c97a](https://github.com/stanstrup/QC4Metabolomics/commit/b10c97a0f34c3c8b752cca0cfcf666eb2d8d3cd5))
+* suppress package startup masking messages in Shiny and cron ([d55da73](https://github.com/stanstrup/QC4Metabolomics/commit/d55da737bbbe321d5884d1e2398ad87617f8533b))
+
 # [1.2.0](https://github.com/stanstrup/QC4Metabolomics/compare/v1.1.7...v1.2.0) (2026-08-31)
 
 

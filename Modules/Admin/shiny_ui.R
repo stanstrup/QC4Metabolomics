@@ -46,8 +46,13 @@ AdminUI <- function(id) {
                     wellPanel(
                         h4("Ignored Files"),
                         p("Files in this list are excluded from all processing. They end up here for various reasons — duplicate filenames, filenames that could not be parsed, or files containing no usable MS data. Use this list to review what has been excluded."),
+                        p("Select rows in the table below and click", tags$strong("Remove Selected from Ignore List"), "to allow those files to be picked up for processing again on the next scan."),
                         actionButton(ns("refresh_ignored_btn"), "Reload Table"),
+                        " ",
+                        actionButton(ns("unignore_btn"), "Remove Selected from Ignore List",
+                                     class = "btn-warning"),
                         br(), br(),
+                        verbatimTextOutput(ns("unignore_result")),
                         dataTableOutput(ns("ignored_files_tbl"))
                     )
 

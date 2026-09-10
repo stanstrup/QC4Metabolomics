@@ -14,15 +14,17 @@ Admin <- function(input, output, session, global_instruments_input) {
     # Output bindings — set once; updated via reactiveVals below
     # -------------------------------------------------------------------------
 
-    reset_result  <- reactiveVal(NULL)
-    remove_result <- reactiveVal(NULL)
-    clean_result  <- reactiveVal(NULL)
-    edit_result   <- reactiveVal(NULL)
+    reset_result    <- reactiveVal(NULL)
+    remove_result   <- reactiveVal(NULL)
+    clean_result    <- reactiveVal(NULL)
+    edit_result     <- reactiveVal(NULL)
+    unignore_result <- reactiveVal(NULL)
 
-    output$reset_priority_result <- renderPrint({ req(reset_result());  cat(reset_result(),  "\n") })
-    output$remove_missing_result <- renderPrint({ req(remove_result()); cat(remove_result(), "\n") })
-    output$clean_log_result      <- renderPrint({ req(clean_result());  cat(clean_result(),  "\n") })
-    output$edit_result           <- renderPrint({ req(edit_result());   cat(edit_result(),   "\n") })
+    output$reset_priority_result <- renderPrint({ req(reset_result());    cat(reset_result(),    "\n") })
+    output$remove_missing_result <- renderPrint({ req(remove_result());   cat(remove_result(),   "\n") })
+    output$clean_log_result      <- renderPrint({ req(clean_result());    cat(clean_result(),    "\n") })
+    output$edit_result           <- renderPrint({ req(edit_result());     cat(edit_result(),     "\n") })
+    output$unignore_result       <- renderPrint({ req(unignore_result()); cat(unignore_result(), "\n") })
 
 
     # -------------------------------------------------------------------------
@@ -165,21 +167,85 @@ Admin <- function(input, output, session, global_instruments_input) {
 
 
     # Ignored files table -----------------------------------------------------
-    ignored_data <- eventReactive(input$refresh_ignored_btn, {
+    ignored_data <- reactiveVal(tibble(path = character(), file_md5 = character()))
+
+    fetch_ignored <- function() {
         tryCatch(
             dbGetQuery(pool, "SELECT path, file_md5 FROM files_ignore ORDER BY path") %>%
                 as_tibble(),
             error = function(e) tibble(path = character(), file_md5 = character())
         )
-    }, ignoreNULL = FALSE)
+    }
+
+    observe({ ignored_data(fetch_ignored()) })
+
+    observeEvent(input$refresh_ignored_btn, {
+        ignored_data(fetch_ignored())
+    })
 
     output$ignored_files_tbl <- renderDataTable(
         datatable(
             ignored_data(),
+            selection = "multiple",
             options = list(pageLength = 25, scrollX = TRUE),
             rownames = FALSE
         )
     )
+
+    observeEvent(input$unignore_btn, {
+        sel <- input$ignored_files_tbl_rows_selected
+        if (is.null(sel) || length(sel) == 0) {
+            unignore_result("No rows selected.")
+            return()
+        }
+
+        rows <- ignored_data()[sel, ]
+
+        showModal(modalDialog(
+            title = "Confirm: Remove from Ignore List",
+            p(paste0("This will remove ", nrow(rows), " file(s) from the ignore list. ",
+                      "They will be picked up for processing on the next file scan.")),
+            footer = tagList(
+                modalButton("Cancel"),
+                actionButton(ns("confirm_unignore_btn"),
+                             "Remove from Ignore List", class = "btn-warning")
+            )
+        ))
+    })
+
+    observeEvent(input$confirm_unignore_btn, {
+        removeModal()
+
+        sel <- input$ignored_files_tbl_rows_selected
+        rows <- ignored_data()[sel, ]
+
+        msg <- tryCatch({
+            con <- poolCheckout(pool)
+            on.exit({ try(dbRollback(con), silent = TRUE); poolReturn(con) }, add = TRUE)
+            dbBegin(con)
+
+            n <- 0L
+            for (i in seq_len(nrow(rows))) {
+                n <- n + dbExecute(con,
+                    paste0("DELETE FROM files_ignore WHERE file_md5 = ",
+                           dbQuoteString(con, rows$file_md5[i]),
+                           " AND path = ",
+                           dbQuoteString(con, rows$path[i]),
+                           " LIMIT 1"))
+            }
+            dbCommit(con)
+
+            write_to_log(
+                paste0("Admin: removed ", n, " file(s) from ignore list"),
+                cat = "info", source = "Admin", pool = pool
+            )
+
+            paste0("Removed ", n, " file(s) from the ignore list.")
+        }, error = function(e) paste0("ERROR: ", conditionMessage(e)))
+
+        unignore_result(msg)
+        ignored_data(fetch_ignored())
+    })
 
 
     # -------------------------------------------------------------------------

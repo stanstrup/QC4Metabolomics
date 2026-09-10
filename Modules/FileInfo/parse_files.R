@@ -206,32 +206,35 @@ while( N_todo(pool) != 0 ){
 
     
     # Get run time from the XML data ------------------------------------------
-    file2time <- function(file, by_lines = 100L, max_rounds = 10L ) {
-      
-      path <- paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",file) %>% 
+    file2time <- function(file, chunk_size = 8192L, max_bytes = 1048576L) {
+
+      path <- paste0(Sys.getenv("QC4METABOLOMICS_base"),"/",file) %>%
                   normalizePath
-      
-      round <- 1L
-      output <- vector( mode = "character", length = 1 )
-      out_round = ""
-      while( !grepl( "startTimeStamp", output)  & round <= max_rounds ) {
-        out_round <- readr::read_lines(path, skip = by_lines*(round-1), n_max =by_lines )
-        output <- paste0(c(output, out_round), collapse="\n")
-        round <- round + 1L
+
+      con <- file(path, open = "rb")
+      on.exit(close(con), add = TRUE)
+
+      output <- ""
+      bytes_read <- 0L
+      while (!grepl("startTimeStamp", output) & bytes_read < max_bytes) {
+        chunk <- readChar(con, chunk_size, useBytes = TRUE)
+        if (length(chunk) == 0 || nchar(chunk, type = "bytes") == 0) break
+        output <- paste0(output, chunk)
+        bytes_read <- bytes_read + nchar(chunk, type = "bytes")
       }
-      
+
       if(grepl( "startTimeStamp", output)){
-      
-      out <- gsub('.*startTimeStamp=\"(.*?)\".*', "\\1", output) %>% 
-              strptime("%Y-%m-%dT%H:%M:%SZ", tz="UTC") %>% 
-                format("%Y-%m-%d %H:%M:%S") 
-      
+
+      out <- gsub('.*startTimeStamp=\"(.*?)\".*', "\\1", output) %>%
+              strptime("%Y-%m-%dT%H:%M:%SZ", tz="UTC") %>%
+                format("%Y-%m-%d %H:%M:%S")
+
       return(out)
-        
+
       }else{
         return(NA)
       }
-      
+
     }
 
 

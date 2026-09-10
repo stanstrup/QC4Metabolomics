@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/stanstrup/QC4Metabolomics/compare/v1.2.1...v1.2.2) (2026-09-08)
+
+
+### Bug Fixes
+
+* use information_schema check in Contaminants init_db_check.sql ([387e382](https://github.com/stanstrup/QC4Metabolomics/commit/387e3827bbd6b0258e7628136f9a0963e4d5372f))
+
 ## [1.2.1](https://github.com/stanstrup/QC4Metabolomics/compare/v1.2.0...v1.2.1) (2026-09-03)
 
 

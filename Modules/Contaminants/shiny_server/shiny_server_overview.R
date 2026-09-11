@@ -105,7 +105,8 @@ heatmap_data_selected <-  reactive({
      data <- heatmap_data_selected()
      
      validate(
-              need(length(unique(data$ion_id))>1, "Less than two ions fit the criteria. Not showing anything since clustering would fail.")
+              need(length(unique(data$ion_id))>1, "Less than two ions fit the criteria. Not showing anything since clustering would fail."),
+              need(length(unique(data$file_md5))>0, "No files with contaminant data found.")
              )
       
     
@@ -127,19 +128,21 @@ heatmap_data_selected <-  reactive({
     
     c_ord <- data_wide %>% select(ion_id, mode) %>% mutate(c_ord = NA)
     
-    if(length(pos_idx)>1){ 
+    n_files <- ncol(data_wide_mat)
+
+    if(length(pos_idx)>1 && n_files > 1){
     c_ord_pos <- hclustfun(distfun(t(scale(t(data_wide_mat[pos_idx,]))))) %>% extract2("order") %>% order
         c_ord$c_ord[pos_idx] <- c_ord_pos
     }else{
-       c_ord$c_ord[pos_idx] <- 1
+       c_ord$c_ord[pos_idx] <- seq_along(pos_idx)
     }
-    
-    
-    if(length(neg_idx)>1){
+
+
+    if(length(neg_idx)>1 && n_files > 1){
     c_ord_neg <- hclustfun(distfun(data_wide_mat[neg_idx,])) %>% extract2("order") %>% order
         c_ord$c_ord[neg_idx] <- c_ord_neg
     }else{
-       c_ord$c_ord[neg_idx] <- 1
+       c_ord$c_ord[neg_idx] <- seq_along(neg_idx)
     }
     
     
@@ -188,9 +191,9 @@ heatmap_data_selected <-  reactive({
                     group_by(mode, ion_id, stat) %>% 
                     dplyr::arrange(mode, ion_id, stat, time_run) %>% 
                     
-                    dplyr::mutate(x_end = lead(rank, 1)) %>% 
-                    ungroup %>% 
-                    dplyr::mutate(x_end = if_else(is.na(x_end),max(rank),x_end) )
+                    dplyr::mutate(x_end = lead(rank, 1)) %>%
+                    ungroup %>%
+                    dplyr::mutate(x_end = if_else(is.na(x_end), max(rank) + 1L, x_end))
     
     
     # use negative numbers for negative mode so we can assign labels differently for pos and neg

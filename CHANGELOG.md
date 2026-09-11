@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/stanstrup/QC4Metabolomics/compare/v1.2.2...v1.3.0) (2026-09-10)
+
+
+### Bug Fixes
+
+* replace readr::read_lines with readChar in file2time to handle long-line mzML files ([990526d](https://github.com/stanstrup/QC4Metabolomics/commit/990526d60f7c9f0390727b9adfdc1b83852803dc))
+
+
+### Features
+
+* add ability to remove files from the ignore list in Admin panel ([8f69362](https://github.com/stanstrup/QC4Metabolomics/commit/8f69362ca93a68dee0b36bda265f3254964e7b90))
+
 ## [1.2.2](https://github.com/stanstrup/QC4Metabolomics/compare/v1.2.1...v1.2.2) (2026-09-08)
 
 

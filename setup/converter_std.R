@@ -6,6 +6,15 @@ Sys.setenv(LC_ALL = "C.UTF-8", LANG = "C.UTF-8")
 
 basedir <- "/data"
 temp_workdir <- file.path(basedir, ".temp_conversion")
+input_exts <- trimws(strsplit(Sys.getenv("QC4METABOLOMICS_msconvert_input_ext", ".raw"), ";")[[1]])
+input_ext_regex <- paste0("(", paste0("\\", input_exts, collapse = "|"), ")$")
+
+get_input_ext <- function(filename) {
+  for (ext in input_exts) {
+    if (grepl(paste0("\\", ext, "$"), filename, ignore.case = TRUE)) return(ext)
+  }
+  input_exts[1]
+}
 
 # Conversion function with smart ASCII/Unicode handling
 convert_file <- function(i, files, files_out, outdir, basedir, temp_workdir) {
@@ -23,18 +32,17 @@ convert_file <- function(i, files, files_out, outdir, basedir, temp_workdir) {
       
       # Create temporary copy with ASCII-safe name for input
       timestamp <- format(Sys.time(), '%Y%m%d_%H%M%S_%OS3')
-      safe_input_name <- glue("temp_input_{i}_{timestamp}.raw")
+      file_ext <- get_input_ext(filename)
+      safe_input_name <- glue("temp_input_{i}_{timestamp}{file_ext}")
       temp_input_file <- file.path(temp_workdir, safe_input_name)
       
-      # Copy the .raw directory with a safe ASCII name
       if (!file.copy(files[i], temp_workdir, recursive = TRUE)) {
-        stop("Failed to copy input .raw directory")
+        stop("Failed to copy input file/directory")
       }
-      
-      # After copying, rename to our desired ASCII-safe name
+
       copied_dir <- file.path(temp_workdir, basename(files[i]))
       if (!file.rename(copied_dir, temp_input_file)) {
-        stop("Failed to rename copied .raw directory")
+        stop("Failed to rename copied file/directory")
       }
       
       used_copy_method <- TRUE
@@ -66,7 +74,7 @@ convert_file <- function(i, files, files_out, outdir, basedir, temp_workdir) {
     
     if (used_copy_method) {
       # Handle temp file method - need to rename output
-      expected_temp_output <- file.path(temp_workdir, gsub("\\.raw$", ".mzML", basename(temp_input_file)))
+      expected_temp_output <- file.path(temp_workdir, gsub(input_ext_regex, ".mzML", basename(temp_input_file)))
       
       if (!file.exists(expected_temp_output)) {
         message("Expected temp output file not found for: ", basename(files[i]))
@@ -125,22 +133,34 @@ convert_file <- function(i, files, files_out, outdir, basedir, temp_workdir) {
 # Main conversion process
 message("Starting conversion at: ", Sys.time())
 
-# Read and process file list
-files <- readLines(glue("{basedir}/raw_filelist.txt"), encoding = "UTF-8")
-files <- glue("{basedir}/{files}")
-files <- gsub("\"", "", files)
-files <- gsub("\\\\", "/", files)
-files <- trimws(files)
+# Get file list either from txt file or by scanning recursively
+files_from_txt <- as.logical(Sys.getenv("QC4METABOLOMICS_msconvert_files_from_txt", "TRUE"))
 
-# Convert from UTF-8 bytes to proper UTF-8 characters
-files <- iconv(files, from = "UTF-8", to = "UTF-8", sub = "")
-Encoding(files) <- "UTF-8"
+if (files_from_txt) {
+  message("Reading file list from raw_filelist.txt")
+  files <- readLines(glue("{basedir}/raw_filelist.txt"), encoding = "UTF-8")
+  files <- glue("{basedir}/{files}")
+  files <- gsub("\"", "", files)
+  files <- gsub("\\\\", "/", files)
+  files <- trimws(files)
 
-# Debug: show how filenames look
-message("Sample filename encoding:")
+  files <- iconv(files, from = "UTF-8", to = "UTF-8", sub = "")
+  Encoding(files) <- "UTF-8"
+} else {
+  message("Scanning recursively for files matching: ", paste(input_exts, collapse = ", "))
+  files <- list.files(path = basedir, pattern = input_ext_regex,
+                      recursive = TRUE, full.names = TRUE, include.dirs = TRUE)
+  files <- files[!grepl("/.temp_conversion/", files, fixed = TRUE)]
+
+  exclude_path <- trimws(Sys.getenv("QC4METABOLOMICS_msconvert_exclude_path", ""))
+  if (nchar(exclude_path) > 0) {
+    exclude_pat <- paste(trimws(strsplit(exclude_path, ";")[[1]]), collapse = "|")
+    files <- files[!grepl(exclude_pat, files)]
+  }
+}
+
 if(length(files) > 0) {
-  message("Raw: ", files[1])
-  message("Encoding: ", Encoding(files[1]))
+  message("Sample file: ", files[1])
 }
 
 # Remove files that don't exist (anymore)
@@ -150,7 +170,7 @@ outdir <- glue("{dirname(files)}{Sys.getenv('QC4METABOLOMICS_msconvert_outdir_pr
 
 # Remove files that have already been converted
 files_b <- basename(files)
-files_out <- glue("{outdir}/{gsub('.raw$', '', files_b)}.mzML")
+files_out <- glue("{outdir}/{gsub(input_ext_regex, '', files_b)}.mzML")
 file_exist <- file.exists(files_out)
 files <- files[!file_exist]
 outdir <- outdir[!file_exist]

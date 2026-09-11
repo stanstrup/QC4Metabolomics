@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/stanstrup/QC4Metabolomics/compare/v1.3.0...v1.4.0) (2026-09-11)
+
+
+### Bug Fixes
+
+* contaminants heatmap crash with single file ([8551e36](https://github.com/stanstrup/QC4Metabolomics/commit/8551e36889cfffc6b7cc245b8b6173b54e3f0dfb))
+
+
+### Features
+
+* make converter support configurable file extensions and recursive scanning ([e52b90e](https://github.com/stanstrup/QC4Metabolomics/commit/e52b90e3acef9549025478a03af88289a753f325))
+
 # [1.3.0](https://github.com/stanstrup/QC4Metabolomics/compare/v1.2.2...v1.3.0) (2026-09-10)
 
 

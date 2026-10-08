@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/stanstrup/QC4Metabolomics/compare/v1.4.1...v1.4.2) (2026-10-08)
+
+
+### Bug Fixes
+
+* accept filename mode in any case (e.g. Pos/NEG) ([3b9c909](https://github.com/stanstrup/QC4Metabolomics/commit/3b9c9095e7f90f6680093c2dcdfadc3f2e3e63eb))
+
 ## [1.4.1](https://github.com/stanstrup/QC4Metabolomics/compare/v1.4.0...v1.4.1) (2026-10-08)
 
 

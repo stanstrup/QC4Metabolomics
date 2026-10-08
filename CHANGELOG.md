@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/stanstrup/QC4Metabolomics/compare/v1.4.0...v1.4.1) (2026-10-08)
+
+
+### Bug Fixes
+
+* cron jobs never ran in Docker and msconvert args were lost ([bef5973](https://github.com/stanstrup/QC4Metabolomics/commit/bef5973c0ec919377c3c5c3c53d381486efe5d1e))
+
 # [1.4.0](https://github.com/stanstrup/QC4Metabolomics/compare/v1.3.0...v1.4.0) (2026-09-11)
 
 

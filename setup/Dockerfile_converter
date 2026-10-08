@@ -32,6 +32,9 @@ RUN find /converter_scripts/ -type f -exec dos2unix {} +
 RUN chmod +x /setup/cron_with_env.sh
 RUN chmod +x /converter_scripts/converter_std.sh
 
+# pam_loginuid fails inside Docker and makes cron silently skip every job
+RUN sed -i '/pam_loginuid/s/^/#/' /etc/pam.d/cron
+
 ##### R packages ##########################################################
 
 RUN echo 'options(repos=structure(c(CRAN="http://cran.r-project.org")))' > .Rprofile

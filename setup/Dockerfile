@@ -24,6 +24,9 @@ RUN find /srv/shiny-server/QC4Metabolomics/ -type f -exec dos2unix {} +
 
 RUN chmod +x  /setup/cron_with_env.sh
 RUN chmod +x  /srv/shiny-server/QC4Metabolomics/setup/scheduled_tasks.sh
+
+# pam_loginuid fails inside Docker and makes cron silently skip every job
+RUN sed -i '/pam_loginuid/s/^/#/' /etc/pam.d/cron
 ###############################################################################
 
 

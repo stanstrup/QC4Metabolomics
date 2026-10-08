@@ -146,8 +146,9 @@ while( N_todo(pool) != 0 ){
 
 
     # Invalid mode ------------------------------------------------------------
-    # mode can only be 'pos','neg','unknown'
-    
+    # mode can only be 'pos','neg','unknown'. Accept any case in the filename (e.g. "Pos")
+    file_tbl %<>% mutate(mode = tolower(mode))
+
     # lets check if the coersion caused invalid modes
     file_tbl %<>% mutate(FLAG = ifelse(mode %in% c('pos','neg','unknown'),FALSE, TRUE))
     
